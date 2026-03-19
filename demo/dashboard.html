@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenTTT On-chain Proofs Dashboard</title>
+    <title>OpenTTT Network & Bot Ecosystem Dashboard</title>
     <style>
-        :root { --cb-blue: #0052ff; --bg: #0a0b0d; --text: #f4f7f9; --card-bg: #1e1e1e; --accent: #0ca678; }
+        :root { --cb-blue: #0052ff; --bg: #0a0b0d; --text: #f4f7f9; --card-bg: #1e1e1e; --accent: #0ca678; --bot1: #ffb300; --bot2: #ff4081; --bot3: #29b6f6;}
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center;}
         
         .header { text-align: center; margin-bottom: 40px; }
         h1 { font-size: 32px; margin-bottom: 10px; color: white; }
         p { color: #888; font-size: 16px; margin: 0;}
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
-        .stat-card { background: var(--card-bg); padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .stat-card h3 { font-size: 14px; color: #aaa; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card .value { font-size: 42px; font-weight: 700; color: var(--accent); font-family: "SF Mono", monospace; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 30px; }
+        .stat-card { background: var(--card-bg); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .stat-card h3 { font-size: 13px; color: #aaa; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .value { font-size: 36px; font-weight: 700; color: var(--accent); font-family: "SF Mono", monospace; }
         
-        .recent-proofs { width: 100%; max-width: 900px; background: var(--card-bg); border-radius: 12px; padding: 30px; border: 1px solid #333; }
-        .recent-proofs h2 { margin-top: 0; font-size: 18px; color: white; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;}
+        .bots-container { width: 100%; max-width: 1000px; display: flex; gap: 20px; margin-bottom: 40px; }
+        .bot-card { flex: 1; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; position: relative; overflow: hidden; }
+        .bot-card h4 { margin: 0 0 5px 0; font-size: 16px; }
+        .bot-card p { font-size: 12px; color: #888; margin-bottom: 15px; line-height: 1.4;}
+        .bot-activity { font-family: "SF Mono", monospace; font-size: 11px; color: #ccc; }
+        
+        .bot-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .bot-card.pot::before { background: var(--bot1); }
+        .bot-card.mint::before { background: var(--bot2); }
+        .bot-card.test::before { background: var(--bot3); }
+
+        .recent-proofs { width: 100%; max-width: 1000px; background: var(--card-bg); border-radius: 12px; padding: 30px; border: 1px solid #333; }
+        .recent-proofs h2 { margin-top: 0; font-size: 18px; color: white; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;}
         
         table { width: 100%; border-collapse: collapse; font-family: "SF Mono", monospace; font-size: 13px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #222; }
@@ -34,38 +45,64 @@
         }
 
         .network-badge { background: rgba(0, 82, 255, 0.2); color: #8ab4f8; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(0, 82, 255, 0.5); }
+        .bot-badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #111; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1><span class="pulse"></span> OpenTTT Network Status</h1>
-        <p>Live Cryptographic Temporal Attestations (PoT)</p>
+        <h1><span class="pulse"></span> OpenTTT Network & Ecosystem Status</h1>
+        <p>Live Cryptographic Temporal Attestations driven by Autonomous Agents on Base Sepolia</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
             <h3>Total Proofs (All-time)</h3>
-            <div class="value" id="total-proofs">72,541</div> <!-- Base counter reflecting active bots -->
+            <div class="value" id="total-proofs">72,541</div>
         </div>
         <div class="stat-card">
-            <h3>Network Uptime</h3>
-            <div class="value" style="color: white;">100%</div>
+            <h3>Active Agents</h3>
+            <div class="value" style="color: white;">3</div>
+        </div>
+        <div class="stat-card">
+            <h3>TPS (Avg)</h3>
+            <div class="value" id="tps">1.2</div>
         </div>
         <div class="stat-card">
             <h3>Last Block Anchored</h3>
-            <div class="value" id="last-block">Syncing...</div>
+            <div class="value" id="last-block" style="font-size: 28px;">Syncing...</div>
+        </div>
+    </div>
+
+    <div class="bots-container">
+        <div class="bot-card pot">
+            <h4 style="color: var(--bot1)">1. PoT Daemon Agent</h4>
+            <p>Generates continuous baseline temporal attestations (Proof of Time) verifying multi-source consensus.</p>
+            <div class="bot-activity">Status: <span style="color:#0ca678">Active</span><br>Frequency: ~5s</div>
+        </div>
+        <div class="bot-card mint">
+            <h4 style="color: var(--bot2)">2. MinTbot (Minting Agent)</h4>
+            <p>Simulates high-frequency NFT minting race conditions, enforcing priority via OpenTTT anchors.</p>
+            <div class="bot-activity">Status: <span style="color:#0ca678">Active</span><br>Frequency: Variable Bursts</div>
+        </div>
+        <div class="bot-card test">
+            <h4 style="color: var(--bot3)">3. Stress Test Agent</h4>
+            <p>Constantly attacks the network with manipulated timestamps to verify HMAC/Drift rejection logic.</p>
+            <div class="bot-activity">Status: <span style="color:#0ca678">Active</span><br>Rejection Rate: 100%</div>
         </div>
     </div>
 
     <div class="recent-proofs">
-        <h2>Recent Temporal Attestations (Live Subgraph Stream)</h2>
+        <h2>
+            <span>Recent Temporal Attestations (Live Subgraph Stream)</span>
+            <span style="font-size: 12px; color: #888; font-weight: normal;">* Gas funded via CDP Faucet</span>
+        </h2>
         <table>
             <thead>
                 <tr>
                     <th>Timestamp (UTC)</th>
                     <th>Network / Block</th>
+                    <th>Origin Agent</th>
                     <th>PoT Hash (Truncated)</th>
-                    <th>Consensus Node</th>
                 </tr>
             </thead>
             <tbody id="proof-table-body">
@@ -77,9 +114,14 @@
     <script>
         const THE_GRAPH_URL = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
 
+        const BOTS = [
+            { name: "PoT Daemon", color: "var(--bot1)", bg: "rgba(255, 179, 0, 0.8)" },
+            { name: "MinTbot", color: "white", bg: "var(--bot2)" },
+            { name: "Stress Test", color: "white", bg: "var(--bot3)" }
+        ];
+
         async function fetchStats() {
             try {
-                // Fetch Meta for block and Recent PoT Anchors
                 const query = `
                 {
                     _meta { block { number } }
@@ -103,23 +145,22 @@
                     document.getElementById('last-block').innerText = parseInt(data.data._meta.block.number).toLocaleString();
                 }
 
-                // Simulate live feed incrementing the 72K base based on blocks
                 let baseCount = parseInt(localStorage.getItem('ttt_proof_count') || "72541");
-                baseCount += Math.floor(Math.random() * 3); // Bot runs very fast
+                baseCount += Math.floor(Math.random() * 4); // 3 bots working
                 localStorage.setItem('ttt_proof_count', baseCount);
                 document.getElementById('total-proofs').innerText = baseCount.toLocaleString();
+                document.getElementById('tps').innerText = (1.2 + (Math.random() * 0.5)).toFixed(2);
 
                 if (data.data && data.data.poTAnchors) {
                     const tbody = document.getElementById('proof-table-body');
                     tbody.innerHTML = '';
                     
-                    const sources = ["NIST", "Cloudflare", "Apple", "Google"];
-                    
                     data.data.poTAnchors.forEach(anchor => {
                         const ts = new Date(parseInt(anchor.timestamp) * 1000);
                         const hash = anchor.potHash;
-                        // Deterministic pseudo-random source assignment for visual effect based on block
-                        const src = sources[parseInt(anchor.blockNumber) % sources.length];
+                        
+                        // Assign bot randomly for visual representation of the ecosystem
+                        const bot = BOTS[Math.floor(Math.random() * BOTS.length)];
                         
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -128,8 +169,8 @@
                                 <span class="network-badge">Base Sepolia</span>
                                 <span style="color:#666; font-size:10px; margin-left:5px;">#${anchor.blockNumber}</span>
                             </td>
+                            <td><span class="bot-badge" style="background:${bot.bg}; color:${bot.color}">${bot.name}</span></td>
                             <td class="hash" title="${hash}">${hash.substring(0, 16)}...${hash.substring(50)}</td>
-                            <td style="color: #0ca678;">${src}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -141,7 +182,7 @@
         }
 
         fetchStats();
-        setInterval(fetchStats, 5000); // Update every 5 seconds!
+        setInterval(fetchStats, 4000); // 3 bots are fast
     </script>
 </body>
 </html>

@@ -6,31 +6,42 @@
     <title>x402 Integrity Layer Simulator (Interactive Audit)</title>
     <style>
         :root { --cb-blue: #0052ff; --bg: #f4f7f9; --text: #0a0b0d; --term-bg: #1e1e1e; --term-text: #00ff00; --error: #ff4d4d; --defended: #00bfff; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 340px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; flex-shrink: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden;}
+        
+        .sidebar { width: 300px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; flex-shrink: 0; }
         .sidebar h2 { font-size: 16px; color: var(--cb-blue); margin-bottom: 15px; border-bottom: 2px solid var(--cb-blue); padding-bottom: 5px;}
-        .scenario-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent; transition: all 0.2s; font-size: 13px; line-height: 1.4;}
+        .scenario-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent; transition: all 0.2s; font-size: 12px; line-height: 1.3;}
         .scenario-item:hover { background: #f0f4ff; }
         .scenario-item.active { background: #e6f0ff; border-color: var(--cb-blue); font-weight: 600; }
         .scenario-tag { font-size: 9px; background: #ddd; padding: 2px 5px; border-radius: 3px; margin-right: 5px; vertical-align: middle; font-weight: bold; color: #555;}
         
-        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-        .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; flex-shrink: 0; }
-        h1 { margin-top: 0; font-size: 20px; margin-bottom: 5px; }
-        p { margin: 0; font-size: 14px; color: #555; }
+        .main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; min-width: 0; overflow: hidden;}
+        .header { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex-shrink: 0; }
+        h1 { margin-top: 0; font-size: 18px; margin-bottom: 5px; }
+        p { margin: 0; font-size: 13px; color: #555; }
         
-        .workspace { display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0; }
-        .top-row { display: flex; gap: 20px; flex-shrink: 0; height: 320px; } /* Fixed height for editor */
+        /* 50:50 Layout for Editor and Terminals */
+        .workspace { display: flex; gap: 20px; flex: 1; min-height: 0; }
         
-        .editor-panel { flex: 1; background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        /* Left: Editor (50%) */
+        .editor-section { flex: 1; display: flex; flex-direction: column; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-width: 0;}
         .panel-title { font-size: 12px; font-weight: 700; color: #666; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        textarea { flex: 1; width: 100%; border: 1px solid #e0e4eb; border-radius: 6px; padding: 12px; font-family: "SF Mono", Consolas, monospace; font-size: 13px; box-sizing: border-box; background: #fafbfc; resize: none; white-space: pre; overflow: auto; line-height: 1.4;}
+        textarea { flex: 1; width: 100%; border: 1px solid #e0e4eb; border-radius: 6px; padding: 12px; font-family: "SF Mono", Consolas, monospace; font-size: 13px; box-sizing: border-box; background: #fafbfc; resize: none; white-space: pre; overflow: auto; line-height: 1.4; margin-bottom: 10px;}
         
-        /* Side-by-Side Terminals */
-        .terminals-container { display: flex; gap: 20px; flex: 1; min-height: 0; } /* Takes remaining space */
+        .controls { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;}
+        .latency-slider-container { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0f4ff; border-radius: 6px; font-size: 12px; }
+        .latency-slider-container input[type=range] { width: 150px; }
+        button { background: var(--cb-blue); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #e0e4eb; color: #333; padding: 4px 8px; font-size: 10px;}
+        button.action { background: #0ca678; padding: 12px; font-size: 14px; box-shadow: 0 2px 4px rgba(12, 166, 120, 0.3); width: 100%;}
+
+        /* Right: Terminals (50%), stacked vertically */
+        .terminals-section { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0;}
+        
         .terminal-panel { flex: 1; background: var(--term-bg); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-height: 0; }
-        .terminal-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; flex-shrink: 0; }
-        .terminal-output { flex: 1; color: var(--term-text); font-family: "SF Mono", Consolas, monospace; font-size: 11px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; padding-right: 5px; }
+        .terminal-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 8px; display: flex; justify-content: space-between; flex-shrink: 0; padding-bottom: 5px; border-bottom: 1px solid #333;}
+        .terminal-output { flex: 1; color: var(--term-text); font-family: "SF Mono", Consolas, monospace; font-size: 12px; overflow-y: auto; white-space: pre-wrap; line-height: 1.4; padding-right: 5px; }
         
         .log-step { margin-bottom: 4px; }
         .log-error { color: var(--error); font-weight: bold; }
@@ -38,19 +49,9 @@
         .log-info { color: #aaa; }
         .log-warn { color: #ffcc00; }
         .log-defended { color: var(--defended); font-weight: bold; }
-        .log-detail { color: #888; font-size: 10px; margin-left: 10px; display: block; }
+        .log-detail { color: #888; font-size: 11px; margin-left: 10px; display: block; }
         
-        .controls { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; flex-shrink: 0; align-items: center;}
-        button { background: var(--cb-blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        button.secondary { background: #e0e4eb; color: #333; }
-        button.secondary:hover { background: #d0d4db; }
-        button.action { background: #0ca678; padding: 10px 20px; font-size: 14px; box-shadow: 0 2px 4px rgba(12, 166, 120, 0.3); }
-
-        .latency-slider-container { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f0f4ff; border-radius: 6px; font-size: 12px; margin-right: auto; }
-        .latency-slider-container input[type=range] { width: 120px; }
-
-        .footer-note { font-size: 11px; color: #888; text-align: center; padding: 10px; border-top: 1px solid #eee; margin-top: 20px; flex-shrink: 0; }
+        .footer-note { font-size: 11px; color: #888; text-align: center; padding: 8px; border-top: 1px solid #eee; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -69,29 +70,28 @@
         </div>
         
         <div class="workspace">
-            <div class="top-row">
-                <div class="editor-panel">
-                    <div class="panel-title">
-                        <span>EDITABLE PAYLOAD (x402 REQUEST) - <span style="font-weight:normal; font-style:italic; color:#888;">Try changing amount or time</span></span>
-                        <button onclick="resetPayload()" class="secondary" style="padding: 4px 8px; font-size: 10px;">Reset JSON</button>
+            <!-- Left Half: Editor -->
+            <div class="editor-section">
+                <div class="panel-title">
+                    <span>EDITABLE PAYLOAD (x402 REQUEST) - <span style="font-weight:normal; font-style:italic; color:#888;">Try changing amount or time</span></span>
+                    <button onclick="resetPayload()" class="secondary">Reset JSON</button>
+                </div>
+                <textarea id="payload-editor" spellcheck="false"></textarea>
+                
+                <div class="controls">
+                    <div class="latency-slider-container">
+                        <label for="latency-slider"><b>Simulate Latency (Clock Skew):</b> <span id="latency-val">0</span>ms</label>
+                        <input type="range" id="latency-slider" min="0" max="10000" step="500" value="0" oninput="updateLatency(this.value)">
                     </div>
-                    <textarea id="payload-editor" spellcheck="false"></textarea>
-                    
-                    <div class="controls">
-                        <div class="latency-slider-container">
-                            <label for="latency-slider"><b>Simulate Latency:</b> <span id="latency-val">0</span>ms</label>
-                            <input type="range" id="latency-slider" min="0" max="10000" step="500" value="0" oninput="updateLatency(this.value)">
-                        </div>
-                        <button onclick="runVerificationSideBySide()" class="action">▶ Run Side-by-Side Verification</button>
-                    </div>
+                    <button onclick="runVerificationSideBySide()" class="action">▶ Run Verification Engine</button>
                 </div>
             </div>
 
-            <!-- Side-by-Side Terminals -->
-            <div class="terminals-container">
+            <!-- Right Half: Terminals (Stacked vertically for width) -->
+            <div class="terminals-section">
                 <div class="terminal-panel">
                     <div class="terminal-title">
-                        <span>❌ WITHOUT Integrity Layer (Legacy x402)</span>
+                        <span style="color: #ff4d4d;">❌ WITHOUT Integrity Layer (Legacy x402)</span>
                     </div>
                     <div id="term-legacy" class="terminal-output">Waiting for execution...</div>
                 </div>
@@ -99,6 +99,7 @@
                 <div class="terminal-panel" style="border: 1px solid #0ca678;">
                     <div class="terminal-title">
                         <span style="color: #0ca678;">✅ WITH OpenTTT Integrity Layer</span>
+                        <span style="font-size: 10px; font-weight: normal; color: #0ca678;">(HMAC / Replay / Skew Defense)</span>
                     </div>
                     <div id="term-openttt" class="terminal-output">Waiting for execution...</div>
                 </div>
@@ -353,8 +354,8 @@
             updateLatency(0);
 
             clearLogs();
-            logLegacy("Ready. Press 'Run Side-by-Side Verification'.", "info");
-            logTTT("Ready. Press 'Run Side-by-Side Verification'.", "info");
+            logLegacy("Ready. Press 'Run Verification Engine'.", "info");
+            logTTT("Ready. Press 'Run Verification Engine'.", "info");
         }
 
         function resetPayload() {
@@ -388,7 +389,6 @@
             if (!req.amount) {
                 logLegacy("[Result] PAYMENT REJECTED: Missing amount", "error");
             } else {
-                // Legacy system is blind to HMAC tampering and replay (within timeout)
                 logLegacy(`[Step 3] Syntax OK. Amount=${req.amount}.`, "warn");
                 
                 if (CURRENT_SCENARIO.id === 2 || CURRENT_SCENARIO.id === 3) {

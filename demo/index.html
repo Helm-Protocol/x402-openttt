@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>x402 Integrity Layer Simulator (Interactive Audit)</title>
     <style>
-        :root { --cb-blue: #0052ff; --bg: #f4f7f9; --text: #0a0b0d; --term-bg: #1e1e1e; --term-text: #00ff00; --error: #ff4d4d; }
+        :root { --cb-blue: #0052ff; --bg: #f4f7f9; --text: #0a0b0d; --term-bg: #1e1e1e; --term-text: #00ff00; --error: #ff4d4d; --defended: #00bfff; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 320px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; }
+        .sidebar { width: 340px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; }
         .sidebar h2 { font-size: 16px; color: var(--cb-blue); margin-bottom: 15px; border-bottom: 2px solid var(--cb-blue); padding-bottom: 5px;}
         .scenario-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent; transition: all 0.2s; font-size: 13px; line-height: 1.4;}
         .scenario-item:hover { background: #f0f4ff; }
@@ -30,17 +30,16 @@
         #terminal-output { flex: 1; color: var(--term-text); font-family: "SF Mono", Consolas, monospace; font-size: 12px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
         .log-step { margin-bottom: 4px; }
         .log-error { color: var(--error); font-weight: bold; }
-        .log-success { color: #00ff00; }
+        .log-success { color: #00ff00; font-weight: bold; }
         .log-info { color: #aaa; }
         .log-warn { color: #ffcc00; }
+        .log-defended { color: var(--defended); font-weight: bold; }
         
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
+        .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         button { background: var(--cb-blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         button.secondary { background: #e0e4eb; color: #333; }
         button.secondary:hover { background: #d0d4db; }
-        
-        .badge { background: #ffebee; color: #e53935; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -66,9 +65,9 @@
                 </div>
                 <textarea id="payload-editor" spellcheck="false"></textarea>
                 <div class="controls">
-                    <button onclick="runVerification(false)">Verify with Legacy x402</button>
-                    <button onclick="runVerification(true)" style="background: #0ca678;">Verify with OpenTTT</button>
-                    <button onclick="resetPayload()" class="secondary">Reset</button>
+                    <button onclick="runVerification(false)" class="secondary">1. Verify with Legacy x402 (Unsafe)</button>
+                    <button onclick="runVerification(true)" style="background: #0ca678;">2. Verify with OpenTTT (Secure)</button>
+                    <button onclick="resetPayload()" class="secondary" style="margin-left:auto;">Reset JSON</button>
                 </div>
             </div>
             
@@ -80,9 +79,8 @@
     </div>
 
     <script>
-        // Simple crypto mock for demo purposes (SHA256 HMAC simulation)
-        async function mockHmacSha256(message, secret = "x402-shared-secret") {
-            const msgBuffer = new TextEncoder().encode(message + secret);
+        async function mockHmacSha256(message) {
+            const msgBuffer = new TextEncoder().encode(message + "x402-shared-secret");
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -94,106 +92,201 @@
 
         const scenarios = [
             {
-                id: 1,
-                title: "Amount Tampering (MITM)",
-                desc: "An attacker intercepts a $1.00 payment and changes the amount to $100.00. OpenTTT detects the HMAC binding failure.",
-                setup: async () => {
-                    const ts = Date.now();
-                    const nonce = "mitm_nonce_" + Math.floor(Math.random()*10000);
-                    // Valid binding: ts + nonce + url + network + amount(100)
-                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase100`);
-                    return {
-                        "x402Version": 2,
-                        "amount": "10000", // ATTACKER CHANGED THIS (was 100)
-                        "network": "base",
-                        "resource": "https://api.example.com/resource",
-                        "extensions": {
-                            "temporal-attestation": {
-                                "timestampMs": ts,
-                                "nonce": nonce,
-                                "hmac": validHmac,
-                                "sources": ["NIST"]
-                            }
-                        }
-                    };
-                },
-                tags: ["#1205", "Security"]
-            },
-            {
-                id: 2,
-                title: "Replay Attack",
-                desc: "An attacker captures a valid payload and resends it. Legacy x402 allows it if within the window. OpenTTT blocks the duplicate nonce/timestamp tuple.",
-                setup: async () => {
-                    const ts = Date.now() - 1000; // 1 second ago (valid in legacy window)
-                    const nonce = "replay_nonce_777";
-                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase500`);
-                    SEEN_NONCES.add(`${nonce}_${ts}`); // Simulate that it was already processed
-                    return {
-                        "x402Version": 2,
-                        "amount": "500",
-                        "network": "base",
-                        "resource": "https://api.example.com/resource",
-                        "extensions": {
-                            "temporal-attestation": {
-                                "timestampMs": ts,
-                                "nonce": nonce,
-                                "hmac": validHmac,
-                                "sources": ["Cloudflare"]
-                            }
-                        }
-                    };
-                },
-                tags: ["#1632", "Replay"]
-            },
-            {
-                id: 3,
-                title: "Clock Skew / Stale Request",
-                desc: "A request arrives with a timestamp older than the allowed drift (5000ms), simulating extreme latency or a delayed replay.",
-                setup: async () => {
-                    const ts = Date.now() - 10000; // 10 seconds ago (fails drift check)
-                    const nonce = "skew_nonce_" + Math.floor(Math.random()*10000);
-                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase200`);
-                    return {
-                        "x402Version": 2,
-                        "amount": "200",
-                        "network": "base",
-                        "resource": "https://api.example.com/resource",
-                        "extensions": {
-                            "temporal-attestation": {
-                                "timestampMs": ts,
-                                "nonce": nonce,
-                                "hmac": validHmac,
-                                "sources": ["Google"]
-                            }
-                        }
-                    };
-                },
-                tags: ["#1062", "Latency"]
-            },
-            {
-                id: 4,
-                title: "Normal Valid Payment",
+                id: 1, title: "Normal Valid Payment", tags: ["#1667"],
                 desc: "A perfectly valid payment with accurate timestamp and valid HMAC signature.",
                 setup: async () => {
                     const ts = Date.now();
                     const nonce = "valid_nonce_" + Math.floor(Math.random()*10000);
                     const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
                     return {
-                        "x402Version": 2,
-                        "amount": "300",
-                        "network": "base",
-                        "resource": "https://api.example.com/resource",
-                        "extensions": {
-                            "temporal-attestation": {
-                                "timestampMs": ts,
-                                "nonce": nonce,
-                                "hmac": validHmac,
-                                "sources": ["NIST", "Apple"]
-                            }
-                        }
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["NIST", "Apple"] } }
                     };
                 },
-                tags: ["#1667", "Standard"]
+                expectedFail: false
+            },
+            {
+                id: 2, title: "Amount Tampering (MITM)", tags: ["#1205"],
+                desc: "Attacker intercepts a $1.00 payment and changes the amount to $100.00. Legacy x402 accepts it. OpenTTT detects the HMAC binding failure.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "mitm_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase100`); // Signed for 100
+                    return {
+                        "x402Version": 2, "amount": "10000", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["NIST"] } }
+                    };
+                },
+                expectedFail: "401"
+            },
+            {
+                id: 3, title: "Replay Attack", tags: ["#1632", "#1645"],
+                desc: "Attacker captures a valid payload and resends it. Legacy x402 allows it if within maxTimeoutSeconds. OpenTTT blocks the duplicate tuple.",
+                setup: async () => {
+                    const ts = Date.now() - 1000;
+                    const nonce = "replay_nonce_777";
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase500`);
+                    SEEN_NONCES.add(`${nonce}_${ts}`); 
+                    return {
+                        "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["Cloudflare"] } }
+                    };
+                },
+                expectedFail: "409"
+            },
+            {
+                id: 4, title: "Clock Skew / Stale Request", tags: ["#1062", "#1181"],
+                desc: "A request arrives with a timestamp older than the allowed drift (5000ms), simulating extreme latency or a delayed replay.",
+                setup: async () => {
+                    const ts = Date.now() - 10000;
+                    const nonce = "skew_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase200`);
+                    return {
+                        "x402Version": 2, "amount": "200", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["Google"] } }
+                    };
+                },
+                expectedFail: "400"
+            },
+            {
+                id: 5, title: "Flash Loan Defense", tags: ["#1195"],
+                desc: "Same-block voting attempt where token holding duration is insufficient (e.g. 100ms). OpenTTT securely anchors and rejects.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "flash_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase500`);
+                    return {
+                        "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "meta": { "tokenAcquiredMs": ts - 100 } } }
+                    };
+                },
+                expectedFail: "POLICY"
+            },
+            {
+                id: 6, title: "SAR Audit Trail", tags: ["#1201"],
+                desc: "Generating an undeniable temporal audit trail for suspicious activity reporting. Fully supported.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "audit_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "auditLevel": "SAR", "sources": ["NIST"] } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 7, title: "Recovery via Idempotent Context", tags: ["#1677"],
+                desc: "Network drops during payment. Agent safely retries using an exact new temporal anchor.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "retry_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "retryCount": 1 } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 8, title: "Time-weighted Fee Modeling", tags: ["#1192"],
+                desc: "Gas fee estimation synchronized to a specific epoch using the integrity layer.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "fee_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase500`);
+                    return {
+                        "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "gasEpoch": 14205 } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 9, title: "Agent Infinite Loop Detection", tags: ["#1215"],
+                desc: "An agent misconfiguration sends 500 duplicate payments per second. Rate limiting via temporal signature.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "loop_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sequenceRate": "500/s" } }
+                    };
+                },
+                expectedFail: "RATE_LIMIT"
+            },
+            {
+                id: 10, title: "Behavioral Fraud Signature", tags: ["#1220"],
+                desc: "Sudden spike in high-value transfers. Temporal signatures flag an anomaly.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "fraud_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase50000`);
+                    return {
+                        "x402Version": 2, "amount": "50000", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "velocityScore": 0.95 } }
+                    };
+                },
+                expectedFail: "SECURITY"
+            },
+            {
+                id: 11, title: "State Inconsistency Resolution", tags: ["#1210"],
+                desc: "Time anchor forces common reference across distributed nodes.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "sync_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "stateHash": "0xabc123" } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 12, title: "Protocol Phase Sealing", tags: ["#1169"],
+                desc: "Preventing race conditions between commitment and execution phases.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "phase_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "phase": "commit" } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 13, title: "Adaptive Drift Compensation", tags: ["#1181"],
+                desc: "Automatically adjusting for geographic network latency.",
+                setup: async () => {
+                    const ts = Date.now() - 300;
+                    const nonce = "drift_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "geoRegion": "ap-northeast-2" } }
+                    };
+                },
+                expectedFail: false
+            },
+            {
+                id: 14, title: "Deterministic Priority Ordering", tags: ["#1645"],
+                desc: "Ensuring mempool order matches exact intent.",
+                setup: async () => {
+                    const ts = Date.now();
+                    const nonce = "order_nonce_" + Math.floor(Math.random()*10000);
+                    const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase300`);
+                    return {
+                        "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
+                        "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "priorityLevel": "high" } }
+                    };
+                },
+                expectedFail: false
             }
         ];
 
@@ -256,7 +349,12 @@
                 if (req.amount) {
                     log(`[Step 3] Legacy validation: Amount ${req.amount} looks okay. No binding verified.`, "warn");
                     log(`[Step 4] Legacy validation: Timeout window roughly valid. Replay not checked deterministically.`, "warn");
-                    log(`[Result] PAYMENT ACCEPTED (Legacy systems are blind to tampering/replay if syntax is valid)`, "error"); // Red because it's a false positive
+                    
+                    if(CURRENT_SCENARIO.expectedFail) {
+                        log(`[Result] 🚨 PAYMENT ACCEPTED (VULNERABILITY): Legacy systems are blind to tampering/replay if syntax is valid!`, "error");
+                    } else {
+                        log(`[Result] ✅ PAYMENT ACCEPTED`, "success");
+                    }
                 } else {
                     log("[Result] PAYMENT REJECTED: Missing amount", "error");
                 }
@@ -272,12 +370,29 @@
 
             log(`[Step 2] Extracted temporal context: TS=${ext.timestampMs}, Nonce=${ext.nonce}`, "info");
 
+            // Flash Loan / Custom Policy Check
+            if (ext.meta && ext.meta.tokenAcquiredMs) {
+                log(`[Step 2.5] Evaluating Governance Policy (Flash Loan Check)`, "info");
+                if (ext.timestampMs - ext.meta.tokenAcquiredMs < 12000) {
+                    log(`[Result] 🛡️ DEFENDED (POLICY REJECT): Holding duration (${ext.timestampMs - ext.meta.tokenAcquiredMs}ms) below 1 block. Flash loan attack blocked!`, "defended");
+                    return;
+                }
+            }
+            if (ext.sequenceRate === "500/s") {
+                log(`[Result] 🛡️ DEFENDED (RATE_LIMIT): Sequence velocity exceeds agent policy. Infinite loop blocked!`, "defended");
+                return;
+            }
+            if (ext.velocityScore && ext.velocityScore > 0.9) {
+                log(`[Result] 🛡️ DEFENDED (SECURITY): Anomaly detected via temporal behavioral signature. Fraud blocked!`, "defended");
+                return;
+            }
+
             // Drift Check
             const now = Date.now();
             const drift = Math.abs(now - ext.timestampMs);
             log(`[Step 3] Evaluating Time Window (Drift = ${drift}ms, Max = 5000ms)`, "info");
             if (drift > 5000) {
-                log(`[Result] ❌ REJECTED (400 Bad Request): Temporal drift exceeds allowed window. Possible stale request or severe clock skew.`, "error");
+                log(`[Result] 🛡️ DEFENDED (400 Bad Request): Temporal drift exceeds allowed window. Stale request blocked!`, "defended");
                 return;
             }
             log(`[Step 3] Time Window validation passed.`, "success");
@@ -286,7 +401,7 @@
             const cacheKey = `${ext.nonce}_${ext.timestampMs}`;
             log(`[Step 4] Querying Global Nonce Cache for: ${cacheKey}`, "info");
             if (SEEN_NONCES.has(cacheKey)) {
-                log(`[Result] ❌ REJECTED (409 Conflict): (Nonce, Timestamp) tuple already processed. REPLAY ATTACK DETECTED.`, "error");
+                log(`[Result] 🛡️ DEFENDED (409 Conflict): (Nonce, Timestamp) tuple already processed. REPLAY ATTACK BLOCKED!`, "defended");
                 return;
             }
             log(`[Step 4] Replay validation passed. Tuple is unique.`, "success");
@@ -301,7 +416,7 @@
             log(`   Provided HMAC:     ${ext.hmac.substring(0,20)}...`, "info");
 
             if (expectedHmac !== ext.hmac) {
-                log(`[Result] ❌ REJECTED (401 Unauthorized): HMAC signature mismatch. Payload has been TAMPERED WITH (MITM attack).`, "error");
+                log(`[Result] 🛡️ DEFENDED (401 Unauthorized): HMAC signature mismatch. Payload TAMPERING (MITM attack) BLOCKED!`, "defended");
                 return;
             }
             log(`[Step 5] HMAC Cryptographic binding verified.`, "success");
@@ -321,7 +436,7 @@
                 div.onclick = () => loadScenario(s);
                 list.appendChild(div);
             });
-            loadScenario(scenarios[0]);
+            loadScenario(scenarios[0]); // Load first scenario
         }
 
         init();

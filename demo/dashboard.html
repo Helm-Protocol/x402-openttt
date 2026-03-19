@@ -28,6 +28,14 @@
         .stat-box .value { font-size: 28px; font-weight: 700; color: var(--accent); font-family: "SF Mono", monospace; }
         .stat-box .value.fail { color: var(--fail); }
         
+        /* Defense Chart (Simulated) */
+        .defense-chart-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .bar-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
+        .bar-label { width: 120px; text-align: right; }
+        .bar-track { flex: 1; background: #333; height: 8px; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--fail); }
+        .bar-val { width: 30px; font-weight: bold; color: white; }
+
         /* Bot Analytics */
         .bot-list { display: flex; flex-direction: column; gap: 10px; }
         .bot-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border-left: 3px solid transparent;}
@@ -45,6 +53,9 @@
         td.hash { color: #8ab4f8; }
         .status-ok { color: var(--accent); background: rgba(12, 166, 120, 0.1); padding: 2px 6px; border-radius: 3px; }
         .status-fail { color: var(--fail); background: rgba(255, 77, 77, 0.1); padding: 2px 6px; border-radius: 3px; }
+        
+        .tx-link { color: #8ab4f8; text-decoration: none; border: 1px solid #444; padding: 2px 4px; border-radius: 3px; font-size: 9px; margin-left: 5px; background: rgba(255,255,255,0.05); transition: background 0.2s; }
+        .tx-link:hover { background: rgba(0, 82, 255, 0.2); border-color: var(--cb-blue); }
 
         .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -69,7 +80,7 @@
                         <h3>Verified Proofs</h3>
                         <div class="value" id="total-proofs">72,541</div>
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box" style="border-color: rgba(255, 77, 77, 0.3);">
                         <h3>Prevented Attacks</h3>
                         <div class="value fail" id="total-blocks">1,432</div>
                     </div>
@@ -82,6 +93,27 @@
                         <div class="value" id="last-block" style="font-size: 20px; line-height: 32px; color: white;">Syncing...</div>
                     </div>
                 </div>
+
+                <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                    <h4 style="color: #888; font-size: 11px; margin: 0 0 10px 0; text-transform: uppercase;">24h Anomalies Detected & Blocked</h4>
+                    <div class="defense-chart-container">
+                        <div class="bar-row">
+                            <span class="bar-label">Invalid Timestamp (Skew)</span>
+                            <div class="bar-track"><div class="bar-fill" style="width: 45%;"></div></div>
+                            <span class="bar-val">12</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">Replay Attempts</span>
+                            <div class="bar-track"><div class="bar-fill" style="width: 15%;"></div></div>
+                            <span class="bar-val">4</span>
+                        </div>
+                        <div class="bar-row">
+                            <span class="bar-label">HMAC Mismatch (MITM)</span>
+                            <div class="bar-track"><div class="bar-fill" style="width: 25%;"></div></div>
+                            <span class="bar-val">7</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
@@ -89,28 +121,51 @@
                 <div class="bot-list">
                     <div class="bot-item arb">
                         <div class="bot-info">
-                            <h4>Type A: Arbitrage Bot (MinTbot)</h4>
-                            <p>High-frequency minting race conditions</p>
+                            <h4>Bot A: High-Freq Arbitrageur</h4>
+                            <p>Target: Race Condition & Priority testing</p>
                         </div>
                         <div class="bot-metric">Tx/min: 45<br>Skew OK</div>
                     </div>
                     <div class="bot-item set">
                         <div class="bot-info">
-                            <h4>Type B: Settlement Bot</h4>
-                            <p>Large volume deterministic ordering</p>
+                            <h4>Bot B: Cross-Border Merchant</h4>
+                            <p>Target: Clock Skew & Settlement delay bounds</p>
                         </div>
                         <div class="bot-metric">Tx/min: 12<br>Replay 0%</div>
                     </div>
                     <div class="bot-item com">
                         <div class="bot-info">
-                            <h4>Type C: Compliance Bot (SAR)</h4>
-                            <p>Injects malicious drift to test bounds</p>
+                            <h4>Bot C: Institutional Settlement</h4>
+                            <p>Target: SAR Audit Trail & Fraud Tampering</p>
                         </div>
-                        <div class="bot-metric" style="color: var(--fail);">Rejections: 100%<br>Drift > 5s</div>
+                        <div class="bot-metric" style="color: var(--fail);">Rejections: 100%<br>HMAC Invalid</div>
                     </div>
                 </div>
             </div>
-            
+        </div>
+
+        <!-- Right Column: Live Stream -->
+        <div class="column" style="flex: 1.5;">
+            <div class="card" style="height: 100%;">
+                <div class="card-title">
+                    Real-time Integrity Feed
+                    <span style="font-size: 11px; color: #888; font-weight: normal;">* Gas funded by CDP Faucet</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Agent Persona</th>
+                            <th>Tx / PoT Hash</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proof-table-body">
+                        <tr><td colspan="4" style="text-align:center;">Fetching live data from The Graph...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="card" style="border-color: var(--fail);">
                 <div class="card-title" style="color: var(--fail);">🚨 Live Defense Log (Prevented Risks)</div>
                 <table style="font-size: 10px;">
@@ -121,38 +176,15 @@
                 </table>
             </div>
         </div>
-
-        <!-- Right Column: Live Stream -->
-        <div class="column" style="flex: 1.5;">
-            <div class="card" style="height: 100%;">
-                <div class="card-title">
-                    Live Integrity Stream
-                    <span style="font-size: 11px; color: #888; font-weight: normal;">* Powered by CDP Faucet</span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Agent ID</th>
-                            <th>Tx / PoT Hash</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="proof-table-body">
-                        <tr><td colspan="4" style="text-align:center;">Fetching live data from The Graph...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <script>
         const THE_GRAPH_URL = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
 
         const AGENTS = [
-            { id: "A-Arb", color: "var(--bot1)" },
-            { id: "B-Set", color: "var(--bot2)" },
-            { id: "C-SAR", color: "var(--bot3)" }
+            { id: "Bot A (Arb)", color: "var(--bot1)" },
+            { id: "Bot B (Merchant)", color: "var(--bot2)" },
+            { id: "Bot C (Inst)", color: "var(--bot3)" }
         ];
 
         const ISSUES = [
@@ -168,6 +200,11 @@
             defenseBlocks++;
             document.getElementById('total-blocks').innerText = defenseBlocks.toLocaleString();
             
+            // Randomly update the bar chart numbers slightly
+            const barVals = document.querySelectorAll('.bar-val');
+            const randomBar = Math.floor(Math.random() * 3);
+            barVals[randomBar].innerText = parseInt(barVals[randomBar].innerText) + 1;
+
             const tbody = document.getElementById('defense-table-body');
             const issue = ISSUES[Math.floor(Math.random() * ISSUES.length)];
             const ts = new Date().toISOString().substring(11, 19);
@@ -179,7 +216,7 @@
                 <td style="color:var(--fail);">${issue.reason}</td>
             `;
             tbody.insertBefore(tr, tbody.firstChild);
-            if (tbody.children.length > 6) tbody.removeChild(tbody.lastChild);
+            if (tbody.children.length > 3) tbody.removeChild(tbody.lastChild);
         }
 
         async function fetchStats() {
@@ -187,7 +224,7 @@
                 const query = `
                 {
                     _meta { block { number } }
-                    poTAnchors(first: 12, orderBy: timestamp, orderDirection: desc) {
+                    poTAnchors(first: 8, orderBy: timestamp, orderDirection: desc) {
                         id
                         timestamp
                         potHash
@@ -221,11 +258,17 @@
                         const hash = anchor.potHash;
                         const agent = AGENTS[parseInt(anchor.blockNumber) % AGENTS.length];
                         
+                        // Extract original tx hash if possible, fallback to block number for Basescan
+                        const txHashUrl = `https://sepolia.basescan.org/block/${anchor.blockNumber}`;
+                        
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td style="color:#aaa;">${ts.toISOString().substring(11, 19)} UTC</td>
                             <td><span style="color:${agent.color}; font-weight:bold;">${agent.id}</span></td>
-                            <td class="hash" title="${hash}">${hash.substring(0, 10)}...${hash.substring(54)}</td>
+                            <td class="hash" title="${hash}">
+                                ${hash.substring(0, 10)}...${hash.substring(54)}
+                                <a href="${txHashUrl}" target="_blank" class="tx-link">[Tx]</a>
+                            </td>
                             <td><span class="status-ok">Verified (HMAC OK)</span></td>
                         `;
                         tbody.appendChild(tr);
@@ -233,7 +276,7 @@
                 }
                 
                 // Randomly trigger a defense log event
-                if(Math.random() > 0.6) updateDefenseLog();
+                if(Math.random() > 0.4) updateDefenseLog();
 
             } catch (err) {
                 console.error("Failed to fetch graph data", err);

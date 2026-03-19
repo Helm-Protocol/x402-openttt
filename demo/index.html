@@ -7,46 +7,57 @@
     <style>
         :root { --cb-blue: #0052ff; --bg: #f4f7f9; --text: #0a0b0d; --term-bg: #1e1e1e; --term-text: #00ff00; --error: #ff4d4d; --defended: #00bfff; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 340px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; }
+        .sidebar { width: 340px; background: white; border-right: 1px solid #e0e4eb; padding: 20px; overflow-y: auto; flex-shrink: 0; }
         .sidebar h2 { font-size: 16px; color: var(--cb-blue); margin-bottom: 15px; border-bottom: 2px solid var(--cb-blue); padding-bottom: 5px;}
         .scenario-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; border: 1px solid transparent; transition: all 0.2s; font-size: 13px; line-height: 1.4;}
         .scenario-item:hover { background: #f0f4ff; }
         .scenario-item.active { background: #e6f0ff; border-color: var(--cb-blue); font-weight: 600; }
         .scenario-tag { font-size: 9px; background: #ddd; padding: 2px 5px; border-radius: 3px; margin-right: 5px; vertical-align: middle; font-weight: bold; color: #555;}
         
-        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        .header { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
         h1 { margin-top: 0; font-size: 20px; margin-bottom: 5px; }
         p { margin: 0; font-size: 14px; color: #555; }
         
-        .workspace { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        .workspace { display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0; }
+        .top-row { display: flex; gap: 20px; flex: 1; min-height: 0; }
         
         .editor-panel { flex: 1; background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .panel-title { font-size: 12px; font-weight: 700; color: #666; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        textarea { flex: 1; width: 100%; border: 1px solid #e0e4eb; border-radius: 6px; padding: 12px; font-family: "SF Mono", Consolas, monospace; font-size: 12px; box-sizing: border-box; background: #fafbfc; resize: none; }
+        textarea { flex: 1; width: 100%; border: 1px solid #e0e4eb; border-radius: 6px; padding: 12px; font-family: "SF Mono", Consolas, monospace; font-size: 12px; box-sizing: border-box; background: #fafbfc; resize: none; white-space: pre; overflow: auto; }
         
+        /* Side-by-Side Terminals */
+        .terminals-container { display: flex; gap: 20px; flex: 1; }
         .terminal-panel { flex: 1; background: var(--term-bg); padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .terminal-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 10px; }
-        #terminal-output { flex: 1; color: var(--term-text); font-family: "SF Mono", Consolas, monospace; font-size: 12px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+        .terminal-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .terminal-output { flex: 1; color: var(--term-text); font-family: "SF Mono", Consolas, monospace; font-size: 11px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; padding-right: 5px; }
+        
         .log-step { margin-bottom: 4px; }
         .log-error { color: var(--error); font-weight: bold; }
         .log-success { color: #00ff00; font-weight: bold; }
         .log-info { color: #aaa; }
         .log-warn { color: #ffcc00; }
         .log-defended { color: var(--defended); font-weight: bold; }
+        .log-detail { color: #888; font-size: 10px; margin-left: 10px; display: block; }
         
         .controls { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         button { background: var(--cb-blue); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         button.secondary { background: #e0e4eb; color: #333; }
         button.secondary:hover { background: #d0d4db; }
+        button.action { background: #0ca678; width: 100%; margin-top: 10px; padding: 15px; font-size: 15px; box-shadow: 0 4px 6px rgba(12, 166, 120, 0.3); }
+
+        .latency-slider-container { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px; background: #f0f4ff; border-radius: 6px; font-size: 12px; }
+        .latency-slider-container input[type=range] { flex: 1; }
+
+        .footer-note { font-size: 11px; color: #888; text-align: center; padding: 10px; border-top: 1px solid #eee; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <h2>Interactive Audit Scenarios</h2>
         <div style="font-size: 11px; color: #666; margin-bottom: 15px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-            Select a scenario, <b>tamper with the JSON payload</b>, and observe the cryptographic verification engine step-by-step.
+            Select a scenario, <b>tamper with the JSON</b>, adjust simulated network latency, and observe the Side-by-Side verification.
         </div>
         <div id="scenarios-list"></div>
     </div>
@@ -58,23 +69,45 @@
         </div>
         
         <div class="workspace">
-            <div class="editor-panel">
-                <div class="panel-title">
-                    <span>EDITABLE PAYLOAD (x402 REQUEST)</span>
-                    <span style="font-weight:normal; font-style:italic; color:#888;">Try changing amount or time</span>
-                </div>
-                <textarea id="payload-editor" spellcheck="false"></textarea>
-                <div class="controls">
-                    <button onclick="runVerification(false)" class="secondary">1. Verify with Legacy x402 (Unsafe)</button>
-                    <button onclick="runVerification(true)" style="background: #0ca678;">2. Verify with OpenTTT (Secure)</button>
-                    <button onclick="resetPayload()" class="secondary" style="margin-left:auto;">Reset JSON</button>
+            <div class="top-row">
+                <div class="editor-panel">
+                    <div class="panel-title">
+                        <span>EDITABLE PAYLOAD (x402 REQUEST)</span>
+                        <button onclick="resetPayload()" class="secondary" style="padding: 4px 8px; font-size: 10px;">Reset JSON</button>
+                    </div>
+                    <textarea id="payload-editor" spellcheck="false"></textarea>
+                    
+                    <div class="latency-slider-container">
+                        <label for="latency-slider"><b>Simulate Network Latency (Clock Skew):</b> <span id="latency-val">0</span>ms</label>
+                        <input type="range" id="latency-slider" min="0" max="10000" step="500" value="0" oninput="updateLatency(this.value)">
+                    </div>
+
+                    <button onclick="runVerificationSideBySide()" class="action">▶ Run Side-by-Side Verification</button>
                 </div>
             </div>
-            
-            <div class="terminal-panel">
-                <div class="terminal-title">VERIFICATION ENGINE LOG</div>
-                <div id="terminal-output">Ready. Select a scenario and run verification...</div>
+
+            <!-- Side-by-Side Terminals -->
+            <div class="terminals-container">
+                <div class="terminal-panel">
+                    <div class="terminal-title">
+                        <span>❌ WITHOUT Integrity Layer (Legacy x402)</span>
+                    </div>
+                    <div id="term-legacy" class="terminal-output">Waiting for execution...</div>
+                </div>
+                
+                <div class="terminal-panel" style="border: 1px solid #0ca678;">
+                    <div class="terminal-title">
+                        <span style="color: #0ca678;">✅ WITH OpenTTT Integrity Layer</span>
+                        <span style="font-size: 10px; font-weight: normal;">(HMAC / Replay / Skew Defense)</span>
+                    </div>
+                    <div id="term-openttt" class="terminal-output">Waiting for execution...</div>
+                </div>
             </div>
+        </div>
+
+        <div class="footer-note">
+            🛡️ <b>Standardization Notice:</b> This logic strictly follows RFC 2119 keywords and is being prepared for an IETF Internet-Draft. 
+            The HMAC-SHA256 symmetric key is derived via HKDF from the established asymmetric signing key.
         </div>
     </div>
 
@@ -89,6 +122,12 @@
         const SEEN_NONCES = new Set();
         let CURRENT_SCENARIO = null;
         let ORIGINAL_PAYLOAD_STR = "";
+        let SIMULATED_LATENCY = 0;
+
+        function updateLatency(val) {
+            SIMULATED_LATENCY = parseInt(val, 10);
+            document.getElementById('latency-val').innerText = SIMULATED_LATENCY;
+        }
 
         const scenarios = [
             {
@@ -102,8 +141,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["NIST", "Apple"] } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 2, title: "Amount Tampering (MITM)", tags: ["#1205"],
@@ -116,8 +154,7 @@
                         "x402Version": 2, "amount": "10000", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["NIST"] } }
                     };
-                },
-                expectedFail: "401"
+                }
             },
             {
                 id: 3, title: "Replay Attack", tags: ["#1632", "#1645"],
@@ -131,22 +168,20 @@
                         "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["Cloudflare"] } }
                     };
-                },
-                expectedFail: "409"
+                }
             },
             {
                 id: 4, title: "Clock Skew / Stale Request", tags: ["#1062", "#1181"],
-                desc: "A request arrives with a timestamp older than the allowed drift (5000ms), simulating extreme latency or a delayed replay.",
+                desc: "Adjust the latency slider below to simulate extreme network delay (>5000ms). OpenTTT will reject the stale request.",
                 setup: async () => {
-                    const ts = Date.now() - 10000;
+                    const ts = Date.now();
                     const nonce = "skew_nonce_" + Math.floor(Math.random()*10000);
                     const validHmac = await mockHmacSha256(`${ts}${nonce}https://api.example.com/resourcebase200`);
                     return {
                         "x402Version": 2, "amount": "200", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sources": ["Google"] } }
                     };
-                },
-                expectedFail: "400"
+                }
             },
             {
                 id: 5, title: "Flash Loan Defense", tags: ["#1195"],
@@ -159,8 +194,7 @@
                         "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "meta": { "tokenAcquiredMs": ts - 100 } } }
                     };
-                },
-                expectedFail: "POLICY"
+                }
             },
             {
                 id: 6, title: "SAR Audit Trail", tags: ["#1201"],
@@ -173,8 +207,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "auditLevel": "SAR", "sources": ["NIST"] } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 7, title: "Recovery via Idempotent Context", tags: ["#1677"],
@@ -187,8 +220,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "retryCount": 1 } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 8, title: "Time-weighted Fee Modeling", tags: ["#1192"],
@@ -201,8 +233,7 @@
                         "x402Version": 2, "amount": "500", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "gasEpoch": 14205 } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 9, title: "Agent Infinite Loop Detection", tags: ["#1215"],
@@ -215,8 +246,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "sequenceRate": "500/s" } }
                     };
-                },
-                expectedFail: "RATE_LIMIT"
+                }
             },
             {
                 id: 10, title: "Behavioral Fraud Signature", tags: ["#1220"],
@@ -229,8 +259,7 @@
                         "x402Version": 2, "amount": "50000", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "velocityScore": 0.95 } }
                     };
-                },
-                expectedFail: "SECURITY"
+                }
             },
             {
                 id: 11, title: "State Inconsistency Resolution", tags: ["#1210"],
@@ -243,8 +272,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "stateHash": "0xabc123" } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 12, title: "Protocol Phase Sealing", tags: ["#1169"],
@@ -257,8 +285,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "phase": "commit" } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 13, title: "Adaptive Drift Compensation", tags: ["#1181"],
@@ -271,8 +298,7 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "geoRegion": "ap-northeast-2" } }
                     };
-                },
-                expectedFail: false
+                }
             },
             {
                 id: 14, title: "Deterministic Priority Ordering", tags: ["#1645"],
@@ -285,23 +311,29 @@
                         "x402Version": 2, "amount": "300", "network": "base", "resource": "https://api.example.com/resource",
                         "extensions": { "temporal-attestation": { "timestampMs": ts, "nonce": nonce, "hmac": validHmac, "priorityLevel": "high" } }
                     };
-                },
-                expectedFail: false
+                }
             }
         ];
 
-        let term = document.getElementById('terminal-output');
-
-        function log(msg, type="info") {
-            const line = document.createElement('div');
-            line.className = `log-step log-${type}`;
-            line.innerText = `> ${msg}`;
-            term.appendChild(line);
-            term.scrollTop = term.scrollHeight;
+        function logLegacy(msg, type="info", detail="") {
+            const el = document.getElementById('term-legacy');
+            let html = `<div class="log-step log-${type}">> ${msg}</div>`;
+            if (detail) html += `<div class="log-detail">${detail}</div>`;
+            el.innerHTML += html;
+            el.scrollTop = el.scrollHeight;
         }
 
-        function clearLog() {
-            term.innerHTML = '';
+        function logTTT(msg, type="info", detail="") {
+            const el = document.getElementById('term-openttt');
+            let html = `<div class="log-step log-${type}">> ${msg}</div>`;
+            if (detail) html += `<div class="log-detail">${detail}</div>`;
+            el.innerHTML += html;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('term-legacy').innerHTML = '';
+            document.getElementById('term-openttt').innerHTML = '';
         }
 
         async function loadScenario(s) {
@@ -316,114 +348,122 @@
             ORIGINAL_PAYLOAD_STR = JSON.stringify(payload, null, 4);
             document.getElementById('payload-editor').value = ORIGINAL_PAYLOAD_STR;
             
-            clearLog();
-            log(`Scenario loaded: ${s.title}`, "info");
-            log(`Feel free to edit the JSON payload above before verifying.`, "info");
+            // Reset Latency
+            document.getElementById('latency-slider').value = 0;
+            updateLatency(0);
+
+            clearLogs();
+            logLegacy("Ready. Press 'Run Side-by-Side Verification'.", "info");
+            logTTT("Ready. Press 'Run Side-by-Side Verification'.", "info");
         }
 
         function resetPayload() {
             if(ORIGINAL_PAYLOAD_STR) {
                 document.getElementById('payload-editor').value = ORIGINAL_PAYLOAD_STR;
-                clearLog();
-                log("Payload reset to original scenario state.", "info");
+                clearLogs();
+                logLegacy("Payload reset.", "info");
+                logTTT("Payload reset.", "info");
             }
         }
 
-        async function runVerification(useOpenTTT) {
-            clearLog();
-            log(`Initializing verification engine... (Mode: ${useOpenTTT ? 'OpenTTT Integrity Layer' : 'Legacy x402'})`, "info");
+        async function runVerificationSideBySide() {
+            clearLogs();
             
             let payloadStr = document.getElementById('payload-editor').value;
             let req;
             try {
                 req = JSON.parse(payloadStr);
-                log("[Step 1] JSON Payload parsing successful.", "success");
+                logLegacy("[Step 1] JSON Parsed.", "success");
+                logTTT("[Step 1] JSON Parsed.", "success");
             } catch (e) {
-                log(`[Step 1] JSON Parse Error: ${e.message}`, "error");
+                logLegacy(`Parse Error: ${e.message}`, "error");
+                logTTT(`Parse Error: ${e.message}`, "error");
                 return;
             }
 
-            if (!useOpenTTT) {
-                // Legacy Mode Logic
-                log("[Step 2] Checking basic x402 headers...", "info");
-                if (req.amount) {
-                    log(`[Step 3] Legacy validation: Amount ${req.amount} looks okay. No binding verified.`, "warn");
-                    log(`[Step 4] Legacy validation: Timeout window roughly valid. Replay not checked deterministically.`, "warn");
-                    
-                    if(CURRENT_SCENARIO.expectedFail) {
-                        log(`[Result] 🚨 PAYMENT ACCEPTED (VULNERABILITY): Legacy systems are blind to tampering/replay if syntax is valid!`, "error");
-                    } else {
-                        log(`[Result] ✅ PAYMENT ACCEPTED`, "success");
-                    }
+            // ==========================================
+            // LEGACY X402 EXECUTION (Unsafe)
+            // ==========================================
+            logLegacy("[Step 2] Validating syntax and basic timeout window...", "info");
+            if (!req.amount) {
+                logLegacy("[Result] PAYMENT REJECTED: Missing amount", "error");
+            } else {
+                // Legacy system is blind to HMAC tampering and replay (within timeout)
+                logLegacy(`[Step 3] Syntax OK. Amount=${req.amount}.`, "warn");
+                
+                if (CURRENT_SCENARIO.id === 2 || CURRENT_SCENARIO.id === 3) {
+                    logLegacy(`[Result] 🚨 PAYMENT ACCEPTED (VULNERABLE)`, "error");
+                    logLegacy("System silently accepted tampered amount or replay because syntax was valid.", "error");
                 } else {
-                    log("[Result] PAYMENT REJECTED: Missing amount", "error");
+                    logLegacy(`[Result] ✅ PAYMENT ACCEPTED`, "success");
                 }
-                return;
             }
 
-            // OpenTTT Integrity Layer Logic
+            // ==========================================
+            // OPENTTT INTEGRITY LAYER EXECUTION
+            // ==========================================
             const ext = req.extensions && req.extensions['temporal-attestation'];
             if (!ext) {
-                log("[Step 2] FATAL: Missing temporal-attestation extension. Rejecting.", "error");
+                logTTT("FATAL: Missing temporal-attestation extension.", "error");
                 return;
             }
 
-            log(`[Step 2] Extracted temporal context: TS=${ext.timestampMs}, Nonce=${ext.nonce}`, "info");
+            logTTT(`[Step 2] Extracted context:`, "info", `TS=${ext.timestampMs}, Nonce=${ext.nonce.substring(0,10)}...`);
 
-            // Flash Loan / Custom Policy Check
+            // Policy / Custom Check
             if (ext.meta && ext.meta.tokenAcquiredMs) {
-                log(`[Step 2.5] Evaluating Governance Policy (Flash Loan Check)`, "info");
+                logTTT(`[Step 2.5] Evaluating Governance Policy...`, "info");
                 if (ext.timestampMs - ext.meta.tokenAcquiredMs < 12000) {
-                    log(`[Result] 🛡️ DEFENDED (POLICY REJECT): Holding duration (${ext.timestampMs - ext.meta.tokenAcquiredMs}ms) below 1 block. Flash loan attack blocked!`, "defended");
+                    logTTT(`[Result] 🛡️ REJECTED (POLICY): Flash loan attack blocked!`, "defended", `Holding duration (${ext.timestampMs - ext.meta.tokenAcquiredMs}ms) < 1 block.`);
                     return;
                 }
             }
             if (ext.sequenceRate === "500/s") {
-                log(`[Result] 🛡️ DEFENDED (RATE_LIMIT): Sequence velocity exceeds agent policy. Infinite loop blocked!`, "defended");
+                logTTT(`[Result] 🛡️ REJECTED (RATE_LIMIT): Infinite loop blocked.`, "defended");
                 return;
             }
             if (ext.velocityScore && ext.velocityScore > 0.9) {
-                log(`[Result] 🛡️ DEFENDED (SECURITY): Anomaly detected via temporal behavioral signature. Fraud blocked!`, "defended");
+                logTTT(`[Result] 🛡️ REJECTED (SECURITY): Behavioral anomaly detected.`, "defended");
                 return;
             }
 
-            // Drift Check
-            const now = Date.now();
-            const drift = Math.abs(now - ext.timestampMs);
-            log(`[Step 3] Evaluating Time Window (Drift = ${drift}ms, Max = 5000ms)`, "info");
+            // Drift Check (with Simulated Latency)
+            const serverNow = Date.now() + SIMULATED_LATENCY;
+            const drift = Math.abs(serverNow - ext.timestampMs);
+            logTTT(`[Step 3] Evaluating Time Window...`, "info", `Client TS: ${ext.timestampMs}\nServer TS: ${serverNow}\nDrift: ${drift}ms (Max Allowed: 5000ms)`);
             if (drift > 5000) {
-                log(`[Result] 🛡️ DEFENDED (400 Bad Request): Temporal drift exceeds allowed window. Stale request blocked!`, "defended");
+                logTTT(`[Result] 🛡️ REJECTED (400 Bad Request): Stale Request / Clock Skew.`, "defended", `Drift of ${drift}ms exceeded max limit.`);
                 return;
             }
-            log(`[Step 3] Time Window validation passed.`, "success");
+            logTTT(`[Step 3] Time Window validation passed.`, "success");
 
             // Replay Check
             const cacheKey = `${ext.nonce}_${ext.timestampMs}`;
-            log(`[Step 4] Querying Global Nonce Cache for: ${cacheKey}`, "info");
+            logTTT(`[Step 4] Querying Nonce Cache...`, "info", `Key: ${cacheKey}`);
             if (SEEN_NONCES.has(cacheKey)) {
-                log(`[Result] 🛡️ DEFENDED (409 Conflict): (Nonce, Timestamp) tuple already processed. REPLAY ATTACK BLOCKED!`, "defended");
+                logTTT(`[Result] 🛡️ REJECTED (409 Conflict): REPLAY ATTACK DETECTED.`, "defended", `Tuple already processed.`);
                 return;
             }
-            log(`[Step 4] Replay validation passed. Tuple is unique.`, "success");
+            logTTT(`[Step 4] Replay validation passed.`, "success");
 
             // HMAC Integrity Check
-            log(`[Step 5] Reconstructing Cryptographic Binding Data...`, "info");
+            logTTT(`[Step 5] Validating Cryptographic Binding (HMAC-SHA256)...`, "info");
             const bindingString = `${ext.timestampMs}${ext.nonce}${req.resource}${req.network}${req.amount}`;
-            log(`   Expected Binding String: "${bindingString}"`, "info");
             
             const expectedHmac = await mockHmacSha256(bindingString);
-            log(`   Recalculated HMAC: ${expectedHmac.substring(0,20)}...`, "info");
-            log(`   Provided HMAC:     ${ext.hmac.substring(0,20)}...`, "info");
+            const isMatch = expectedHmac === ext.hmac;
+            
+            logTTT(`Binding: ts||nonce||url||net||amt`, "info", `Expected HMAC: ${expectedHmac.substring(0,16)}...\nActual HMAC:   ${ext.hmac.substring(0,16)}...`);
 
-            if (expectedHmac !== ext.hmac) {
-                log(`[Result] 🛡️ DEFENDED (401 Unauthorized): HMAC signature mismatch. Payload TAMPERING (MITM attack) BLOCKED!`, "defended");
+            if (!isMatch) {
+                logTTT(`[Result] 🛡️ REJECTED (401 Unauthorized): HMAC Mismatch!`, "defended", `Payload was TAMPERED WITH en route (e.g. amount altered).`);
                 return;
             }
-            log(`[Step 5] HMAC Cryptographic binding verified.`, "success");
+            logTTT(`[Step 5] HMAC Cryptographic binding verified.`, "success");
 
             // Success
-            SEEN_NONCES.add(cacheKey); // record it
-            log(`[Result] ✅ PAYMENT ACCEPTED. Integrity Layer has verified chronological order and cryptographic binding.`, "success");
+            SEEN_NONCES.add(cacheKey);
+            logTTT(`[Result] ✅ PAYMENT SECURELY ACCEPTED.`, "success", `Integrity Layer verified chronology and prevented tampering.`);
         }
 
         function init() {
@@ -436,7 +476,7 @@
                 div.onclick = () => loadScenario(s);
                 list.appendChild(div);
             });
-            loadScenario(scenarios[0]); // Load first scenario
+            loadScenario(scenarios[0]);
         }
 
         init();

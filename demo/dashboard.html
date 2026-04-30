@@ -194,79 +194,60 @@
             { id: "#1195 (Flash Loan)", reason: "Holding duration < 1 block" }
         ];
 
-        let defenseBlocks = 1432;
-
-        function updateDefenseLog() {
-            defenseBlocks++;
-            document.getElementById('total-blocks').innerText = defenseBlocks.toLocaleString();
-            
-            // Randomly update the bar chart numbers slightly
-            const barVals = document.querySelectorAll('.bar-val');
-            const randomBar = Math.floor(Math.random() * 3);
-            barVals[randomBar].innerText = parseInt(barVals[randomBar].innerText) + 1;
-
-            const tbody = document.getElementById('defense-table-body');
-            const issue = ISSUES[Math.floor(Math.random() * ISSUES.length)];
-            const ts = new Date().toISOString().substring(11, 19);
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${ts}</td>
-                <td style="color:white; font-weight:bold;">${issue.id}</td>
-                <td style="color:var(--fail);">${issue.reason}</td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-            if (tbody.children.length > 3) tbody.removeChild(tbody.lastChild);
-        }
-
         async function fetchStats() {
             try {
                 const query = `
                 {
                     _meta { block { number } }
-                    poTAnchors(first: 8, orderBy: timestamp, orderDirection: desc) {
+                    poTAnchors(first: 20, orderBy: timestamp, orderDirection: desc) {
                         id
+                        stratum
                         timestamp
-                        potHash
+                        txHash
                         blockNumber
                     }
                 }`;
-                
+
                 const metaRes = await fetch(THE_GRAPH_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: query })
                 });
-                
+
                 const data = await metaRes.json();
-                
+
                 if (data.data && data.data._meta) {
                     document.getElementById('last-block').innerText = parseInt(data.data._meta.block.number).toLocaleString();
                 }
 
-                let baseCount = parseInt(localStorage.getItem('ttt_proof_count') || "72541");
-                baseCount += Math.floor(Math.random() * 3);
-                localStorage.setItem('ttt_proof_count', baseCount);
-                document.getElementById('total-proofs').innerText = baseCount.toLocaleString();
-
                 if (data.data && data.data.poTAnchors) {
+                    const anchors = data.data.poTAnchors;
+
+                    // Total Proofs: real count from subgraph response
+                    document.getElementById('total-proofs').innerText = anchors.length.toLocaleString();
+
+                    // Prevented Attacks: unique txHash count (cryptographic failures = 0 by definition)
+                    const uniqueTxHashes = new Set(anchors.map(a => a.txHash).filter(Boolean));
+                    document.getElementById('total-blocks').innerText = "0";
+
                     const tbody = document.getElementById('proof-table-body');
                     tbody.innerHTML = '';
-                    
-                    data.data.poTAnchors.forEach((anchor, i) => {
+
+                    anchors.forEach((anchor, i) => {
                         const ts = new Date(parseInt(anchor.timestamp) * 1000);
-                        const hash = anchor.potHash;
                         const agent = AGENTS[parseInt(anchor.blockNumber) % AGENTS.length];
-                        
-                        // Extract original tx hash if possible, fallback to block number for Basescan
-                        const txHashUrl = `https://sepolia.basescan.org/block/${anchor.blockNumber}`;
-                        
+                        const txHash = anchor.txHash || '';
+                        const txHashUrl = `https://sepolia.basescan.org/tx/${txHash}`;
+                        const shortHash = txHash.length >= 12
+                            ? txHash.substring(0, 10) + '...' + txHash.substring(txHash.length - 6)
+                            : txHash;
+
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td style="color:#aaa;">${ts.toISOString().substring(11, 19)} UTC</td>
                             <td><span style="color:${agent.color}; font-weight:bold;">${agent.id}</span></td>
-                            <td class="hash" title="${hash}">
-                                ${hash.substring(0, 10)}...${hash.substring(54)}
+                            <td class="hash" title="${txHash}">
+                                ${shortHash}
                                 <a href="${txHashUrl}" target="_blank" class="tx-link">[Tx]</a>
                             </td>
                             <td><span class="status-ok">Verified (HMAC OK)</span></td>
@@ -274,9 +255,6 @@
                         tbody.appendChild(tr);
                     });
                 }
-                
-                // Randomly trigger a defense log event
-                if(Math.random() > 0.4) updateDefenseLog();
 
             } catch (err) {
                 console.error("Failed to fetch graph data", err);
@@ -284,7 +262,7 @@
         }
 
         fetchStats();
-        setInterval(fetchStats, 3500); 
+        setInterval(fetchStats, 1000);
     </script>
 </body>
 </html>

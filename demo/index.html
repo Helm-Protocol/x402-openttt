@@ -52,6 +52,29 @@
         .log-detail { color: #888; font-size: 11px; margin-left: 10px; display: block; }
         
         .footer-note { font-size: 11px; color: #888; text-align: center; padding: 8px; border-top: 1px solid #eee; flex-shrink: 0; }
+
+        /* Mobile Readiness */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; overflow: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e0e4eb; height: auto; max-height: 300px; }
+            .workspace { flex-direction: column; height: auto; }
+            .editor-section, .terminals-section { flex: none; width: 100%; box-sizing: border-box; }
+            textarea { height: 200px; }
+            .terminal-panel { height: 250px; }
+            .main { padding: 10px; height: auto; overflow: visible; }
+        }
+
+        /* Live Animations */
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0ca678; margin-right: 8px; box-shadow: 0 0 8px #0ca678; animation: pulse 2s infinite; }
+        
+        @keyframes highlightOk { 0% { background-color: rgba(0, 255, 0, 0.2); } 100% { background-color: transparent; } }
+        @keyframes highlightFail { 0% { background-color: rgba(255, 77, 77, 0.2); } 100% { background-color: transparent; } }
+        @keyframes highlightDefend { 0% { background-color: rgba(0, 191, 255, 0.2); } 100% { background-color: transparent; } }
+        
+        .new-log-ok { animation: highlightOk 1.5s ease-out; }
+        .new-log-fail { animation: highlightFail 1.5s ease-out; }
+        .new-log-defend { animation: highlightDefend 1.5s ease-out; }
     </style>
 </head>
 <body>
@@ -65,7 +88,7 @@
 
     <div class="main">
         <div class="header">
-            <h1 id="title">Loading...</h1>
+            <h1 id="title"><span class="pulse"></span> Loading...</h1>
             <p id="description">Loading description...</p>
         </div>
         
@@ -318,7 +341,11 @@
 
         function logLegacy(msg, type="info", detail="") {
             const el = document.getElementById('term-legacy');
-            let html = `<div class="log-step log-${type}">> ${msg}</div>`;
+            let animClass = "";
+            if (type === "success") animClass = "new-log-ok";
+            else if (type === "error") animClass = "new-log-fail";
+            
+            let html = `<div class="log-step log-${type} ${animClass}">> ${msg}</div>`;
             if (detail) html += `<div class="log-detail">${detail}</div>`;
             el.innerHTML += html;
             el.scrollTop = el.scrollHeight;
@@ -326,7 +353,12 @@
 
         function logTTT(msg, type="info", detail="") {
             const el = document.getElementById('term-openttt');
-            let html = `<div class="log-step log-${type}">> ${msg}</div>`;
+            let animClass = "";
+            if (type === "success") animClass = "new-log-ok";
+            else if (type === "error") animClass = "new-log-fail";
+            else if (type === "defended") animClass = "new-log-defend";
+
+            let html = `<div class="log-step log-${type} ${animClass}">> ${msg}</div>`;
             if (detail) html += `<div class="log-detail">${detail}</div>`;
             el.innerHTML += html;
             el.scrollTop = el.scrollHeight;

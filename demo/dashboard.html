@@ -3,288 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenTTT Network & Bot Ecosystem Dashboard</title>
+    <title>OpenTTT · Proof-of-Time Network</title>
     <style>
-        :root { --cb-blue: #0052ff; --bg: #0a0b0d; --text: #f4f7f9; --card-bg: #1e1e1e; --accent: #0ca678; --bot1: #ffb300; --bot2: #ff4081; --bot3: #29b6f6; --fail: #ff4d4d;}
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;}
-        
-        .header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 28px; margin-bottom: 5px; color: white; }
-        p { color: #888; font-size: 14px; margin: 0;}
-        .subgraph-link { font-family: "SF Mono", monospace; font-size: 11px; color: var(--cb-blue); text-decoration: none; border: 1px solid #333; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 10px; }
-        .subgraph-link:hover { background: rgba(0, 82, 255, 0.1); }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .container { display: flex; gap: 20px; width: 100%; max-width: 1200px; margin-bottom: 20px; }
-        .column { display: flex; flex-direction: column; gap: 20px; flex: 1; }
-        
-        /* Dashboard Cards */
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .card-title { font-size: 14px; color: white; margin: 0 0 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between;}
-        
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .stat-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #222;}
-        .stat-box h3 { font-size: 11px; color: #888; margin: 0 0 5px 0; text-transform: uppercase; }
-        .stat-box .value { font-size: 28px; font-weight: 700; color: var(--accent); font-family: "SF Mono", monospace; }
-        .stat-box .value.fail { color: var(--fail); }
-        
-        /* Defense Chart (Simulated) */
-        .defense-chart-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .bar-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
-        .bar-label { width: 120px; text-align: right; }
-        .bar-track { flex: 1; background: #333; height: 8px; border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--fail); }
-        .bar-val { width: 30px; font-weight: bold; color: white; }
+        :root {
+            --bg:       #0a0b0d;
+            --card-bg:  #111214;
+            --border:   #1e2028;
+            --text:     #e8eaf0;
+            --muted:    #6b7280;
+            --blue:     #3b82f6;
+            --green:    #10b981;
+            --gold:     #f59e0b;
+            --red:      #ef4444;
+        }
 
-        /* Bot Analytics */
-        .bot-list { display: flex; flex-direction: column; gap: 10px; }
-        .bot-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border-left: 3px solid transparent;}
-        .bot-item.arb { border-color: var(--bot1); }
-        .bot-item.set { border-color: var(--bot2); }
-        .bot-item.com { border-color: var(--bot3); }
-        .bot-info h4 { margin: 0 0 3px 0; font-size: 13px; color: #ddd;}
-        .bot-info p { margin: 0; font-size: 10px; color: #888; }
-        .bot-metric { font-family: "SF Mono", monospace; font-size: 11px; color: #0ca678; text-align: right;}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 24px 48px;
+        }
 
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; font-family: "SF Mono", monospace; font-size: 11px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #222; }
-        th { color: #888; font-weight: 600; text-transform: uppercase; font-size: 10px; }
-        td.hash { color: #8ab4f8; }
-        .status-ok { color: var(--accent); background: rgba(12, 166, 120, 0.1); padding: 2px 6px; border-radius: 3px; }
-        .status-fail { color: var(--fail); background: rgba(255, 77, 77, 0.1); padding: 2px 6px; border-radius: 3px; }
-        
-        .tx-link { color: #8ab4f8; text-decoration: none; border: 1px solid #444; padding: 2px 4px; border-radius: 3px; font-size: 9px; margin-left: 5px; background: rgba(255,255,255,0.05); transition: background 0.2s; }
-        .tx-link:hover { background: rgba(0, 82, 255, 0.2); border-color: var(--cb-blue); }
+        /* ── Header ── */
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 32px;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
 
-        .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .header-left h1 {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--text);
+        }
+
+        .header-left p {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            font-family: "SF Mono", "Fira Mono", monospace;
+        }
+
+        .live-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            font-family: "SF Mono", "Fira Mono", monospace;
+        }
+
+        .live-dot::before {
+            content: "●";
+            color: var(--green);
+            font-size: 9px;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            max-width: 1200px;
+            margin: 0 auto 28px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 1100px) {
+            .stats-row { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 18px 16px 14px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            font-family: "SF Mono", "Fira Mono", monospace;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .stat-value.blue  { color: var(--blue); }
+        .stat-value.green { color: var(--green); }
+        .stat-value.muted { color: var(--muted); }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 8px;
+            letter-spacing: 0.03em;
+            line-height: 1.4;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-family: "SF Mono", "Fira Mono", monospace;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 1px 5px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* ── Two-column section ── */
+        .main-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Tier table ── */
+        .tier-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: "SF Mono", "Fira Mono", monospace;
+            font-size: 12px;
+        }
+
+        .tier-table th {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 10px;
+            text-align: left;
+            padding: 6px 8px 8px;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tier-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .tier-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            letter-spacing: 0.04em;
+        }
+
+        .tier-t0 { color: var(--gold);  border: 1px solid var(--gold); }
+        .tier-t1 { color: var(--green); border: 1px solid var(--green); }
+        .tier-t2 { color: var(--blue);  border: 1px solid var(--blue); }
+        .tier-t3 { color: var(--muted); border: 1px solid var(--border); }
+
+        .pct-bar {
+            display: inline-block;
+            height: 2px;
+            background: var(--border);
+            vertical-align: middle;
+            margin-left: 8px;
+            position: relative;
+            width: 60px;
+        }
+
+        .pct-fill {
+            position: absolute;
+            left: 0; top: 0;
+            height: 100%;
+            background: var(--muted);
+        }
+
+        /* ── Feed table ── */
+        .feed-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: "SF Mono", "Fira Mono", monospace;
+            font-size: 11px;
+        }
+
+        .feed-table th {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 10px;
+            text-align: left;
+            padding: 6px 8px 8px;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feed-table td {
+            padding: 9px 8px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        .feed-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .feed-table td.age   { color: var(--muted); white-space: nowrap; }
+        .feed-table td.block { color: var(--muted); }
+
+        .tx-link {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 10px;
+        }
+
+        .tx-link:hover { text-decoration: underline; }
+
+        /* ── Footer ── */
+        .footer {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: "SF Mono", "Fira Mono", monospace;
+            line-height: 1.8;
+        }
+
+        /* ── Loading / error states ── */
+        .loading { color: var(--muted); font-size: 11px; }
+        .error   { color: var(--red);   font-size: 11px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1><span class="pulse"></span> OpenTTT Live Integrity Center</h1>
-        <p>Autonomous Agentic Economy secured by HMAC-SHA256 Temporal Attestations on Base Sepolia</p>
-        <a href="https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0" target="_blank" class="subgraph-link">
-            🔍 View Direct Subgraph Endpoint
-        </a>
-    </div>
 
-    <div class="container">
-        <!-- Left Column: Metrics & Bots -->
-        <div class="column">
-            <div class="card">
-                <div class="card-title">Network Resilience <span>P(success) = 99.999%</span></div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <h3>Verified Proofs</h3>
-                        <div class="value" id="total-proofs">72,541</div>
-                    </div>
-                    <div class="stat-box" style="border-color: rgba(255, 77, 77, 0.3);">
-                        <h3>Prevented Attacks</h3>
-                        <div class="value fail" id="total-blocks">1,432</div>
-                    </div>
-                    <div class="stat-box">
-                        <h3>Avg Proof Latency</h3>
-                        <div class="value" style="font-size: 20px; line-height: 32px; color: white;">~1.2s</div>
-                    </div>
-                    <div class="stat-box">
-                        <h3>Block Anchored</h3>
-                        <div class="value" id="last-block" style="font-size: 20px; line-height: 32px; color: white;">Syncing...</div>
-                    </div>
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h1>OpenTTT · Proof-of-Time Network</h1>
+            <p>draft-helmprotocol-tttps-03 · Base Sepolia Testnet</p>
+        </div>
+        <div class="live-dot">Live</div>
+    </header>
 
-                <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
-                    <h4 style="color: #888; font-size: 11px; margin: 0 0 10px 0; text-transform: uppercase;">24h Anomalies Detected & Blocked</h4>
-                    <div class="defense-chart-container">
-                        <div class="bar-row">
-                            <span class="bar-label">Invalid Timestamp (Skew)</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 45%;"></div></div>
-                            <span class="bar-val">12</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">Replay Attempts</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 15%;"></div></div>
-                            <span class="bar-val">4</span>
-                        </div>
-                        <div class="bar-row">
-                            <span class="bar-label">HMAC Mismatch (MITM)</span>
-                            <div class="bar-track"><div class="bar-fill" style="width: 25%;"></div></div>
-                            <span class="bar-val">7</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Stats Row -->
+    <div class="stats-row">
 
-            <div class="card">
-                <div class="card-title">Agentic Behavior Analytics</div>
-                <div class="bot-list">
-                    <div class="bot-item arb">
-                        <div class="bot-info">
-                            <h4>Bot A: High-Freq Arbitrageur</h4>
-                            <p>Target: Race Condition & Priority testing</p>
-                        </div>
-                        <div class="bot-metric">Tx/min: 45<br>Skew OK</div>
-                    </div>
-                    <div class="bot-item set">
-                        <div class="bot-info">
-                            <h4>Bot B: Cross-Border Merchant</h4>
-                            <p>Target: Clock Skew & Settlement delay bounds</p>
-                        </div>
-                        <div class="bot-metric">Tx/min: 12<br>Replay 0%</div>
-                    </div>
-                    <div class="bot-item com">
-                        <div class="bot-info">
-                            <h4>Bot C: Institutional Settlement</h4>
-                            <p>Target: SAR Audit Trail & Fraud Tampering</p>
-                        </div>
-                        <div class="bot-metric" style="color: var(--fail);">Rejections: 100%<br>HMAC Invalid</div>
-                    </div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-value" id="live-anchors">—</div>
+            <div class="stat-label">PoT Anchors · Subgraph</div>
         </div>
 
-        <!-- Right Column: Live Stream -->
-        <div class="column" style="flex: 1.5;">
-            <div class="card" style="height: 100%;">
-                <div class="card-title">
-                    Real-time Integrity Feed
-                    <span style="font-size: 11px; color: #888; font-weight: normal;">* Gas funded by CDP Faucet</span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Agent Persona</th>
-                            <th>Tx / PoT Hash</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="proof-table-body">
-                        <tr><td colspan="4" style="text-align:center;">Fetching live data from The Graph...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card" style="border-color: var(--fail);">
-                <div class="card-title" style="color: var(--fail);">🚨 Live Defense Log (Prevented Risks)</div>
-                <table style="font-size: 10px;">
-                    <thead><tr><th>Time (UTC)</th><th>Triggered Issue</th><th>Rejection Reason</th></tr></thead>
-                    <tbody id="defense-table-body">
-                        <!-- Simulated real-time defense log -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="stat-card">
+            <div class="stat-value muted">70,612<span class="stat-badge">§15.2</span></div>
+            <div class="stat-label">Verified Records · Oct'25–Apr'26</div>
         </div>
+
+        <div class="stat-card">
+            <div class="stat-value blue">55%<span class="stat-badge">§15.2</span></div>
+            <div class="stat-label">AI-Originated · 38,837 records</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value green">62%</div>
+            <div class="stat-label">AdaptiveSwitch TURBO · §7</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value green">0<span class="stat-badge">§15.2</span></div>
+            <div class="stat-label">Cryptographic Failures · 70,612 records</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value muted" id="last-block">—</div>
+            <div class="stat-label">Subgraph Block Height</div>
+        </div>
+
     </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+        <!-- Left: Tier Distribution -->
+        <div class="panel">
+            <div class="panel-title">Tier Distribution · Last 1000 Anchors</div>
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Name</th>
+                        <th>Count</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody id="tier-tbody">
+                    <tr><td colspan="4" class="loading">Fetching…</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right: Live Feed -->
+        <div class="panel">
+            <div class="panel-title">Live Feed · Last 10 Anchors</div>
+            <table class="feed-table">
+                <thead>
+                    <tr>
+                        <th>Age</th>
+                        <th>Tier</th>
+                        <th>Block</th>
+                        <th>Tx</th>
+                    </tr>
+                </thead>
+                <tbody id="feed-tbody">
+                    <tr><td colspan="4" class="loading">Fetching…</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        OpenTTT · Reference implementation of draft-helmprotocol-tttps-03<br>
+        70,612 verified PoT records · 55% AI agent-originated · Zero cryptographic failures (§15.2)
+    </footer>
 
     <script>
-        const THE_GRAPH_URL = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+        "use strict";
 
-        const AGENTS = [
-            { id: "Bot A (Arb)", color: "var(--bot1)" },
-            { id: "Bot B (Merchant)", color: "var(--bot2)" },
-            { id: "Bot C (Inst)", color: "var(--bot3)" }
-        ];
+        const GRAPH_URL = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
 
-        const ISSUES = [
-            { id: "#1632 (Replay)", reason: "Nonce already seen in cache" },
-            { id: "#1062 (Clock Skew)", reason: "Drift > 5000ms threshold" },
-            { id: "#1205 (Tamper)", reason: "HMAC-SHA256 signature mismatch" },
-            { id: "#1195 (Flash Loan)", reason: "Holding duration < 1 block" }
-        ];
+        const TIER_META = {
+            0: { label: "T0", name: "Epoch (6.4min)",        cls: "tier-t0" },
+            1: { label: "T1", name: "Base L2 Block (2s)",    cls: "tier-t1" },
+            2: { label: "T2", name: "ETH L1 Slot (12s)",     cls: "tier-t2" },
+            3: { label: "T3", name: "High-Freq (100ms)",      cls: "tier-t3" }
+        };
 
-        let defenseBlocks = 1432;
-
-        function updateDefenseLog() {
-            defenseBlocks++;
-            document.getElementById('total-blocks').innerText = defenseBlocks.toLocaleString();
-            
-            // Randomly update the bar chart numbers slightly
-            const barVals = document.querySelectorAll('.bar-val');
-            const randomBar = Math.floor(Math.random() * 3);
-            barVals[randomBar].innerText = parseInt(barVals[randomBar].innerText) + 1;
-
-            const tbody = document.getElementById('defense-table-body');
-            const issue = ISSUES[Math.floor(Math.random() * ISSUES.length)];
-            const ts = new Date().toISOString().substring(11, 19);
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${ts}</td>
-                <td style="color:white; font-weight:bold;">${issue.id}</td>
-                <td style="color:var(--fail);">${issue.reason}</td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-            if (tbody.children.length > 3) tbody.removeChild(tbody.lastChild);
+        function fmtNum(n) {
+            return Number(n).toLocaleString("en-US");
         }
 
-        async function fetchStats() {
+        function ageStr(timestampSec) {
+            const diff = Math.floor(Date.now() / 1000) - Number(timestampSec);
+            if (diff < 60)  return diff + "s ago";
+            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+            return Math.floor(diff / 3600) + "h ago";
+        }
+
+        function stratumToTier(stratum) {
+            // stratum field may come as string or number
+            const s = Number(BigInt(stratum));
+            return TIER_META.hasOwnProperty(s) ? s : 1;
+        }
+
+        async function poll() {
+            const query = `{
+                _meta { block { number } }
+                poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
+                    id
+                    stratum
+                    timestamp
+                    txHash
+                    blockNumber
+                }
+            }`;
+
+            let data;
             try {
-                const query = `
-                {
-                    _meta { block { number } }
-                    poTAnchors(first: 8, orderBy: timestamp, orderDirection: desc) {
-                        id
-                        timestamp
-                        potHash
-                        blockNumber
-                    }
-                }`;
-                
-                const metaRes = await fetch(THE_GRAPH_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query })
+                const res = await fetch(GRAPH_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
                 });
-                
-                const data = await metaRes.json();
-                
-                if (data.data && data.data._meta) {
-                    document.getElementById('last-block').innerText = parseInt(data.data._meta.block.number).toLocaleString();
-                }
-
-                let baseCount = parseInt(localStorage.getItem('ttt_proof_count') || "72541");
-                baseCount += Math.floor(Math.random() * 3);
-                localStorage.setItem('ttt_proof_count', baseCount);
-                document.getElementById('total-proofs').innerText = baseCount.toLocaleString();
-
-                if (data.data && data.data.poTAnchors) {
-                    const tbody = document.getElementById('proof-table-body');
-                    tbody.innerHTML = '';
-                    
-                    data.data.poTAnchors.forEach((anchor, i) => {
-                        const ts = new Date(parseInt(anchor.timestamp) * 1000);
-                        const hash = anchor.potHash;
-                        const agent = AGENTS[parseInt(anchor.blockNumber) % AGENTS.length];
-                        
-                        // Extract original tx hash if possible, fallback to block number for Basescan
-                        const txHashUrl = `https://sepolia.basescan.org/block/${anchor.blockNumber}`;
-                        
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td style="color:#aaa;">${ts.toISOString().substring(11, 19)} UTC</td>
-                            <td><span style="color:${agent.color}; font-weight:bold;">${agent.id}</span></td>
-                            <td class="hash" title="${hash}">
-                                ${hash.substring(0, 10)}...${hash.substring(54)}
-                                <a href="${txHashUrl}" target="_blank" class="tx-link">[Tx]</a>
-                            </td>
-                            <td><span class="status-ok">Verified (HMAC OK)</span></td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                }
-                
-                // Randomly trigger a defense log event
-                if(Math.random() > 0.4) updateDefenseLog();
-
+                const json = await res.json();
+                data = json.data;
             } catch (err) {
-                console.error("Failed to fetch graph data", err);
+                console.error("Graph fetch error:", err);
+                return;
+            }
+
+            if (!data) return;
+
+            // ── Block height ──
+            if (data._meta && data._meta.block) {
+                document.getElementById("last-block").textContent =
+                    fmtNum(data._meta.block.number);
+            }
+
+            const anchors = data.poTAnchors || [];
+
+            // ── Live anchor count ──
+            const totalCount = anchors.length;
+            document.getElementById("live-anchors").textContent =
+                totalCount >= 1000 ? "1,000+" : fmtNum(totalCount);
+
+            // ── Tier distribution ──
+            const tierCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+            for (const a of anchors) {
+                const t = stratumToTier(a.stratum);
+                tierCounts[t]++;
+            }
+
+            const tierTbody = document.getElementById("tier-tbody");
+            tierTbody.innerHTML = "";
+            for (const t of [0, 1, 2, 3]) {
+                const meta  = TIER_META[t];
+                const count = tierCounts[t];
+                const pct   = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : "0.0";
+                const barW  = Math.round(parseFloat(pct));
+                const tr    = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><span class="tier-badge ${meta.cls}">${meta.label}</span></td>
+                    <td>${meta.name}</td>
+                    <td>${fmtNum(count)}</td>
+                    <td>
+                        ${pct}%
+                        <span class="pct-bar"><span class="pct-fill" style="width:${barW}%"></span></span>
+                    </td>`;
+                tierTbody.appendChild(tr);
+            }
+
+            // ── Live feed (last 10) ──
+            const feedTbody = document.getElementById("feed-tbody");
+            feedTbody.innerHTML = "";
+            const top10 = anchors.slice(0, 10);
+
+            if (top10.length === 0) {
+                feedTbody.innerHTML = '<tr><td colspan="4" class="loading">No anchors found.</td></tr>';
+                return;
+            }
+
+            for (const a of top10) {
+                const t    = stratumToTier(a.stratum);
+                const meta = TIER_META[t];
+                const tx   = a.txHash || "";
+                const txShort = tx.length >= 10
+                    ? tx.substring(0, 8) + "…" + tx.substring(tx.length - 4)
+                    : tx;
+                const basescanUrl = tx
+                    ? `https://sepolia.basescan.org/tx/${tx}`
+                    : `https://sepolia.basescan.org/block/${a.blockNumber}`;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="age">${ageStr(a.timestamp)}</td>
+                    <td><span class="tier-badge ${meta.cls}">${meta.label}</span></td>
+                    <td class="block">${fmtNum(a.blockNumber)}</td>
+                    <td>
+                        <a href="${basescanUrl}" target="_blank" rel="noopener" class="tx-link"
+                           title="${tx || a.blockNumber}">${txShort || "#" + fmtNum(a.blockNumber)}</a>
+                    </td>`;
+                feedTbody.appendChild(tr);
             }
         }
 
-        fetchStats();
-        setInterval(fetchStats, 3500); 
+        // Initial load + 5s interval
+        poll();
+        setInterval(poll, 5000);
     </script>
 </body>
 </html>

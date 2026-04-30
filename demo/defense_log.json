@@ -1,5 +1,10 @@
 [
   {
+    "time": "09:17:10",
+    "issue": "#1195 (Flash Loan)",
+    "reason": "Holding duration < 1 block"
+  },
+  {
     "time": "09:16:38",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
@@ -93,10 +98,5 @@
     "time": "09:06:52",
     "issue": "#1195 (Flash Loan)",
     "reason": "Holding duration < 1 block"
-  },
-  {
-    "time": "09:06:19",
-    "issue": "#1632 (Replay Attack)",
-    "reason": "Nonce already seen in cache"
   }
 ]

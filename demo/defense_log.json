@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:43:50",
+    "issue": "#1062 (Clock Skew)",
+    "reason": "Drift > 5000ms threshold"
+  },
+  {
     "time": "10:43:19",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
@@ -93,10 +98,5 @@
     "time": "10:33:46",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
-  },
-  {
-    "time": "10:33:14",
-    "issue": "#1205 (HMAC Tamper)",
-    "reason": "HMAC-SHA256 signature mismatch"
   }
 ]

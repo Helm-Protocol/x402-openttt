@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:06:39",
+    "issue": "#1062 (Clock Skew)",
+    "reason": "Drift > 5000ms threshold"
+  },
+  {
     "time": "10:06:07",
     "issue": "#1632 (Replay Attack)",
     "reason": "Nonce already seen in cache"
@@ -91,11 +96,6 @@
   },
   {
     "time": "09:56:33",
-    "issue": "#1632 (Replay Attack)",
-    "reason": "Nonce already seen in cache"
-  },
-  {
-    "time": "09:56:01",
     "issue": "#1632 (Replay Attack)",
     "reason": "Nonce already seen in cache"
   }

@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:51:16",
+    "issue": "#1195 (Flash Loan)",
+    "reason": "Holding duration < 1 block"
+  },
+  {
     "time": "10:50:44",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
@@ -93,10 +98,5 @@
     "time": "10:41:11",
     "issue": "#1205 (HMAC Tamper)",
     "reason": "HMAC-SHA256 signature mismatch"
-  },
-  {
-    "time": "10:40:39",
-    "issue": "#1632 (Replay Attack)",
-    "reason": "Nonce already seen in cache"
   }
 ]

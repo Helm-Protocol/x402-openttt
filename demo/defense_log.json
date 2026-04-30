@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:36:25",
+    "issue": "#1195 (Flash Loan)",
+    "reason": "Holding duration < 1 block"
+  },
+  {
     "time": "10:35:53",
     "issue": "#1195 (Flash Loan)",
     "reason": "Holding duration < 1 block"
@@ -93,10 +98,5 @@
     "time": "10:26:19",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
-  },
-  {
-    "time": "10:25:47",
-    "issue": "#1195 (Flash Loan)",
-    "reason": "Holding duration < 1 block"
   }
 ]

@@ -273,6 +273,25 @@
                     });
                 }
 
+                // Fetch real defense log
+                try {
+                    const defRes = await fetch(`defense_log.json?t=${Date.now()}`);
+                    const defLog = await defRes.json();
+                    const defTbody = document.getElementById('defense-table-body');
+                    if (defTbody && Array.isArray(defLog)) {
+                        defTbody.innerHTML = '';
+                        defLog.slice(0, 10).forEach(entry => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${entry.time}</td>
+                                <td style="color:#ff6b6b;">${entry.issue}</td>
+                                <td style="color:#aaa;">${entry.reason}</td>
+                            `;
+                            defTbody.appendChild(tr);
+                        });
+                    }
+                } catch(e) { /* defense log fetch failed, ignore */ }
+
             } catch (err) {
                 console.error("Failed to fetch graph data", err);
             }

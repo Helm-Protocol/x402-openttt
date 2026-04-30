@@ -7,7 +7,7 @@
     <style>
         :root { --cb-blue: #0052ff; --bg: #0a0b0d; --text: #f4f7f9; --card-bg: #1e1e1e; --accent: #0ca678; --bot1: #ffb300; --bot2: #ff4081; --bot3: #29b6f6; --fail: #ff4d4d;}
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;}
-        
+
         .header { text-align: center; margin-bottom: 30px; }
         h1 { font-size: 28px; margin-bottom: 5px; color: white; }
         p { color: #888; font-size: 14px; margin: 0;}
@@ -16,18 +16,18 @@
 
         .container { display: flex; gap: 20px; width: 100%; max-width: 1200px; margin-bottom: 20px; }
         .column { display: flex; flex-direction: column; gap: 20px; flex: 1; }
-        
+
         /* Dashboard Cards */
         .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         .card-title { font-size: 14px; color: white; margin: 0 0 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between;}
-        
+
         /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .stat-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #222;}
         .stat-box h3 { font-size: 11px; color: #888; margin: 0 0 5px 0; text-transform: uppercase; }
         .stat-box .value { font-size: 28px; font-weight: 700; color: var(--accent); font-family: "SF Mono", monospace; }
         .stat-box .value.fail { color: var(--fail); }
-        
+
         /* Defense Chart (Simulated) */
         .defense-chart-container { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .bar-row { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
@@ -55,12 +55,14 @@
         td.hash { color: #8ab4f8; }
         .status-ok { color: var(--accent); background: rgba(12, 166, 120, 0.1); padding: 2px 6px; border-radius: 3px; }
         .status-fail { color: var(--fail); background: rgba(255, 77, 77, 0.1); padding: 2px 6px; border-radius: 3px; }
-        
+
         .tx-link { color: #8ab4f8; text-decoration: none; border: 1px solid #444; padding: 2px 4px; border-radius: 3px; font-size: 9px; margin-left: 5px; background: rgba(255,255,255,0.05); transition: background 0.2s; }
         .tx-link:hover { background: rgba(0, 82, 255, 0.2); border-color: var(--cb-blue); }
 
         .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes newrow { from { background: rgba(255,77,77,0.2); } to { background: transparent; } }
+        .new-defense-row { animation: newrow 2s ease-out; }
     </style>
 </head>
 <body>
@@ -169,7 +171,7 @@
             </div>
 
             <div class="card" style="border-color: var(--fail);">
-                <div class="card-title" style="color: var(--fail);">🚨 Live Defense Log (Prevented Risks)</div>
+                <div class="card-title" style="color: var(--fail);">🚨 Live Defense Log (Prevented Risks) <a href="defense-log.html" style="font-size:10px; color:#8ab4f8; text-decoration:none; border:1px solid #444; padding:2px 6px; border-radius:3px; font-family:'SF Mono',monospace;">→ Full Log</a></div>
                 <table style="font-size: 10px;">
                     <thead><tr><th>Time (UTC)</th><th>Triggered Issue</th><th>Rejection Reason</th></tr></thead>
                     <tbody id="defense-table-body">
@@ -275,15 +277,18 @@
                     });
                 }
 
-                // Fetch real defense log
+                // Fetch real defense log via GitHub API (short cache ~60s vs CDN 600s)
                 try {
-                    const defRes = await fetch(`defense_log.json?t=${Date.now()}`);
+                    const defRes = await fetch(`https://api.github.com/repos/Helm-Protocol/x402-openttt/contents/demo/defense_log.json?ref=gh-pages&t=${Date.now()}`, {
+                        headers: { 'Accept': 'application/vnd.github.v3.raw' }
+                    });
                     const defLog = await defRes.json();
                     const defTbody = document.getElementById('defense-table-body');
                     if (defTbody && Array.isArray(defLog)) {
                         defTbody.innerHTML = '';
-                        defLog.slice(0, 10).forEach(entry => {
+                        defLog.slice(0, 10).forEach((entry, i) => {
                             const tr = document.createElement('tr');
+                            if (i === 0) tr.classList.add('new-defense-row');
                             tr.innerHTML = `
                                 <td>${entry.time}</td>
                                 <td style="color:#ff6b6b;">${entry.issue}</td>

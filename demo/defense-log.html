@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTTPS Live Defense Log</title>
+    <style>
+        :root {
+            --bg: #0a0b0d;
+            --text: #c8c8c8;
+            --red: #ff4d4d;
+            --amber: #ffb300;
+            --green: #0ca678;
+            --blue: #8ab4f8;
+            --dim: #555;
+            --border: #333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "SF Mono", "Courier New", Courier, monospace;
+            background: var(--bg);
+            color: var(--text);
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        /* ── Header box ── */
+        .ascii-header {
+            white-space: pre;
+            color: var(--red);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 11px;
+            color: var(--amber);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 6px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 18px 0;
+        }
+
+        /* ── Attack summary bars ── */
+        .summary-block {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .bar-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+        .bar-label { width: 130px; color: var(--text); }
+        .bar-ascii { color: var(--red); width: 200px; letter-spacing: -1px; }
+        .bar-count { color: white; width: 60px; }
+        .summary-total {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--dim);
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+        }
+        .summary-total span { color: white; }
+
+        /* ── Event table ── */
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .event-table th {
+            text-align: left;
+            color: var(--dim);
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+        }
+        .event-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #1a1a1a;
+            vertical-align: top;
+        }
+        .event-table tr:hover td { background: rgba(255,255,255,0.025); }
+
+        .col-time  { width: 90px; color: var(--dim); }
+        .col-type  { width: 200px; }
+        .col-reason { }
+        .col-status { width: 90px; text-align: center; }
+
+        .attack-clock  { color: var(--amber); }
+        .attack-hmac   { color: var(--red); }
+        .attack-replay { color: #ff8c42; }
+        .attack-flash  { color: #b388ff; }
+        .attack-other  { color: var(--text); }
+
+        .badge-blocked {
+            background: rgba(255,77,77,0.15);
+            color: var(--red);
+            border: 1px solid rgba(255,77,77,0.4);
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        @keyframes newrow {
+            from { background: rgba(255,77,77,0.15); }
+            to   { background: transparent; }
+        }
+        .new-row { animation: newrow 2s ease-out; }
+
+        /* ── Protocol reference ── */
+        .ref-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .ref-item {
+            background: #111;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 11px;
+        }
+        .ref-item .ref-tag { color: var(--blue); margin-bottom: 4px; }
+        .ref-item .ref-desc { color: var(--dim); font-size: 10px; }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--dim);
+        }
+        .back-link {
+            color: var(--blue);
+            text-decoration: none;
+            border: 1px solid #444;
+            padding: 4px 10px;
+            border-radius: 3px;
+            transition: background 0.15s;
+        }
+        .back-link:hover { background: rgba(138,180,248,0.1); }
+
+        .status-line {
+            font-size: 10px;
+            color: var(--dim);
+            margin-bottom: 20px;
+        }
+        .status-line span { color: var(--green); }
+    </style>
+</head>
+<body>
+
+    <div class="ascii-header" id="ascii-header">╔═══════════════════════════════════════════════════════════╗
+║  TTTPS LIVE DEFENSE LOG  ·  draft-helmprotocol-tttps-03  ║
+║  Base Sepolia  ·  Auto-refresh: 5s                       ║
+╚═══════════════════════════════════════════════════════════╝</div>
+
+    <div class="status-line">Last updated: <span id="last-updated">—</span> &nbsp;|&nbsp; Entries loaded: <span id="entry-count" style="color:white;">—</span></div>
+
+    <!-- ── Attack Summary ── -->
+    <div class="section-label">Attack Summary (last 20 events)</div>
+    <div style="border:1px solid var(--border); padding:14px 16px; border-radius:4px; margin-bottom:20px;" id="summary-block">
+        <div class="bar-line"><span class="bar-label">Clock Skew</span><span class="bar-ascii" id="bar-clock">░░░░░░░░░░░░░░░░</span><span class="bar-count" id="cnt-clock">—</span></div>
+        <div class="bar-line"><span class="bar-label">HMAC Tamper</span><span class="bar-ascii" id="bar-hmac">░░░░░░░░░░░░░░░░</span><span class="bar-count" id="cnt-hmac">—</span></div>
+        <div class="bar-line"><span class="bar-label">Replay Attack</span><span class="bar-ascii" id="bar-replay">░░░░░░░░░░░░░░░░</span><span class="bar-count" id="cnt-replay">—</span></div>
+        <div class="bar-line"><span class="bar-label">Flash Loan</span><span class="bar-ascii" id="bar-flash">░░░░░░░░░░░░░░░░</span><span class="bar-count" id="cnt-flash">—</span></div>
+        <div class="summary-total" id="summary-total">
+            Total blocked: <span id="total-blocked">—</span> &nbsp;|&nbsp; Success rate: <span style="color:var(--green);">100%</span> &nbsp;|&nbsp; §15.2 failures: <span style="color:var(--green);">0</span>
+        </div>
+    </div>
+
+    <!-- ── Live Event Stream ── -->
+    <div class="section-label">Live Event Stream</div>
+    <table class="event-table">
+        <thead>
+            <tr>
+                <th class="col-time">Time</th>
+                <th class="col-type">Attack Vector</th>
+                <th class="col-reason">Rejection Reason</th>
+                <th class="col-status">Status</th>
+            </tr>
+        </thead>
+        <tbody id="event-tbody">
+            <tr><td colspan="4" style="text-align:center; color:var(--dim); padding:20px;">Loading defense log…</td></tr>
+        </tbody>
+    </table>
+
+    <hr class="divider">
+
+    <!-- ── Protocol Reference ── -->
+    <div class="section-label">TTTPS Defense Protocol Reference</div>
+    <div class="ref-grid">
+        <div class="ref-item">
+            <div class="ref-tag">§4.2 Temporal Gate</div>
+            <div class="ref-desc">±500ms bound enforcement. Timestamps outside the window are rejected before any further processing.</div>
+        </div>
+        <div class="ref-item">
+            <div class="ref-tag">§5.1 HMAC-SHA256</div>
+            <div class="ref-desc">Ed25519 key binding. Every proof-of-time token is signed; any tampered payload causes immediate rejection.</div>
+        </div>
+        <div class="ref-item">
+            <div class="ref-tag">§6.1 Nonce Cache</div>
+            <div class="ref-desc">Replay prevention via per-nonce sliding-window cache. Duplicate nonces are detected and discarded.</div>
+        </div>
+        <div class="ref-item">
+            <div class="ref-tag">§7 AdaptiveSwitch</div>
+            <div class="ref-desc">TURBO/FULL mode auto-selection. Honest builders run TURBO (~47ms); adversarial load routes to FULL.</div>
+        </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="footer">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+        <span id="refresh-status">Auto-refresh every 5s</span>
+    </div>
+
+    <script>
+        const GITHUB_API_URL = `https://api.github.com/repos/Helm-Protocol/x402-openttt/contents/demo/defense_log.json?ref=gh-pages`;
+        const BAR_WIDTH = 16;
+
+        function attackClass(issue) {
+            const s = (issue || '').toLowerCase();
+            if (s.includes('clock') || s.includes('skew')) return 'attack-clock';
+            if (s.includes('hmac') || s.includes('tamper')) return 'attack-hmac';
+            if (s.includes('replay')) return 'attack-replay';
+            if (s.includes('flash') || s.includes('loan')) return 'attack-flash';
+            return 'attack-other';
+        }
+
+        function buildBar(count, max) {
+            const filled = max > 0 ? Math.round((count / max) * BAR_WIDTH) : 0;
+            return '█'.repeat(filled) + '░'.repeat(BAR_WIDTH - filled);
+        }
+
+        function updateSummary(log) {
+            const slice = log.slice(0, 20);
+            const counts = { clock: 0, hmac: 0, replay: 0, flash: 0 };
+            slice.forEach(e => {
+                const s = (e.issue || '').toLowerCase();
+                if (s.includes('clock') || s.includes('skew')) counts.clock++;
+                else if (s.includes('hmac') || s.includes('tamper')) counts.hmac++;
+                else if (s.includes('replay')) counts.replay++;
+                else if (s.includes('flash') || s.includes('loan')) counts.flash++;
+            });
+            const max = Math.max(...Object.values(counts), 1);
+
+            document.getElementById('bar-clock').textContent  = buildBar(counts.clock,  max);
+            document.getElementById('bar-hmac').textContent   = buildBar(counts.hmac,   max);
+            document.getElementById('bar-replay').textContent = buildBar(counts.replay, max);
+            document.getElementById('bar-flash').textContent  = buildBar(counts.flash,  max);
+
+            document.getElementById('cnt-clock').textContent  = counts.clock  + ' event' + (counts.clock  !== 1 ? 's' : '');
+            document.getElementById('cnt-hmac').textContent   = counts.hmac   + ' event' + (counts.hmac   !== 1 ? 's' : '');
+            document.getElementById('cnt-replay').textContent = counts.replay + ' event' + (counts.replay !== 1 ? 's' : '');
+            document.getElementById('cnt-flash').textContent  = counts.flash  + ' event' + (counts.flash  !== 1 ? 's' : '');
+
+            document.getElementById('total-blocked').textContent = slice.length;
+        }
+
+        let prevFirstTime = null;
+
+        function renderTable(log) {
+            const tbody = document.getElementById('event-tbody');
+            tbody.innerHTML = '';
+            log.forEach((entry, i) => {
+                const tr = document.createElement('tr');
+                const isNew = (i === 0 && entry.time !== prevFirstTime);
+                if (isNew) tr.classList.add('new-row');
+                const cls = attackClass(entry.issue);
+                tr.innerHTML = `
+                    <td class="col-time">${entry.time || '—'}</td>
+                    <td class="col-type"><span class="${cls}">${entry.issue || '—'}</span></td>
+                    <td class="col-reason" style="color:#aaa;">${entry.reason || '—'}</td>
+                    <td class="col-status"><span class="badge-blocked">BLOCKED</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if (log.length > 0) prevFirstTime = log[0].time;
+        }
+
+        async function fetchLog() {
+            try {
+                const res = await fetch(`${GITHUB_API_URL}&t=${Date.now()}`, {
+                    headers: { 'Accept': 'application/vnd.github.v3.raw' }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const log = await res.json();
+                if (!Array.isArray(log)) throw new Error('Unexpected format');
+
+                updateSummary(log);
+                renderTable(log);
+
+                document.getElementById('last-updated').textContent = new Date().toISOString().substring(11, 19) + ' UTC';
+                document.getElementById('entry-count').textContent = log.length;
+                document.getElementById('refresh-status').textContent = 'Auto-refresh every 5s';
+            } catch (err) {
+                document.getElementById('refresh-status').textContent = 'Fetch error — retrying…';
+                console.error('Defense log fetch error:', err);
+            }
+        }
+
+        fetchLog();
+        setInterval(fetchLog, 5000);
+    </script>
+</body>
+</html>

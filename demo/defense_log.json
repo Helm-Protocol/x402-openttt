@@ -1,5 +1,10 @@
 [
   {
+    "time": "08:49:01",
+    "issue": "#1195 (Flash Loan)",
+    "reason": "Holding duration < 1 block"
+  },
+  {
     "time": "08:48:28",
     "issue": "#1195 (Flash Loan)",
     "reason": "Holding duration < 1 block"
@@ -93,10 +98,5 @@
     "time": "08:38:57",
     "issue": "#1195 (Flash Loan)",
     "reason": "Holding duration < 1 block"
-  },
-  {
-    "time": "08:38:27",
-    "issue": "#1205 (HMAC Tamper)",
-    "reason": "HMAC-SHA256 signature mismatch"
   }
 ]

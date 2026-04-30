@@ -1,5 +1,10 @@
 [
   {
+    "time": "09:15:34",
+    "issue": "#1195 (Flash Loan)",
+    "reason": "Holding duration < 1 block"
+  },
+  {
     "time": "09:14:59",
     "issue": "#1205 (HMAC Tamper)",
     "reason": "HMAC-SHA256 signature mismatch"
@@ -93,10 +98,5 @@
     "time": "09:05:14",
     "issue": "#1205 (HMAC Tamper)",
     "reason": "HMAC-SHA256 signature mismatch"
-  },
-  {
-    "time": "09:04:39",
-    "issue": "#1062 (Clock Skew)",
-    "reason": "Drift > 5000ms threshold"
   }
 ]

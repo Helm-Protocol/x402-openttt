@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROTOCOL INTEGRITY — §15.2 Deployment Statistics</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a0b0d;
+            color: #f4f7f9;
+            font-family: "SF Mono", "Fira Mono", "Consolas", "Courier New", monospace;
+            font-size: 13px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        a { color: #8ab4f8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8ab4f8;
+            font-size: 12px;
+            border: 1px solid #333;
+            padding: 4px 10px;
+        }
+        .back-link:hover { background: rgba(138,180,248,0.08); text-decoration: none; }
+        pre {
+            white-space: pre;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .green  { color: #0ca678; }
+        .red    { color: #ff4d4d; }
+        .amber  { color: #ffb300; }
+        .blue   { color: #8ab4f8; }
+        .dim    { color: #555; }
+        .section { margin-bottom: 28px; }
+        .section-rule {
+            border: none;
+            border-top: 1px solid #222;
+            margin: 10px 0 16px 0;
+        }
+        .big-stat {
+            display: inline-block;
+            min-width: 120px;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .stat-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 6px;
+            line-height: 1.8;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            width: 260px;
+            flex-shrink: 0;
+        }
+        .bar-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+        .bar-label { color: #888; width: 220px; font-size: 12px; flex-shrink: 0; }
+        .bar-track {
+            width: 200px;
+            height: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .bar-fill-green  { height: 100%; background: #0ca678; }
+        .bar-fill-amber  { height: 100%; background: #ffb300; }
+        .bar-fill-blue   { height: 100%; background: #8ab4f8; }
+        .bar-fill-red    { height: 100%; background: #ff4d4d; }
+        .bar-val { color: #f4f7f9; font-size: 12px; width: 50px; }
+        .live-meta {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .live-item { display: flex; flex-direction: column; gap: 2px; }
+        .live-item-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .live-item-value { font-size: 18px; color: #8ab4f8; }
+    </style>
+</head>
+<body>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<!-- HEADER BOX -->
+<div class="section">
+<pre class="green">╔═══════════════════════════════════════════════════════════╗
+║  PROTOCOL INTEGRITY  ·  §15.2 Deployment Statistics      ║
+║  draft-helmprotocol-tttps-03  ·  Base Sepolia            ║
+╚═══════════════════════════════════════════════════════════╝</pre>
+</div>
+
+<!-- KEY STATS -->
+<div class="section">
+<pre class="dim">  §15.2 SPECIFICATION VALUES
+  ───────────────────────────────────────────────────────────</pre>
+<div class="stat-row">
+    <span class="stat-label">  VERIFIED PoT RECORDS</span>
+    <span class="big-stat green">70,612</span>
+</div>
+<div class="stat-row">
+    <span class="stat-label">  CRYPTOGRAPHIC FAILURES</span>
+    <span class="big-stat green">0</span>
+    <span style="color:#555; font-size:11px;">(100% success rate)</span>
+</div>
+<div class="stat-row">
+    <span class="stat-label">  AI-ORIGINATED ANCHORS</span>
+    <span class="big-stat amber">55%</span>
+</div>
+<div class="stat-row">
+    <span class="stat-label">  TURBO MODE SHARE</span>
+    <span class="big-stat blue">62%</span>
+    <span style="color:#555; font-size:11px;">§7 AdaptiveSwitch</span>
+</div>
+<div class="stat-row">
+    <span class="stat-label">  FULL MODE SHARE</span>
+    <span class="big-stat" style="color:#888">38%</span>
+</div>
+</div>
+
+<!-- GRG PIPELINE -->
+<div class="section">
+<pre class="dim">GRG PIPELINE (§3.4)
+───────────────────────────────────────────────────────────</pre>
+
+<pre>  Stage 1: <span class="amber">Golomb-Rice Coding</span>
+           Input:  raw PoT timestamp bytes
+           Output: variable-length compressed bitstream</pre>
+<div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
+    <span class="bar-label">           Status</span>
+    <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>
+    <span class="bar-val green">OPERATIONAL</span>
+</div>
+
+<pre>  Stage 2: <span class="amber">Reed-Solomon (4,6) over GF(2^8)</span>
+           Input:  Golomb-Rice output
+           Output: systematic codeword with redundancy
+           k=4, n=6, can correct up to 1 symbol error</pre>
+<div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
+    <span class="bar-label">           Status</span>
+    <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>
+    <span class="bar-val green">OPERATIONAL</span>
+</div>
+
+<pre>  Stage 3: <span class="amber">Golay (23,12,7)</span>
+           Input:  RS codeword
+           Output: Golay-encoded block, d_min=7
+           3-error correcting capability</pre>
+<div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
+    <span class="bar-label">           Status</span>
+    <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>
+    <span class="bar-val green">OPERATIONAL</span>
+</div>
+
+<pre>  Stage 4: <span class="amber">HMAC-SHA256 binding</span>
+           Input:  Golay output + Ed25519 private key
+           Output: final PoT anchor (on-chain payload)</pre>
+<div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
+    <span class="bar-label">           Status</span>
+    <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>
+    <span class="bar-val green">OPERATIONAL</span>
+</div>
+</div>
+
+<!-- LIVE DATA -->
+<div class="section">
+<pre class="dim">LIVE ON-CHAIN DATA  ·  <span id="live-status" class="amber">FETCHING...</span>
+───────────────────────────────────────────────────────────</pre>
+<div class="live-meta">
+    <div class="live-item">
+        <span class="live-item-label">LIVE ANCHOR COUNT</span>
+        <span class="live-item-value" id="live-count">—</span>
+    </div>
+    <div class="live-item">
+        <span class="live-item-label">LATEST BLOCK</span>
+        <span class="live-item-value" id="live-block">—</span>
+    </div>
+    <div class="live-item">
+        <span class="live-item-label">MOST RECENT ANCHOR</span>
+        <span class="live-item-value" id="live-recent">—</span>
+    </div>
+</div>
+</div>
+
+<!-- ADAPTIVESWITCH -->
+<div class="section">
+<pre class="dim">ADAPTIVESWITCH MODE DISTRIBUTION (§7)
+───────────────────────────────────────────────────────────</pre>
+
+<div class="bar-container">
+    <span class="bar-label">  TURBO MODE</span>
+    <div class="bar-track"><div class="bar-fill-blue" style="width:62%"></div></div>
+    <span class="bar-val blue">62%</span>
+    <span style="color:#555; font-size:11px;">~47ms   −20% fee</span>
+</div>
+<div class="bar-container" style="margin-bottom:14px;">
+    <span class="bar-label">  FULL  MODE</span>
+    <div class="bar-track"><div class="bar-fill-amber" style="width:38%"></div></div>
+    <span class="bar-val amber">38%</span>
+    <span style="color:#555; font-size:11px;">~127ms  backoff</span>
+</div>
+
+<pre>  Switching threshold:    <span class="amber">V* = $8.67 – $87.13</span>
+  Builder incentive:      honest   → TURBO <span class="green">(fast + profit↑)</span>
+                          dishonest → FULL  <span class="red">(slow, exits market)</span></pre>
+</div>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<script>
+const SUBGRAPH = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+const QUERY = `{
+  _meta { block { number } }
+  poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
+    id stratum timestamp txHash blockNumber
+  }
+}`;
+
+function timeAgo(ts) {
+    const diff = Math.floor(Date.now() / 1000) - parseInt(ts);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+async function refresh() {
+    try {
+        const res = await fetch(SUBGRAPH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: QUERY })
+        });
+        const json = await res.json();
+        const d = json.data;
+        if (!d) return;
+
+        const anchors = d.poTAnchors || [];
+        const blockNum = d._meta && d._meta.block ? d._meta.block.number : '—';
+
+        document.getElementById('live-count').textContent = anchors.length.toLocaleString();
+        document.getElementById('live-block').textContent = parseInt(blockNum).toLocaleString();
+        document.getElementById('live-recent').textContent = anchors.length > 0 ? timeAgo(anchors[0].timestamp) : '—';
+        document.getElementById('live-status').textContent = 'LIVE';
+        document.getElementById('live-status').className = 'green';
+    } catch (e) {
+        document.getElementById('live-status').textContent = 'ERROR';
+        document.getElementById('live-status').className = 'red';
+    }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

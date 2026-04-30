@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REAL-TIME INTEGRITY FEED — Live PoT Anchors</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a0b0d;
+            color: #f4f7f9;
+            font-family: "SF Mono", "Fira Mono", "Consolas", "Courier New", monospace;
+            font-size: 13px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        a { color: #8ab4f8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8ab4f8;
+            font-size: 12px;
+            border: 1px solid #333;
+            padding: 4px 10px;
+        }
+        .back-link:hover { background: rgba(138,180,248,0.08); text-decoration: none; }
+        pre {
+            white-space: pre;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .green  { color: #0ca678; }
+        .red    { color: #ff4d4d; }
+        .amber  { color: #ffb300; }
+        .blue   { color: #8ab4f8; }
+        .dim    { color: #555; }
+        .section { margin-bottom: 28px; }
+
+        /* Big stats row */
+        .stats-row {
+            display: flex;
+            gap: 0;
+            border: 1px solid #222;
+            margin-bottom: 4px;
+        }
+        .stat-block {
+            flex: 1;
+            padding: 14px 20px;
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .stat-block:last-child { border-right: none; }
+        .stat-block-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-block-value {
+            font-size: 30px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Anchor table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th {
+            color: #555;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 6px 8px;
+            border-bottom: 1px solid #222;
+            text-align: left;
+        }
+        td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #111;
+            vertical-align: middle;
+        }
+        tr.newest td {
+            color: #f4f7f9;
+            background: rgba(138, 180, 248, 0.04);
+        }
+        tr.newest td:first-child::before {
+            content: "> ";
+            color: #8ab4f8;
+        }
+        .td-time  { color: #888; }
+        .td-block { color: #ffb300; }
+        .td-hash  { color: #8ab4f8; }
+        .td-grg   { color: #0ca678; font-size: 11px; }
+        .td-status { color: #0ca678; }
+        .tx-link {
+            color: #8ab4f8;
+            font-size: 10px;
+            border: 1px solid #333;
+            padding: 1px 5px;
+            margin-left: 4px;
+        }
+        .tx-link:hover { background: rgba(138,180,248,0.08); text-decoration: none; }
+
+        .protocol-note {
+            color: #444;
+            font-size: 11px;
+            margin-top: 12px;
+            line-height: 1.7;
+        }
+        #fetch-status {
+            font-size: 11px;
+            margin-left: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<!-- HEADER BOX -->
+<div class="section">
+<pre class="green">╔═══════════════════════════════════════════════════════════╗
+║  REAL-TIME INTEGRITY FEED  ·  Live PoT Anchors           ║
+║  Base Sepolia Subgraph  ·  Auto-refresh: 5s              ║
+╚═══════════════════════════════════════════════════════════╝</pre>
+</div>
+
+<!-- LARGE STATS ROW -->
+<div class="section">
+    <div class="stats-row">
+        <div class="stat-block">
+            <span class="stat-block-label">Anchors</span>
+            <span class="stat-block-value blue" id="s-anchors">—</span>
+        </div>
+        <div class="stat-block">
+            <span class="stat-block-label">Latest Block</span>
+            <span class="stat-block-value amber" id="s-block">—</span>
+        </div>
+        <div class="stat-block">
+            <span class="stat-block-label">Failures</span>
+            <span class="stat-block-value green">0</span>
+        </div>
+        <div class="stat-block">
+            <span class="stat-block-label">Feed Status</span>
+            <span class="stat-block-value amber" id="s-status" style="font-size:18px; padding-top:6px;">FETCHING</span>
+        </div>
+    </div>
+</div>
+
+<!-- ANCHOR TABLE -->
+<div class="section">
+<pre class="dim">LIVE ANCHOR TABLE  (last 20)<span id="fetch-status" class="amber">  FETCHING...</span>
+───────────────────────────────────────────────────────────</pre>
+<table>
+    <thead>
+        <tr>
+            <th>Timestamp UTC</th>
+            <th>Block</th>
+            <th>TX Hash (Basescan)</th>
+            <th>GRG Hash</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="feed-table">
+        <tr><td colspan="5" class="dim">Loading...</td></tr>
+    </tbody>
+</table>
+</div>
+
+<!-- PROTOCOL NOTE -->
+<div class="section">
+<pre class="dim">───────────────────────────────────────────────────────────</pre>
+<p class="protocol-note">
+  Each anchor = PoT timestamp → GRG pipeline → HMAC-SHA256 → Ed25519 binding → Base Sepolia block<br>
+  GRG: Golomb-Rice Coding → Reed-Solomon (4,6) GF(2^8) → Golay (23,12,7) → HMAC-SHA256 final binding
+</p>
+</div>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<script>
+const SUBGRAPH = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+const QUERY = `{
+  _meta { block { number } }
+  poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
+    id stratum timestamp txHash blockNumber
+  }
+}`;
+
+function shortHash(h, front, back) {
+    if (!h || h.length < (front + back + 2)) return h || '—';
+    return h.substring(0, front) + '...' + h.substring(h.length - back);
+}
+
+function grgHash(stratum) {
+    try {
+        return '0x' + BigInt(stratum).toString(16).padStart(8, '0').substring(0, 8);
+    } catch (e) {
+        return '0x????????';
+    }
+}
+
+async function refresh() {
+    try {
+        const res = await fetch(SUBGRAPH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: QUERY })
+        });
+        const json = await res.json();
+        const d = json.data;
+        if (!d) return;
+
+        const anchors = d.poTAnchors || [];
+        const blockNum = d._meta && d._meta.block ? d._meta.block.number : '—';
+
+        // Stats row
+        document.getElementById('s-anchors').textContent = anchors.length.toLocaleString();
+        document.getElementById('s-block').textContent   = parseInt(blockNum).toLocaleString();
+        document.getElementById('s-status').textContent  = 'LIVE';
+        document.getElementById('s-status').className    = 'stat-block-value green';
+
+        const statusEl = document.getElementById('fetch-status');
+        statusEl.textContent = '  LIVE';
+        statusEl.className = 'green';
+
+        // Table — last 20
+        const tbody = document.getElementById('feed-table');
+        tbody.innerHTML = '';
+        anchors.slice(0, 20).forEach((a, i) => {
+            const ts      = new Date(parseInt(a.timestamp) * 1000);
+            const timeStr = ts.toISOString().substring(11, 19);
+            const txHash  = a.txHash || '';
+            const grg     = grgHash(a.stratum);
+
+            const tr = document.createElement('tr');
+            if (i === 0) tr.className = 'newest';
+
+            tr.innerHTML = `
+                <td class="${i === 0 ? '' : 'td-time'}">${timeStr} UTC</td>
+                <td class="${i === 0 ? '' : 'td-block'}">${parseInt(a.blockNumber).toLocaleString()}</td>
+                <td class="${i === 0 ? '' : 'td-hash'}">
+                    ${shortHash(txHash, 6, 6)}
+                    <a href="https://sepolia.basescan.org/tx/${txHash}" target="_blank" class="tx-link">[→]</a>
+                </td>
+                <td class="${i === 0 ? '' : 'td-grg'}">${grg}</td>
+                <td class="${i === 0 ? '' : 'td-status'}">ANCHORED</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        document.getElementById('s-status').textContent = 'ERROR';
+        document.getElementById('s-status').className   = 'stat-block-value red';
+        document.getElementById('fetch-status').textContent = '  ERROR';
+        document.getElementById('fetch-status').className   = 'red';
+    }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

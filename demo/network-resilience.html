@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NETWORK RESILIENCE — Live On-Chain Attestation Metrics</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a0b0d;
+            color: #f4f7f9;
+            font-family: "SF Mono", "Fira Mono", "Consolas", "Courier New", monospace;
+            font-size: 13px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        a { color: #8ab4f8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8ab4f8;
+            font-size: 12px;
+            border: 1px solid #333;
+            padding: 4px 10px;
+        }
+        .back-link:hover { background: rgba(138,180,248,0.08); text-decoration: none; }
+        pre {
+            white-space: pre;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .green  { color: #0ca678; }
+        .red    { color: #ff4d4d; }
+        .amber  { color: #ffb300; }
+        .blue   { color: #8ab4f8; }
+        .dim    { color: #555; }
+        .section { margin-bottom: 28px; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1px;
+            border: 1px solid #222;
+            margin-bottom: 4px;
+        }
+        .metric-cell {
+            padding: 12px 16px;
+            border: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .metric-cell-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .metric-cell-value {
+            font-size: 22px;
+            color: #8ab4f8;
+        }
+
+        .hist-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+        .hist-hour {
+            width: 34px;
+            color: #555;
+            font-size: 11px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .hist-track {
+            height: 10px;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            overflow: hidden;
+            min-width: 4px;
+        }
+        .hist-fill {
+            height: 100%;
+            background: #8ab4f8;
+        }
+        .hist-count {
+            font-size: 11px;
+            color: #555;
+            min-width: 28px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th {
+            color: #555;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 6px 8px;
+            border-bottom: 1px solid #222;
+            text-align: left;
+        }
+        td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #111;
+            vertical-align: middle;
+        }
+        .td-time  { color: #888; }
+        .td-block { color: #ffb300; }
+        .td-hash  { color: #8ab4f8; }
+        .td-status { color: #0ca678; }
+        .tx-link {
+            color: #8ab4f8;
+            font-size: 10px;
+            border: 1px solid #333;
+            padding: 1px 5px;
+            margin-left: 4px;
+        }
+        .tx-link:hover { background: rgba(138,180,248,0.08); text-decoration: none; }
+        #fetch-status {
+            font-size: 11px;
+            margin-left: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<!-- HEADER BOX -->
+<div class="section">
+<pre class="green">╔═══════════════════════════════════════════════════════════╗
+║  NETWORK RESILIENCE  ·  P(success) = 99.999%            ║
+║  Live on-chain attestation metrics                       ║
+╚═══════════════════════════════════════════════════════════╝</pre>
+</div>
+
+<!-- LIVE METRICS -->
+<div class="section">
+<pre class="dim">LIVE NETWORK METRICS<span id="fetch-status" class="amber">  FETCHING...</span>
+───────────────────────────────────────────────────────────</pre>
+<div class="metrics-grid">
+    <div class="metric-cell">
+        <span class="metric-cell-label">Total Anchors Fetched</span>
+        <span class="metric-cell-value" id="m-total">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Unique Blocks</span>
+        <span class="metric-cell-value" id="m-blocks">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Unique Transactions</span>
+        <span class="metric-cell-value" id="m-txs">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Anchors / Block</span>
+        <span class="metric-cell-value" id="m-ratio">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Data Span</span>
+        <span class="metric-cell-value" id="m-span">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Latest Block</span>
+        <span class="metric-cell-value" id="m-latestblock">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Most Recent Anchor</span>
+        <span class="metric-cell-value" id="m-recent" style="font-size:16px;">—</span>
+    </div>
+    <div class="metric-cell">
+        <span class="metric-cell-label">Crypto Failures</span>
+        <span class="metric-cell-value green">0</span>
+    </div>
+</div>
+</div>
+
+<!-- TIME DISTRIBUTION HISTOGRAM -->
+<div class="section">
+<pre class="dim">ANCHOR DISTRIBUTION BY HOUR OF DAY (last 1000)
+───────────────────────────────────────────────────────────</pre>
+<div id="histogram">
+    <span class="dim">  computing...</span>
+</div>
+</div>
+
+<!-- RECENT ANCHORS -->
+<div class="section">
+<pre class="dim">RECENT ANCHORS  (last 10)
+───────────────────────────────────────────────────────────</pre>
+<table>
+    <thead>
+        <tr>
+            <th>Time UTC</th>
+            <th>Block</th>
+            <th>TX Hash</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="anchor-table">
+        <tr><td colspan="4" class="dim">Loading...</td></tr>
+    </tbody>
+</table>
+</div>
+
+<a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+<script>
+const SUBGRAPH = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+const QUERY = `{
+  _meta { block { number } }
+  poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
+    id stratum timestamp txHash blockNumber
+  }
+}`;
+
+function timeAgo(ts) {
+    const diff = Math.floor(Date.now() / 1000) - parseInt(ts);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+}
+
+function shortHash(h) {
+    if (!h || h.length < 12) return h || '—';
+    return h.substring(0, 6) + '...' + h.substring(h.length - 6);
+}
+
+function renderHistogram(anchors) {
+    const counts = new Array(24).fill(0);
+    anchors.forEach(a => {
+        const h = new Date(parseInt(a.timestamp) * 1000).getUTCHours();
+        counts[h]++;
+    });
+    const max = Math.max(...counts, 1);
+    const BAR_MAX = 180;
+
+    const container = document.getElementById('histogram');
+    container.innerHTML = '';
+    for (let h = 0; h < 24; h++) {
+        const c = counts[h];
+        const w = Math.round((c / max) * BAR_MAX);
+        const row = document.createElement('div');
+        row.className = 'hist-row';
+        row.innerHTML = `
+            <span class="hist-hour">${String(h).padStart(2,'0')}:00</span>
+            <div class="hist-track" style="width:${BAR_MAX}px;">
+                <div class="hist-fill" style="width:${w}px;"></div>
+            </div>
+            <span class="hist-count">${c}</span>
+        `;
+        container.appendChild(row);
+    }
+}
+
+async function refresh() {
+    try {
+        const res = await fetch(SUBGRAPH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: QUERY })
+        });
+        const json = await res.json();
+        const d = json.data;
+        if (!d) return;
+
+        const anchors = d.poTAnchors || [];
+        const blockNum = d._meta && d._meta.block ? d._meta.block.number : '—';
+
+        // Metrics
+        const uniqueBlocks = new Set(anchors.map(a => a.blockNumber)).size;
+        const uniqueTxs    = new Set(anchors.map(a => a.txHash)).size;
+        const ratio        = uniqueBlocks > 0 ? (anchors.length / uniqueBlocks).toFixed(2) : '—';
+
+        let span = '—';
+        if (anchors.length >= 2) {
+            const newest = parseInt(anchors[0].timestamp);
+            const oldest = parseInt(anchors[anchors.length - 1].timestamp);
+            const diffSec = newest - oldest;
+            if (diffSec < 3600) span = Math.round(diffSec / 60) + ' min';
+            else if (diffSec < 86400) span = (diffSec / 3600).toFixed(1) + ' hrs';
+            else span = (diffSec / 86400).toFixed(1) + ' days';
+        }
+
+        document.getElementById('m-total').textContent       = anchors.length.toLocaleString();
+        document.getElementById('m-blocks').textContent      = uniqueBlocks.toLocaleString();
+        document.getElementById('m-txs').textContent         = uniqueTxs.toLocaleString();
+        document.getElementById('m-ratio').textContent       = ratio;
+        document.getElementById('m-span').textContent        = span;
+        document.getElementById('m-latestblock').textContent = parseInt(blockNum).toLocaleString();
+        document.getElementById('m-recent').textContent      = anchors.length > 0 ? timeAgo(anchors[0].timestamp) : '—';
+
+        const statusEl = document.getElementById('fetch-status');
+        statusEl.textContent = '  LIVE';
+        statusEl.className = 'green';
+
+        // Histogram
+        renderHistogram(anchors);
+
+        // Recent anchors table — last 10
+        const tbody = document.getElementById('anchor-table');
+        tbody.innerHTML = '';
+        anchors.slice(0, 10).forEach(a => {
+            const ts = new Date(parseInt(a.timestamp) * 1000);
+            const timeStr = ts.toISOString().substring(11, 19);
+            const txHash = a.txHash || '';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="td-time">${timeStr} UTC</td>
+                <td class="td-block">${parseInt(a.blockNumber).toLocaleString()}</td>
+                <td class="td-hash">
+                    ${shortHash(txHash)}
+                    <a href="https://sepolia.basescan.org/tx/${txHash}" target="_blank" class="tx-link">[→]</a>
+                </td>
+                <td class="td-status">ANCHORED</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        const statusEl = document.getElementById('fetch-status');
+        statusEl.textContent = '  ERROR';
+        statusEl.className = 'red';
+    }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

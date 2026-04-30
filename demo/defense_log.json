@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:45:26",
+    "issue": "#1205 (HMAC Tamper)",
+    "reason": "HMAC-SHA256 signature mismatch"
+  },
+  {
     "time": "10:44:54",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"
@@ -91,11 +96,6 @@
   },
   {
     "time": "10:35:21",
-    "issue": "#1205 (HMAC Tamper)",
-    "reason": "HMAC-SHA256 signature mismatch"
-  },
-  {
-    "time": "10:34:49",
     "issue": "#1205 (HMAC Tamper)",
     "reason": "HMAC-SHA256 signature mismatch"
   }

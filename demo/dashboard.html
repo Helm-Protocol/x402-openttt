@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenTTT Live Integrity Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,668 +15,832 @@
             --text:     #f4f7f9;
             --muted:    #6b7280;
             --green:    #10b981;
-            --bot1:     #ffb300;
-            --bot2:     #ff4081;
-            --bot3:     #29b6f6;
-            --purple:   #a78bfa;
+            --blue:     #3b82f6;
             --amber:    #f59e0b;
+            --red:      #ef4444;
+            --bot1:     #f59e0b;
+            --bot2:     #ec4899;
+            --bot3:     #3b82f6;
+            --t0:       #6b7280;
+            --t1:       #3b82f6;
+            --t2:       #10b981;
+            --t3:       #f59e0b;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: var(--bg);
             color: var(--text);
-            padding: 36px 28px 56px;
-            max-width: 1300px;
+            padding: 32px 28px 64px;
+            max-width: 1360px;
             margin: 0 auto;
         }
 
         /* ─── Header ─── */
-        .header { margin-bottom: 24px; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 28px;
+        }
         .header h1 {
-            font-size: 22px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
             color: #fff;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .header .subtitle {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--muted);
-            font-family: "SF Mono", "Fira Code", monospace;
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+        }
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: 0.04em;
+        }
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
-        hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+        hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 
         /* ─── Section label ─── */
         .section-label {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--muted);
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
-        /* ─── Stats 2×2 grid ─── */
+        /* ─── ROW 2: Tachometer + Stats ─── */
+        .row2 {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .row2 { grid-template-columns: 1fr; }
+        }
+
+        /* Tachometer card */
+        .tacho-card {
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            padding: 24px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tacho-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 16px;
+            align-self: flex-start;
+        }
+        .tacho-wrap {
+            position: relative;
+            width: 240px;
+            height: 130px;
+        }
+        .tacho-wrap canvas { display: block; }
+        .tacho-center {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .tacho-val {
+            font-size: 36px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        .tacho-unit {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+        .tacho-sublabel {
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+        }
+        .tacho-sublabel span {
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+            color: var(--green);
+        }
+
+        /* Stats grid (right of tachometer) */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
-            margin-bottom: 28px;
         }
         .stat-cell {
             background: var(--card-bg);
-            padding: 22px 20px;
+            padding: 20px 18px;
         }
         .stat-cell .val {
-            font-size: 52px;
+            font-size: 40px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             color: #fff;
             line-height: 1;
             letter-spacing: -0.02em;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
-        .stat-cell .val.green  { color: var(--green); }
-        .stat-cell .val.medium { font-size: 38px; }
+        .stat-cell .val.green { color: var(--green); }
+        .stat-cell .val.medium { font-size: 28px; }
         .stat-cell .lbl {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--muted);
             line-height: 1.5;
         }
-
-        /* ─── Numbered list rows ─── */
-        .num-list { margin-bottom: 28px; }
-        .num-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .num-row:first-child { border-top: 1px solid var(--border); }
-        .num-idx {
-            font-size: 12px;
-            font-weight: 600;
+        .stat-ref {
+            font-size: 10px;
             color: var(--muted);
-            font-variant-numeric: tabular-nums;
-            width: 28px;
-            flex-shrink: 0;
-            padding-top: 2px;
-        }
-        .num-body { flex: 1; }
-        .num-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 3px;
-        }
-        .num-detail {
-            font-size: 12px;
-            color: var(--muted);
-            font-family: "SF Mono", "Fira Code", monospace;
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+            opacity: 0.7;
         }
 
-        /* ─── AdaptiveSwitch rows ─── */
-        .adapt-list { margin-bottom: 28px; }
-        .adapt-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .adapt-row:first-child { border-top: 1px solid var(--border); }
-        .adapt-mode {
-            font-size: 11px;
-            font-weight: 700;
-            font-family: "SF Mono", "Fira Code", monospace;
-            letter-spacing: 0.06em;
-            width: 52px;
-            flex-shrink: 0;
-            padding-top: 3px;
-        }
-        .adapt-mode.turbo { color: var(--green); }
-        .adapt-mode.full  { color: var(--amber); }
-        .adapt-mode.vstar { color: var(--purple); }
-        .adapt-pct {
-            font-size: 20px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            color: #fff;
-            width: 56px;
-            flex-shrink: 0;
-            line-height: 1.1;
-            padding-top: 1px;
-        }
-        .adapt-desc { flex: 1; }
-        .adapt-desc .ad-title {
-            font-size: 13px;
-            color: #d1d5db;
-            margin-bottom: 2px;
-        }
-        .adapt-desc .ad-ref {
-            font-size: 11px;
-            color: var(--muted);
-            font-family: "SF Mono", "Fira Code", monospace;
-        }
-
-        /* ─── Bot list ─── */
-        .bot-list { margin-bottom: 28px; }
-        .bot-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-            gap: 14px;
-        }
-        .bot-item:first-child { border-top: 1px solid var(--border); }
-        .bot-left { display: flex; gap: 14px; flex: 1; }
-        .bot-stripe {
-            width: 3px;
-            flex-shrink: 0;
-            align-self: stretch;
-            border-radius: 1px;
-        }
-        .bot-info h4 {
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        .bot-info p {
-            font-size: 11px;
-            color: var(--muted);
-            line-height: 1.5;
-        }
-        .bot-metric {
-            font-family: "SF Mono", "Fira Code", monospace;
-            font-size: 11px;
-            color: var(--green);
-            text-align: right;
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-
-        /* ─── Anchor metrics grid ─── */
-        .anchor-grid {
+        /* ─── ROW 3: Two charts ─── */
+        .row3 {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) {
+            .row3 { grid-template-columns: 1fr; }
+        }
+        .chart-card {
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            padding: 20px;
+        }
+        .chart-card .chart-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .chart-wrap {
+            position: relative;
+            height: 180px;
+        }
+        .donut-wrap {
+            position: relative;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .donut-legend {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+        }
+        .donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+        }
+        .donut-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── ROW 4: Bot status cards ─── */
+        .row4 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
             margin-bottom: 28px;
         }
-        .anchor-cell {
+        @media (max-width: 900px) {
+            .row4 { grid-template-columns: 1fr; }
+        }
+        .bot-card {
             background: var(--card-bg);
-            padding: 16px 14px;
+            padding: 18px 16px;
         }
-        .anchor-cell .anchor-val {
-            font-size: 30px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            color: #fff;
-            margin-bottom: 6px;
-            line-height: 1;
+        .bot-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
         }
-        .anchor-cell .anchor-name {
-            font-size: 10px;
+        .bot-stripe {
+            width: 3px;
+            height: 18px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .bot-name {
+            font-size: 13px;
             font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 3px;
+            color: #fff;
         }
-        .anchor-cell .anchor-detail {
+        .bot-desc {
             font-size: 11px;
             color: var(--muted);
-            font-family: "SF Mono", "Fira Code", monospace;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .bot-metric {
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+            font-size: 11px;
+            color: var(--green);
         }
 
-        /* ─── Main two-column layout ─── */
-        .layout {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 24px;
-            align-items: start;
+        /* ─── ROW 5: Protocol Architecture ─── */
+        .row5 {
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            margin-bottom: 28px;
         }
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
-            .tier-grid { grid-template-columns: repeat(2, 1fr); }
+        .num-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
         }
-        .col-left { display: flex; flex-direction: column; }
-        .col-right { display: flex; flex-direction: column; gap: 28px; }
+        .num-row:last-child { border-bottom: none; }
+        .num-idx {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            width: 24px;
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+        .num-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            width: 160px;
+            flex-shrink: 0;
+        }
+        .num-detail {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+            line-height: 1.5;
+        }
 
-        /* ─── Live feed table ─── */
+        /* ─── ROW 6: Live Feed Table ─── */
+        .row6 {
+            margin-bottom: 28px;
+        }
         .feed-wrap { overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-family: "SF Mono", "Fira Code", monospace;
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
             font-size: 11px;
         }
         th {
             text-align: left;
             color: var(--muted);
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            padding: 0 8px 10px 0;
+            letter-spacing: 0.08em;
+            padding: 0 10px 10px 0;
             border-bottom: 1px solid var(--border);
         }
         td {
-            padding: 9px 8px 9px 0;
+            padding: 9px 10px 9px 0;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
             color: #d1d5db;
         }
-        td.hash-col { color: #8ab4f8; }
+        tr.new-anchor td {
+            animation: rowFlash 2s ease-out forwards;
+        }
+        @keyframes rowFlash {
+            0%   { background: rgba(16,185,129,0.18); }
+            100% { background: transparent; }
+        }
         .tier-badge {
             display: inline-block;
             font-size: 9px;
             font-weight: 700;
             letter-spacing: 0.05em;
             padding: 2px 6px;
+            border-radius: 2px;
             background: rgba(255,255,255,0.05);
             color: #9ca3af;
         }
-        .status-anchored {
-            color: var(--green);
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
+        .tier-badge.t0 { color: var(--t0); background: rgba(107,114,128,0.1); }
+        .tier-badge.t1 { color: var(--t1); background: rgba(59,130,246,0.12); }
+        .tier-badge.t2 { color: var(--t2); background: rgba(16,185,129,0.12); }
+        .tier-badge.t3 { color: var(--t3); background: rgba(245,158,11,0.12); }
         a.tx-link {
             color: #8ab4f8;
             text-decoration: none;
             font-size: 10px;
-            padding: 1px 4px;
+            padding: 1px 5px;
             border: 1px solid #2d3748;
+            border-radius: 2px;
+            margin-left: 6px;
         }
         a.tx-link:hover { background: rgba(138,180,248,0.1); }
+        .age-col { color: var(--muted); }
+        .block-col { color: var(--muted); }
 
-        /* ─── Defense activity ─── */
-        .defense-card {
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            padding: 20px;
-        }
-        .defense-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .defense-row:first-child { border-top: 1px solid var(--border); }
-        .defense-key { font-size: 13px; color: #d1d5db; }
-        .defense-val {
-            font-family: "SF Mono", "Fira Code", monospace;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-        }
-        .defense-val.green { color: var(--green); }
-        .defense-note {
+        /* ─── Footer ─── */
+        .footer {
             font-size: 11px;
             color: var(--muted);
-            margin-left: 12px;
+            font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Section 1: Header -->
-    <div class="header">
+<!-- ROW 1: Header -->
+<div class="header">
+    <div>
         <h1>OpenTTT Live Integrity Center</h1>
-        <p class="subtitle">Proof-of-Time anchors on Base Sepolia · draft-helmprotocol-tttps-03</p>
+        <p class="subtitle">Proof-of-Time anchors &middot; Base Sepolia &middot; draft-helmprotocol-tttps-03</p>
     </div>
-    <hr>
+    <div class="live-badge">
+        <div class="live-dot"></div>
+        Live
+    </div>
+</div>
 
-    <!-- Section 2: Network Resilience Stats (2×2 grid) -->
-    <div class="section-label">Network Resilience</div>
+<!-- ROW 2: Tachometer + Stats -->
+<div class="row2">
+    <!-- Tachometer -->
+    <div class="tacho-card">
+        <div class="tacho-title">Anchor Rate</div>
+        <div class="tacho-wrap">
+            <canvas id="tachoChart" width="240" height="130"></canvas>
+            <div class="tacho-center">
+                <div class="tacho-val" id="tacho-val">—</div>
+                <div class="tacho-unit">anchors / min</div>
+            </div>
+        </div>
+        <div class="tacho-sublabel" id="tacho-sublabel">Network Speed</div>
+    </div>
+
+    <!-- Key Stats -->
     <div class="stats-grid">
         <div class="stat-cell">
-            <div class="val medium" id="total-proofs">—</div>
-            <div class="lbl">Verified Proofs<br>§15.2: 70,612 total</div>
+            <div class="val medium" id="total-live">—</div>
+            <div class="lbl">PoT Anchors &middot; subgraph live</div>
         </div>
         <div class="stat-cell">
-            <div class="val green">0</div>
-            <div class="lbl">Zero Failures<br>Cryptographic failures · 70,612 records [§15.2]</div>
+            <div class="val medium">70,612</div>
+            <div class="lbl">Verified total &middot; Oct'25&ndash;Apr'26 <span class="stat-ref">[&sect;15.2]</span></div>
         </div>
         <div class="stat-cell">
-            <div class="val medium">47ms</div>
-            <div class="lbl">Avg Proof Latency<br>TURBO mode · honest builder [§15.2]</div>
+            <div class="val medium green">55%</div>
+            <div class="lbl">AI agent share <span class="stat-ref">[&sect;15.2]</span></div>
         </div>
         <div class="stat-cell">
-            <div class="val medium" id="last-block">—</div>
-            <div class="lbl">Block Anchored<br>Base Sepolia · live</div>
+            <div class="val medium">$8.67</div>
+            <div class="lbl">V* threshold <span class="stat-ref">[&sect;7]</span></div>
         </div>
     </div>
+</div>
 
-    <hr>
-
-    <div class="layout">
-
-        <!-- Left column -->
-        <div class="col-left">
-
-            <!-- Section 3: Protocol Architecture -->
-            <div class="section-label">Protocol Architecture</div>
-            <div class="num-list">
-                <div class="num-row">
-                    <span class="num-idx">01</span>
-                    <div class="num-body">
-                        <div class="num-title">Multi-Source NTP</div>
-                        <div class="num-detail">NIST + Cloudflare + Google · median synthesis · ±10ms</div>
-                    </div>
-                </div>
-                <div class="num-row">
-                    <span class="num-idx">02</span>
-                    <div class="num-body">
-                        <div class="num-title">Ed25519 Binding</div>
-                        <div class="num-detail">timestamp + txHash + chainId · non-repudiable</div>
-                    </div>
-                </div>
-                <div class="num-row">
-                    <span class="num-idx">03</span>
-                    <div class="num-body">
-                        <div class="num-title">GRG Pipeline</div>
-                        <div class="num-detail">Golomb-Rice → Reed-Solomon(4,6) → Golay(23,12,7) → HMAC-SHA256</div>
-                    </div>
-                </div>
-                <div class="num-row" style="border-bottom: none;">
-                    <span class="num-idx">04</span>
-                    <div class="num-body">
-                        <div class="num-title">On-Chain Anchor</div>
-                        <div class="num-detail">ERC-1155 · The Graph indexed · immutable</div>
-                    </div>
-                </div>
-            </div>
-
-            <hr style="margin: 4px 0 24px;">
-
-            <!-- Section 4: AdaptiveSwitch Panel -->
-            <div class="section-label">AdaptiveSwitch · §7</div>
-            <div class="adapt-list">
-                <div class="adapt-row">
-                    <span class="adapt-mode turbo">TURBO</span>
-                    <span class="adapt-pct">62%</span>
-                    <div class="adapt-desc">
-                        <div class="ad-title">honest builder path · ~47ms · −20% fee</div>
-                        <div class="ad-ref">[§7]</div>
-                    </div>
-                </div>
-                <div class="adapt-row">
-                    <span class="adapt-mode full">FULL</span>
-                    <span class="adapt-pct">38%</span>
-                    <div class="adapt-desc">
-                        <div class="ad-title">penalty path · ~127ms · exponential backoff</div>
-                        <div class="ad-ref">[§7]</div>
-                    </div>
-                </div>
-                <div class="adapt-row" style="border-bottom: none;">
-                    <span class="adapt-mode vstar">V*</span>
-                    <span class="adapt-pct" style="font-size: 13px; padding-top: 4px; line-height: 1.4;">$8.67<br>$87.13</span>
-                    <div class="adapt-desc">
-                        <div class="ad-title">MEV threshold · below $8.67 spam is irrational</div>
-                        <div class="ad-ref">[§7]</div>
-                    </div>
-                </div>
-            </div>
-
-            <hr style="margin: 4px 0 24px;">
-
-            <!-- Section 5: Bot Analytics -->
-            <div class="section-label">Bot Analytics</div>
-            <div class="bot-list">
-                <div class="bot-item">
-                    <div class="bot-left">
-                        <div class="bot-stripe" style="background: var(--bot1);"></div>
-                        <div class="bot-info">
-                            <h4>PoT Daemon</h4>
-                            <p>Continuous T1-tier temporal attestations. Honest builder: earns TURBO mode.</p>
-                        </div>
-                    </div>
-                    <div class="bot-metric" id="bot1-metric">Tx: —</div>
-                </div>
-                <div class="bot-item">
-                    <div class="bot-left">
-                        <div class="bot-stripe" style="background: var(--bot2);"></div>
-                        <div class="bot-info">
-                            <h4>Settlement Agent</h4>
-                            <p>High-frequency settlement proofs. AdaptiveSwitch §7 participant.</p>
-                        </div>
-                    </div>
-                    <div class="bot-metric" id="bot2-metric">Rate: —</div>
-                </div>
-                <div class="bot-item" style="border-bottom: none;">
-                    <div class="bot-left">
-                        <div class="bot-stripe" style="background: var(--bot3);"></div>
-                        <div class="bot-info">
-                            <h4>Validation Agent</h4>
-                            <p>GRG pipeline stress test: submits deliberate timestamp skew. On-chain rejections logged.</p>
-                        </div>
-                    </div>
-                    <div class="bot-metric">GRG: ✓<br>HMAC: ✓<br>Pipeline: Verified</div>
-                </div>
-            </div>
-
-            <hr style="margin: 4px 0 24px;">
-
-            <!-- Section 6: Anchor Metrics -->
-            <div class="section-label">Anchor Metrics · last 1,000</div>
-            <div class="anchor-grid">
-                <div class="anchor-cell">
-                    <div class="anchor-val" id="metric-total">—</div>
-                    <div class="anchor-name">Anchors</div>
-                    <div class="anchor-detail">subgraph · live</div>
-                </div>
-                <div class="anchor-cell">
-                    <div class="anchor-val" id="metric-blocks">—</div>
-                    <div class="anchor-name">Unique Blocks</div>
-                    <div class="anchor-detail">Base Sepolia</div>
-                </div>
-                <div class="anchor-cell">
-                    <div class="anchor-val" id="metric-rate">—</div>
-                    <div class="anchor-name">Anchors / Block</div>
-                    <div class="anchor-detail">density · last 1,000</div>
-                </div>
-                <div class="anchor-cell">
-                    <div class="anchor-val" id="metric-span">—</div>
-                    <div class="anchor-name">Hours Span</div>
-                    <div class="anchor-detail">oldest → newest</div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Right column -->
-        <div class="col-right">
-
-            <!-- Section 7: Live Feed -->
-            <div>
-                <div class="section-label">Live Proof Feed</div>
-                <div class="feed-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 70px;">Age</th>
-                                <th style="width: 90px;">Block</th>
-                                <th>Tx Hash</th>
-                                <th>GRG Hash</th>
-                                <th style="width: 70px;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="proof-table-body">
-                            <tr><td colspan="5" style="color: var(--muted); padding: 20px 0;">Fetching live data from The Graph…</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Section 8: Defense Activity -->
-            <div>
-                <div class="section-label">AdaptiveSwitch Activity · §7</div>
-                <div class="defense-card">
-                    <div class="defense-row">
-                        <span class="defense-key">TURBO operations</span>
-                        <span>
-                            <span class="defense-val green">62%</span>
-                            <span class="defense-note">of 70,612 records</span>
-                        </span>
-                    </div>
-                    <div class="defense-row">
-                        <span class="defense-key">FULL operations</span>
-                        <span>
-                            <span class="defense-val">38%</span>
-                            <span class="defense-note">— penalty mode</span>
-                        </span>
-                    </div>
-                    <div class="defense-row" style="border-bottom: none;">
-                        <span class="defense-key">Crypto failures</span>
-                        <span>
-                            <span class="defense-val green">0</span>
-                            <span class="defense-note">— zero in 70,612 records</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-
+<!-- ROW 3: Time Series + Tier Doughnut -->
+<div class="row3">
+    <!-- Time Series -->
+    <div class="chart-card">
+        <div class="chart-title">Anchor Activity (last 1,000 records)</div>
+        <div class="chart-wrap">
+            <canvas id="timeSeriesChart"></canvas>
         </div>
     </div>
+    <!-- Tier Doughnut -->
+    <div class="chart-card">
+        <div class="chart-title">Tier Distribution</div>
+        <div class="donut-wrap">
+            <canvas id="tierDonutChart"></canvas>
+        </div>
+        <div class="donut-legend">
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--t0)"></div><span id="leg-t0">T0 &mdash;</span></div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--t1)"></div><span id="leg-t1">T1 &mdash;</span></div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--t2)"></div><span id="leg-t2">T2 &mdash;</span></div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:var(--t3)"></div><span id="leg-t3">T3 &mdash;</span></div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        "use strict";
+<!-- ROW 4: Bot Status Cards -->
+<div class="section-label">Bot Status</div>
+<div class="row4">
+    <div class="bot-card">
+        <div class="bot-header">
+            <div class="bot-stripe" style="background:var(--bot1)"></div>
+            <div class="bot-name">PoT Daemon</div>
+        </div>
+        <div class="bot-desc">5s interval &middot; T1 Base L2 Block anchors</div>
+        <div class="bot-metric" id="bot1-metric">Last anchor: &mdash;</div>
+    </div>
+    <div class="bot-card">
+        <div class="bot-header">
+            <div class="bot-stripe" style="background:var(--bot2)"></div>
+            <div class="bot-name">Settlement Agent</div>
+        </div>
+        <div class="bot-desc">TTT.mint() + PoT &middot; AdaptiveSwitch &sect;7</div>
+        <div class="bot-metric" id="bot2-metric">anchors/block: &mdash;</div>
+    </div>
+    <div class="bot-card">
+        <div class="bot-header">
+            <div class="bot-stripe" style="background:var(--bot3)"></div>
+            <div class="bot-name">Validation Agent</div>
+        </div>
+        <div class="bot-desc">GRG pipeline: Golomb-Rice &rarr; RS(4,6) &rarr; Golay(23,12,7) &rarr; HMAC</div>
+        <div class="bot-metric">Pipeline: &#10003; Verified</div>
+    </div>
+</div>
 
-        const SUBGRAPH = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+<!-- ROW 5: Protocol Architecture -->
+<div class="section-label">Protocol Architecture</div>
+<div class="row5">
+    <div class="num-row">
+        <span class="num-idx">01</span>
+        <span class="num-title">Multi-Source NTP</span>
+        <span class="num-detail">NIST + Cloudflare + Google &middot; &plusmn;10ms</span>
+    </div>
+    <div class="num-row">
+        <span class="num-idx">02</span>
+        <span class="num-title">Ed25519 Binding</span>
+        <span class="num-detail">timestamp + txHash + chainId &middot; non-repudiable</span>
+    </div>
+    <div class="num-row">
+        <span class="num-idx">03</span>
+        <span class="num-title">GRG Pipeline</span>
+        <span class="num-detail">Golomb-Rice &rarr; Reed-Solomon(4,6) &rarr; Golay(23,12,7) &rarr; HMAC-SHA256</span>
+    </div>
+    <div class="num-row">
+        <span class="num-idx">04</span>
+        <span class="num-title">On-Chain Anchor</span>
+        <span class="num-detail">ERC-1155 &middot; The Graph indexed &middot; immutable</span>
+    </div>
+</div>
 
-        const QUERY = `{
-          _meta { block { number } }
-          poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
-            id stratum timestamp txHash blockNumber
-          }
-        }`;
+<!-- ROW 6: Live Feed Table -->
+<div class="row6">
+    <div class="section-label">Live Feed &middot; Last 15 Anchors</div>
+    <div class="feed-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:80px;">Age</th>
+                    <th style="width:70px;">Tier</th>
+                    <th style="width:110px;">Block</th>
+                    <th>Tx Hash</th>
+                </tr>
+            </thead>
+            <tbody id="feed-tbody">
+                <tr><td colspan="4" style="color:var(--muted);padding:20px 0;">Fetching live data from The Graph&hellip;</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        function ageStr(unixStr) {
-            const diff = Math.floor(Date.now() / 1000) - Number(unixStr);
-            if (diff < 60)   return diff + "s ago";
-            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
-            return Math.floor(diff / 3600) + "h ago";
+<!-- Footer -->
+<div class="footer">
+    draft-helmprotocol-tttps-03 &middot; IETF Experimental &middot; heime.jorgen@proton.me &middot; npm install openttt
+</div>
+
+<script>
+"use strict";
+
+const SUBGRAPH = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+const QUERY = `{
+  _meta { block { number } }
+  poTAnchors(first: 1000, orderBy: timestamp, orderDirection: desc) {
+    id stratum timestamp txHash blockNumber
+  }
+}`;
+
+const MAX_RATE = 30; // anchors per minute gauge max
+
+// Track seen txHashes for new-row flash
+let seenHashes = new Set();
+
+// Chart instances
+let tachoChart = null;
+let timeSeriesChart = null;
+let tierDonutChart = null;
+
+function stratumKey(s) {
+    const k = String(s);
+    return ["0","1","2","3"].includes(k) ? k : "1";
+}
+
+function relativeAge(unixStr) {
+    const now = Math.floor(Date.now() / 1000);
+    const ts = Number(BigInt(unixStr));
+    const diff = now - ts;
+    if (diff < 60)  return diff + "s ago";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    return Math.floor(diff / 3600) + "h ago";
+}
+
+function shortHash(h) {
+    if (!h || h.length < 14) return h || "—";
+    return h.substring(0, 10) + "…" + h.substring(h.length - 8);
+}
+
+function initCharts() {
+    // Tachometer — half-circle doughnut
+    const tachoCtx = document.getElementById("tachoChart").getContext("2d");
+    tachoChart = new Chart(tachoCtx, {
+        type: "doughnut",
+        data: {
+            datasets: [{
+                data: [0, MAX_RATE],
+                backgroundColor: ["#6b7280", "#1e2028"],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            circumference: 180,
+            rotation: -90,
+            cutout: "74%",
+            animation: { duration: 600 },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false }
+            }
         }
+    });
 
-        // stratum is uint256(grgHash) — convert back to 0x-prefixed hex for display
-        function stratumToGrgHex(stratum) {
-            const hex = BigInt(stratum).toString(16).padStart(64, "0");
-            return "0x" + hex.substring(0, 6) + "…" + hex.substring(60);
-        }
-
-        function shortHash(h) {
-            if (!h || h.length < 14) return h || "—";
-            return h.substring(0, 8) + "…" + h.substring(h.length - 6);
-        }
-
-        async function fetchAndRender() {
-            let data;
-            try {
-                const res = await fetch(SUBGRAPH, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query: QUERY })
-                });
-                const json = await res.json();
-                data = json.data;
-            } catch (err) {
-                console.error("Subgraph fetch error:", err);
-                return;
-            }
-            if (!data) return;
-
-            // Block height
-            if (data._meta && data._meta.block) {
-                document.getElementById("last-block").textContent =
-                    parseInt(data._meta.block.number).toLocaleString("en-US");
-            }
-
-            const anchors = data.poTAnchors || [];
-
-            // Verified proofs count
-            document.getElementById("total-proofs").textContent = anchors.length >= 1000
-                ? "1,000+"
-                : anchors.length.toLocaleString("en-US");
-
-            // Anchor metrics
-            const uniqueBlocks = new Set(anchors.map(a => a.blockNumber)).size;
-            const rate = uniqueBlocks > 0
-                ? (anchors.length / uniqueBlocks).toFixed(2)
-                : "—";
-            const oldest = anchors[anchors.length - 1];
-            const newest = anchors[0];
-            const spanHours = oldest && newest
-                ? ((Number(newest.timestamp) - Number(oldest.timestamp)) / 3600).toFixed(1)
-                : "—";
-
-            document.getElementById("metric-total").textContent =
-                anchors.length >= 1000 ? "1,000+" : anchors.length.toLocaleString("en-US");
-            document.getElementById("metric-blocks").textContent = uniqueBlocks.toLocaleString("en-US");
-            document.getElementById("metric-rate").textContent = rate;
-            document.getElementById("metric-span").textContent = spanHours;
-
-            // Bot 1: TX count from last 100 anchors
-            const last100 = anchors.slice(0, 100);
-            document.getElementById("bot1-metric").textContent = "Tx: " + last100.length;
-
-            // Bot 2: anchors-per-block rate from last 100
-            if (last100.length >= 2) {
-                const blockNums = last100.map(a => Number(a.blockNumber));
-                const spanBlocks = Math.max(...blockNums) - Math.min(...blockNums) || 1;
-                document.getElementById("bot2-metric").textContent =
-                    (last100.length / spanBlocks).toFixed(2) + " /block";
-            } else {
-                document.getElementById("bot2-metric").textContent = "Rate: —";
-            }
-
-            // Live feed: last 10 anchors
-            const tbody = document.getElementById("proof-table-body");
-            tbody.innerHTML = "";
-
-            const feed = anchors.slice(0, 10);
-            if (feed.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="color: var(--muted);">No anchors found.</td></tr>';
-                return;
-            }
-
-            for (const anchor of feed) {
-                const age    = ageStr(anchor.timestamp);
-                const block  = parseInt(anchor.blockNumber).toLocaleString("en-US");
-                const txHash = anchor.txHash || "";
-                const txUrl  = txHash
-                    ? `https://sepolia.basescan.org/tx/${txHash}`
-                    : `https://sepolia.basescan.org/block/${anchor.blockNumber}`;
-                const txDisplay = txHash
-                    ? `<a href="${txUrl}" target="_blank" rel="noopener" class="tx-link" title="${txHash}">${shortHash(txHash)}</a>`
-                    : `<a href="${txUrl}" target="_blank" rel="noopener" class="tx-link">#${block}</a>`;
-                const grgHex = stratumToGrgHex(anchor.stratum);
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="color: var(--muted);">${age}</td>
-                    <td style="color: var(--muted);">${block}</td>
-                    <td class="hash-col">${txDisplay}</td>
-                    <td class="hash-col" style="font-size:10px;">${grgHex}</td>
-                    <td><span class="status-anchored">Anchored</span></td>
-                `;
-                tbody.appendChild(tr);
+    // Time Series line chart
+    const tsCtx = document.getElementById("timeSeriesChart").getContext("2d");
+    timeSeriesChart = new Chart(tsCtx, {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "anchors/min",
+                data: [],
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59,130,246,0.12)",
+                borderWidth: 2,
+                pointRadius: 2,
+                pointBackgroundColor: "#3b82f6",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 400 },
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#6b7280",
+                        font: { size: 9, family: "ui-monospace" },
+                        maxRotation: 0,
+                        maxTicksLimit: 8
+                    },
+                    grid: { color: "#1e2028" }
+                },
+                y: {
+                    ticks: { color: "#6b7280", font: { size: 9 }, stepSize: 1 },
+                    grid: { color: "#1e2028" },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#111216",
+                    borderColor: "#1e2028",
+                    borderWidth: 1,
+                    titleColor: "#6b7280",
+                    bodyColor: "#fff",
+                    titleFont: { size: 10 },
+                    bodyFont: { size: 11 }
+                }
             }
         }
+    });
 
-        fetchAndRender();
-        setInterval(fetchAndRender, 3500);
-    </script>
+    // Tier doughnut
+    const tdCtx = document.getElementById("tierDonutChart").getContext("2d");
+    tierDonutChart = new Chart(tdCtx, {
+        type: "doughnut",
+        data: {
+            labels: ["T0","T1","T2","T3"],
+            datasets: [{
+                data: [0, 0, 0, 0],
+                backgroundColor: ["#6b7280","#3b82f6","#10b981","#f59e0b"],
+                borderWidth: 0,
+                spacing: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "65%",
+            animation: { duration: 600 },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#111216",
+                    borderColor: "#1e2028",
+                    borderWidth: 1,
+                    titleColor: "#6b7280",
+                    bodyColor: "#fff",
+                    callbacks: {
+                        label: (ctx) => " " + ctx.label + ": " + ctx.parsed + " anchors"
+                    }
+                }
+            }
+        }
+    });
+}
+
+function render(anchors) {
+    if (!anchors || anchors.length === 0) return;
+
+    // 1. Anchor rate — tachometer
+    const timestamps = anchors.map(a => Number(BigInt(a.timestamp)));
+    const newestTs = timestamps[0];
+    const oldestTs = timestamps[timestamps.length - 1];
+    const spanMin = Math.max((newestTs - oldestTs) / 60, 1);
+    const rate = anchors.length / spanMin;
+    const rateDisplay = rate < 10 ? rate.toFixed(1) : Math.round(rate).toString();
+
+    let rateColor = "#ef4444";
+    if (rate > 5)       rateColor = "#10b981";
+    else if (rate >= 1) rateColor = "#f59e0b";
+
+    const clampedRate = Math.min(rate, MAX_RATE);
+    tachoChart.data.datasets[0].data = [clampedRate, MAX_RATE - clampedRate];
+    tachoChart.data.datasets[0].backgroundColor = [rateColor, "#1e2028"];
+    tachoChart.update("none");
+
+    const tachoValEl = document.getElementById("tacho-val");
+    tachoValEl.textContent = rateDisplay;
+    tachoValEl.style.color = rateColor;
+    document.getElementById("tacho-sublabel").innerHTML =
+        '<span style="color:' + rateColor + '">' + rateDisplay + ' anchors/min</span> &middot; Network Speed';
+
+    // 2. Stats
+    document.getElementById("total-live").textContent =
+        anchors.length >= 1000 ? "1,000+" : anchors.length.toLocaleString("en-US");
+
+    // 3. Time series — group by minute
+    const minuteBuckets = {};
+    for (const a of anchors) {
+        const ts = Number(BigInt(a.timestamp));
+        const bucket = Math.floor(ts / 60) * 60;
+        minuteBuckets[bucket] = (minuteBuckets[bucket] || 0) + 1;
+    }
+    const sortedBuckets = Object.keys(minuteBuckets).map(Number).sort((a, b) => a - b);
+    const last20 = sortedBuckets.slice(-20);
+    const tsLabels = last20.map(b => {
+        const d = new Date(b * 1000);
+        return String(d.getUTCHours()).padStart(2,"0") + ":" + String(d.getUTCMinutes()).padStart(2,"0");
+    });
+    const tsData = last20.map(b => minuteBuckets[b]);
+    timeSeriesChart.data.labels = tsLabels;
+    timeSeriesChart.data.datasets[0].data = tsData;
+    timeSeriesChart.update();
+
+    // 4. Tier distribution
+    const tc = { "0": 0, "1": 0, "2": 0, "3": 0 };
+    for (const a of anchors) {
+        tc[stratumKey(a.stratum)]++;
+    }
+    tierDonutChart.data.datasets[0].data = [tc["0"], tc["1"], tc["2"], tc["3"]];
+    tierDonutChart.update();
+
+    const total = anchors.length;
+    document.getElementById("leg-t0").textContent = "T0  " + tc["0"] + " (" + Math.round(tc["0"]/total*100) + "%)";
+    document.getElementById("leg-t1").textContent = "T1  " + tc["1"] + " (" + Math.round(tc["1"]/total*100) + "%)";
+    document.getElementById("leg-t2").textContent = "T2  " + tc["2"] + " (" + Math.round(tc["2"]/total*100) + "%)";
+    document.getElementById("leg-t3").textContent = "T3  " + tc["3"] + " (" + Math.round(tc["3"]/total*100) + "%)";
+
+    // 5. Bot metrics
+    document.getElementById("bot1-metric").textContent = "Last anchor: " + relativeAge(anchors[0].timestamp);
+
+    const recent = anchors.slice(0, 50);
+    if (recent.length >= 2) {
+        const blocks = recent.map(a => Number(BigInt(a.blockNumber)));
+        const spanBlocks = Math.max(...blocks) - Math.min(...blocks) || 1;
+        document.getElementById("bot2-metric").textContent =
+            "anchors/block: " + (recent.length / spanBlocks).toFixed(2);
+    }
+
+    // 6. Live feed — last 15 anchors
+    const feed = anchors.slice(0, 15);
+    const newHashSet = new Set(feed.map(a => a.txHash || a.id));
+
+    const freshSet = new Set();
+    for (const h of newHashSet) {
+        if (!seenHashes.has(h)) freshSet.add(h);
+    }
+    seenHashes = newHashSet;
+
+    const tbody = document.getElementById("feed-tbody");
+    tbody.innerHTML = "";
+
+    for (const anchor of feed) {
+        const hash = anchor.txHash || "";
+        const key = hash || anchor.id;
+        const tierKey = stratumKey(anchor.stratum);
+        const age = relativeAge(anchor.timestamp);
+        const blockNum = parseInt(anchor.blockNumber, 10).toLocaleString("en-US");
+        const txUrl = hash
+            ? "https://sepolia.basescan.org/tx/" + hash
+            : "https://sepolia.basescan.org/block/" + anchor.blockNumber;
+        const displayHash = hash ? shortHash(hash) : ("block #" + blockNum);
+        const isNew = freshSet.has(key);
+
+        const tr = document.createElement("tr");
+        if (isNew) tr.className = "new-anchor";
+
+        const txLinkHtml = hash
+            ? '<a href="' + txUrl + '" target="_blank" rel="noopener" class="tx-link">&#x2197;</a>'
+            : "";
+
+        tr.innerHTML =
+            '<td class="age-col">' + age + "</td>" +
+            '<td><span class="tier-badge t' + tierKey + '">T' + tierKey + "</span></td>" +
+            '<td class="block-col">' + blockNum + "</td>" +
+            '<td><span style="font-family:ui-monospace,monospace;color:#8ab4f8;">' + displayHash + "</span>" + txLinkHtml + "</td>";
+
+        tbody.appendChild(tr);
+    }
+}
+
+async function fetchAndRender() {
+    let data;
+    try {
+        const res = await fetch(SUBGRAPH, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: QUERY })
+        });
+        const json = await res.json();
+        data = json.data;
+    } catch (err) {
+        console.error("Subgraph fetch error:", err);
+        return;
+    }
+    if (!data) return;
+    render(data.poTAnchors || []);
+}
+
+// Boot
+initCharts();
+fetchAndRender();
+setInterval(fetchAndRender, 3500);
+</script>
 </body>
 </html>

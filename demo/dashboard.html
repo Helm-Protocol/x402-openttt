@@ -201,20 +201,20 @@
             white-space: nowrap;
         }
 
-        /* ─── Tier distribution ─── */
-        .tier-grid {
+        /* ─── Anchor metrics grid ─── */
+        .anchor-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
             margin-bottom: 28px;
         }
-        .tier-cell {
+        .anchor-cell {
             background: var(--card-bg);
             padding: 16px 14px;
         }
-        .tier-cell .tier-val {
+        .anchor-cell .anchor-val {
             font-size: 30px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
@@ -222,7 +222,7 @@
             margin-bottom: 6px;
             line-height: 1;
         }
-        .tier-cell .tier-name {
+        .anchor-cell .anchor-name {
             font-size: 10px;
             font-weight: 600;
             letter-spacing: 0.06em;
@@ -230,7 +230,7 @@
             color: var(--muted);
             margin-bottom: 3px;
         }
-        .tier-cell .tier-period {
+        .anchor-cell .anchor-detail {
             font-size: 11px;
             color: var(--muted);
             font-family: "SF Mono", "Fira Code", monospace;
@@ -468,28 +468,28 @@
 
             <hr style="margin: 4px 0 24px;">
 
-            <!-- Section 6: Tier Distribution -->
-            <div class="section-label">Tier Distribution · last 1,000 anchors</div>
-            <div class="tier-grid">
-                <div class="tier-cell">
-                    <div class="tier-val" id="tier-t0">—</div>
-                    <div class="tier-name">T0</div>
-                    <div class="tier-period">Epoch · 6.4min</div>
+            <!-- Section 6: Anchor Metrics -->
+            <div class="section-label">Anchor Metrics · last 1,000</div>
+            <div class="anchor-grid">
+                <div class="anchor-cell">
+                    <div class="anchor-val" id="metric-total">—</div>
+                    <div class="anchor-name">Anchors</div>
+                    <div class="anchor-detail">subgraph · live</div>
                 </div>
-                <div class="tier-cell">
-                    <div class="tier-val" id="tier-t1">—</div>
-                    <div class="tier-name">T1</div>
-                    <div class="tier-period">Base L2 · 2s</div>
+                <div class="anchor-cell">
+                    <div class="anchor-val" id="metric-blocks">—</div>
+                    <div class="anchor-name">Unique Blocks</div>
+                    <div class="anchor-detail">Base Sepolia</div>
                 </div>
-                <div class="tier-cell">
-                    <div class="tier-val" id="tier-t2">—</div>
-                    <div class="tier-name">T2</div>
-                    <div class="tier-period">ETH L1 · 12s</div>
+                <div class="anchor-cell">
+                    <div class="anchor-val" id="metric-rate">—</div>
+                    <div class="anchor-name">Anchors / Block</div>
+                    <div class="anchor-detail">density · last 1,000</div>
                 </div>
-                <div class="tier-cell">
-                    <div class="tier-val" id="tier-t3">—</div>
-                    <div class="tier-name">T3</div>
-                    <div class="tier-period">High-Freq · 100ms</div>
+                <div class="anchor-cell">
+                    <div class="anchor-val" id="metric-span">—</div>
+                    <div class="anchor-name">Hours Span</div>
+                    <div class="anchor-detail">oldest → newest</div>
                 </div>
             </div>
 
@@ -505,14 +505,15 @@
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 130px;">Timestamp</th>
-                                <th style="width: 100px;">Tier</th>
-                                <th>Tx / PoT Hash</th>
-                                <th style="width: 80px;">Status</th>
+                                <th style="width: 70px;">Age</th>
+                                <th style="width: 90px;">Block</th>
+                                <th>Tx Hash</th>
+                                <th>GRG Hash</th>
+                                <th style="width: 70px;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="proof-table-body">
-                            <tr><td colspan="4" style="color: var(--muted); padding: 20px 0;">Fetching live data from The Graph…</td></tr>
+                            <tr><td colspan="5" style="color: var(--muted); padding: 20px 0;">Fetching live data from The Graph…</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -561,23 +562,17 @@
           }
         }`;
 
-        const TIER_LABEL = {
-            "0": "T0 · Epoch",
-            "1": "T1 · Base L2 Block",
-            "2": "T2 · ETH L1 Slot",
-            "3": "T3 · High-Freq"
-        };
-
-        function stratumToKey(stratum) {
-            // BigInt-safe: stratum arrives as string from The Graph
-            const s = String(stratum);
-            return ["0", "1", "2", "3"].includes(s) ? s : "1";
+        function ageStr(unixStr) {
+            const diff = Math.floor(Date.now() / 1000) - Number(unixStr);
+            if (diff < 60)   return diff + "s ago";
+            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+            return Math.floor(diff / 3600) + "h ago";
         }
 
-        function fmtTs(unixStr) {
-            // BigInt-safe timestamp
-            const ms = Number(BigInt(unixStr)) * 1000;
-            return new Date(ms).toISOString().substring(11, 19) + " UTC";
+        // stratum is uint256(grgHash) — convert back to 0x-prefixed hex for display
+        function stratumToGrgHex(stratum) {
+            const hex = BigInt(stratum).toString(16).padStart(64, "0");
+            return "0x" + hex.substring(0, 6) + "…" + hex.substring(60);
         }
 
         function shortHash(h) {
@@ -610,20 +605,26 @@
             const anchors = data.poTAnchors || [];
 
             // Verified proofs count
-            const countEl = document.getElementById("total-proofs");
-            countEl.textContent = anchors.length >= 1000
+            document.getElementById("total-proofs").textContent = anchors.length >= 1000
                 ? "1,000+"
                 : anchors.length.toLocaleString("en-US");
 
-            // Tier distribution (last 1000)
-            const tc = { "0": 0, "1": 0, "2": 0, "3": 0 };
-            for (const a of anchors) {
-                tc[stratumToKey(a.stratum)]++;
-            }
-            document.getElementById("tier-t0").textContent = tc["0"].toLocaleString("en-US");
-            document.getElementById("tier-t1").textContent = tc["1"].toLocaleString("en-US");
-            document.getElementById("tier-t2").textContent = tc["2"].toLocaleString("en-US");
-            document.getElementById("tier-t3").textContent = tc["3"].toLocaleString("en-US");
+            // Anchor metrics
+            const uniqueBlocks = new Set(anchors.map(a => a.blockNumber)).size;
+            const rate = uniqueBlocks > 0
+                ? (anchors.length / uniqueBlocks).toFixed(2)
+                : "—";
+            const oldest = anchors[anchors.length - 1];
+            const newest = anchors[0];
+            const spanHours = oldest && newest
+                ? ((Number(newest.timestamp) - Number(oldest.timestamp)) / 3600).toFixed(1)
+                : "—";
+
+            document.getElementById("metric-total").textContent =
+                anchors.length >= 1000 ? "1,000+" : anchors.length.toLocaleString("en-US");
+            document.getElementById("metric-blocks").textContent = uniqueBlocks.toLocaleString("en-US");
+            document.getElementById("metric-rate").textContent = rate;
+            document.getElementById("metric-span").textContent = spanHours;
 
             // Bot 1: TX count from last 100 anchors
             const last100 = anchors.slice(0, 100);
@@ -631,10 +632,10 @@
 
             // Bot 2: anchors-per-block rate from last 100
             if (last100.length >= 2) {
-                const blockNums = last100.map(a => Number(BigInt(a.blockNumber)));
+                const blockNums = last100.map(a => Number(a.blockNumber));
                 const spanBlocks = Math.max(...blockNums) - Math.min(...blockNums) || 1;
-                const rate = (last100.length / spanBlocks).toFixed(2);
-                document.getElementById("bot2-metric").textContent = rate + " /block";
+                document.getElementById("bot2-metric").textContent =
+                    (last100.length / spanBlocks).toFixed(2) + " /block";
             } else {
                 document.getElementById("bot2-metric").textContent = "Rate: —";
             }
@@ -645,28 +646,28 @@
 
             const feed = anchors.slice(0, 10);
             if (feed.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="color: var(--muted);">No anchors found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="color: var(--muted);">No anchors found.</td></tr>';
                 return;
             }
 
             for (const anchor of feed) {
-                const tierKey = stratumToKey(anchor.stratum);
-                const tierLabel = TIER_LABEL[tierKey] || ("T" + tierKey);
-                const ts = fmtTs(anchor.timestamp);
+                const age    = ageStr(anchor.timestamp);
+                const block  = parseInt(anchor.blockNumber).toLocaleString("en-US");
                 const txHash = anchor.txHash || "";
-                const txUrl = txHash
+                const txUrl  = txHash
                     ? `https://sepolia.basescan.org/tx/${txHash}`
                     : `https://sepolia.basescan.org/block/${anchor.blockNumber}`;
-                const displayHash = txHash ? shortHash(txHash) : ("#" + parseInt(anchor.blockNumber).toLocaleString("en-US"));
+                const txDisplay = txHash
+                    ? `<a href="${txUrl}" target="_blank" rel="noopener" class="tx-link" title="${txHash}">${shortHash(txHash)}</a>`
+                    : `<a href="${txUrl}" target="_blank" rel="noopener" class="tx-link">#${block}</a>`;
+                const grgHex = stratumToGrgHex(anchor.stratum);
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td style="color: var(--muted);">${ts}</td>
-                    <td><span class="tier-badge">${tierLabel}</span></td>
-                    <td class="hash-col">
-                        ${displayHash}
-                        <a href="${txUrl}" target="_blank" rel="noopener" class="tx-link">&#x2197;</a>
-                    </td>
+                    <td style="color: var(--muted);">${age}</td>
+                    <td style="color: var(--muted);">${block}</td>
+                    <td class="hash-col">${txDisplay}</td>
+                    <td class="hash-col" style="font-size:10px;">${grgHex}</td>
                     <td><span class="status-anchored">Anchored</span></td>
                 `;
                 tbody.appendChild(tr);

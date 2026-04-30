@@ -38,13 +38,15 @@
 
         /* Bot Analytics */
         .bot-list { display: flex; flex-direction: column; gap: 10px; }
-        .bot-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border-left: 3px solid transparent;}
+        .bot-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border-left: 3px solid transparent; cursor: pointer; transition: background 0.15s; }
+        .bot-item:hover { background: rgba(255,255,255,0.05); }
         .bot-item.arb { border-color: var(--bot1); }
         .bot-item.set { border-color: var(--bot2); }
         .bot-item.com { border-color: var(--bot3); }
         .bot-info h4 { margin: 0 0 3px 0; font-size: 13px; color: #ddd;}
         .bot-info p { margin: 0; font-size: 10px; color: #888; }
         .bot-metric { font-family: "SF Mono", monospace; font-size: 11px; color: #0ca678; text-align: right;}
+        .bot-detail-hint { font-size: 10px; color: #555; margin-top: 4px; font-family: "SF Mono", monospace; }
 
         /* Tables */
         table { width: 100%; border-collapse: collapse; font-family: "SF Mono", monospace; font-size: 11px; }
@@ -119,26 +121,26 @@
             <div class="card">
                 <div class="card-title">Agentic Behavior Analytics</div>
                 <div class="bot-list">
-                    <div class="bot-item arb">
+                    <div class="bot-item arb" onclick="location.href='bot-a.html'">
                         <div class="bot-info">
                             <h4>Bot A: High-Freq Arbitrageur</h4>
-                            <p>Target: Race Condition & Priority testing</p>
+                            <p>Target: Race Condition &amp; Priority testing</p>
                         </div>
-                        <div class="bot-metric" id="bot-a-metric">—</div>
+                        <div class="bot-metric" id="bot-a-metric">—<div class="bot-detail-hint">→ detail</div></div>
                     </div>
-                    <div class="bot-item set">
+                    <div class="bot-item set" onclick="location.href='bot-b.html'">
                         <div class="bot-info">
-                            <h4>Bot B: Settlement Agent</h4>
-                            <p>On-chain anchor submission (Base Sepolia)</p>
+                            <h4>Bot B: Cross-Border Merchant</h4>
+                            <p>Clock Skew &amp; Settlement Delay testing</p>
                         </div>
-                        <div class="bot-metric" id="bot-b-metric">—</div>
+                        <div class="bot-metric" id="bot-b-metric">—<div class="bot-detail-hint">→ detail</div></div>
                     </div>
-                    <div class="bot-item com">
+                    <div class="bot-item com" onclick="location.href='bot-c.html'">
                         <div class="bot-info">
-                            <h4>Bot C: Validation Agent</h4>
-                            <p>HMAC-SHA256 integrity verification</p>
+                            <h4>Bot C: Institutional Settlement</h4>
+                            <p>HMAC Tamper &amp; SAR Audit testing</p>
                         </div>
-                        <div class="bot-metric" id="bot-c-metric">—</div>
+                        <div class="bot-metric" id="bot-c-metric">—<div class="bot-detail-hint">→ detail</div></div>
                     </div>
                 </div>
             </div>

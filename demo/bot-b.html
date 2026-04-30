@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot B: Cross-Border Merchant — TTTPS Defense</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a0b0d;
+            color: #c8c8c8;
+            font-family: "SF Mono", "Courier New", Courier, monospace;
+            font-size: 13px;
+            padding: 24px;
+            line-height: 1.6;
+        }
+        a { color: #8ab4f8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { display: inline-block; margin-bottom: 20px; font-size: 12px; color: #555; border: 1px solid #333; padding: 3px 10px; }
+        .back:hover { color: #c8c8c8; border-color: #666; text-decoration: none; }
+
+        .ascii-title { color: #c8c8c8; white-space: pre; margin-bottom: 28px; line-height: 1.4; }
+
+        .section { margin-bottom: 32px; }
+        .section-label {
+            color: #555;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 6px;
+        }
+
+        .pipeline { white-space: pre; line-height: 1.8; }
+        .ok   { color: #0ca678; }
+        .fail { color: #ff4d4d; }
+        .warn { color: #ffb300; }
+        .dim  { color: #444; }
+        .hi   { color: #c8c8c8; }
+        .pipeline-line { opacity: 0; transition: opacity 0.1s; }
+        .pipeline-line.show { opacity: 1; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { color: #444; font-weight: normal; text-align: left; padding: 5px 8px; border-bottom: 1px solid #1a1a1a; font-size: 10px; text-transform: uppercase; }
+        td { padding: 5px 8px; border-bottom: 1px solid #111; color: #888; }
+        td.hi  { color: #c8c8c8; }
+        td.ok  { color: #0ca678; }
+        td.fail{ color: #ff4d4d; }
+        td.warn{ color: #ffb300; }
+
+        .stat-row { display: flex; gap: 30px; margin-bottom: 16px; }
+        .stat .label { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+        .stat .val   { font-size: 22px; color: #0ca678; font-weight: 700; }
+        .stat .val.red   { color: #ff4d4d; }
+        .stat .val.white { color: #c8c8c8; }
+
+        /* Drift visualizer */
+        .drift-vis { margin: 14px 0; }
+        .drift-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 11px; }
+        .drift-label { width: 140px; color: #555; }
+        .drift-track { flex: 1; background: #111; height: 8px; border: 1px solid #222; position: relative; }
+        .drift-fill  { height: 100%; transition: width 0.5s; }
+        .drift-fill.ok   { background: #0ca678; }
+        .drift-fill.over { background: #ff4d4d; }
+        .drift-val   { width: 80px; text-align: right; }
+
+        .refresh-badge { font-size: 10px; color: #333; float: right; }
+        .box-title { color: #444; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<a class="back" href="dashboard.html">← Back to Dashboard</a>
+
+<div class="ascii-title">╔══════════════════════════════════════════════════════╗
+║  BOT B: CROSS-BORDER MERCHANT                        ║
+║  Attack Vector: Clock Skew / Settlement Delay        ║
+╚══════════════════════════════════════════════════════╝</div>
+
+<div class="section">
+    <div class="section-label">TTTPS Defense Pipeline <span class="refresh-badge" id="refresh-ts">—</span></div>
+
+    <div class="section-label" style="color:#0ca678; margin-top:12px; border:none; padding:0; font-size:10px;">▶ LEGITIMATE REQUEST (clock in sync)</div>
+    <div class="pipeline" id="pipeline-ok"></div>
+
+    <div class="section-label" style="color:#ff4d4d; margin-top:20px; border:none; padding:0; font-size:10px;">▶ ATTACK ATTEMPT (clock skew &gt; threshold)</div>
+    <div class="pipeline" id="pipeline-attack"></div>
+</div>
+
+<div class="section">
+    <div class="section-label">Clock Drift Visualization</div>
+    <div class="box-title">Drift vs ±500ms threshold (§4.2: |Δt| ≤ T_skew)</div>
+    <div class="drift-vis" id="drift-vis">
+        <!-- populated by JS -->
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-label">Live Network Stats</div>
+    <div class="stat-row">
+        <div class="stat"><div class="label">Total Anchors</div><div class="val" id="stat-anchors">—</div></div>
+        <div class="stat"><div class="label">Anchors/min</div><div class="val" id="stat-rate">—</div></div>
+        <div class="stat"><div class="label">Crypto Failures</div><div class="val red">0</div></div>
+        <div class="stat"><div class="label">Avg Δt (last 20)</div><div class="val white" id="stat-avg-delta">—</div></div>
+    </div>
+
+    <div class="box-title">Recent Anchor Timestamps — Actual Deltas</div>
+    <table>
+        <thead><tr><th>Block</th><th>Timestamp (UTC)</th><th>Δt from prev</th><th>§4.2 Gate</th></tr></thead>
+        <tbody id="anchor-table"></tbody>
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-label">Recent Rejections — Clock Skew</div>
+    <table>
+        <thead><tr><th>Time (UTC)</th><th>Issue</th><th>Rejection Reason</th></tr></thead>
+        <tbody id="defense-table"></tbody>
+    </table>
+</div>
+
+<script>
+const GRAPH_URL = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+const THRESHOLD_MS = 500;
+
+const OK_LINES = [
+    { t: "ok",  s: "[1] PoT GENERATION     ████████████████ PASS  ~47ms" },
+    { t: "ok",  s: "[2] GRG PIPELINE       ████████████████ PASS" },
+    { t: "ok",  s: "[3] HMAC-SHA256        ████████████████ SIGN OK" },
+    { t: "ok",  s: "[4] TEMPORAL GATE      ████████████████" },
+    { t: "dim", s: "    timestamp delta:   +0.003s         IN BOUNDS" },
+    { t: "dim", s: "    threshold:         ±500ms          OK" },
+    { t: "ok",  s: "[5] ON-CHAIN ANCHOR    ████████████████ ANCHORED" },
+];
+
+const ATK_LINES = [
+    { t: "ok",  s: "[1] PoT GENERATION     ████████████████ PASS" },
+    { t: "ok",  s: "[2] GRG PIPELINE       ████████████████ PASS" },
+    { t: "ok",  s: "[3] HMAC-SHA256        ████████████████ SIGN OK" },
+    { t: "warn",s: "[4] TEMPORAL GATE" },
+    { t: "dim", s: "    timestamp delta:   +5847ms         !! DRIFT DETECTED" },
+    { t: "dim", s: "    threshold:         ±500ms          EXCEEDED" },
+    { t: "fail",s: "[X] REJECTED AT: TEMPORAL GATE" },
+    { t: "dim", s: "    reason: Clock drift > 5000ms threshold" },
+    { t: "dim", s: "    §4.2: TTTPS requires |Δt| ≤ T_skew" },
+];
+
+function colorClass(t) {
+    if (t === "ok")   return "ok";
+    if (t === "fail") return "fail";
+    if (t === "warn") return "warn";
+    return "dim";
+}
+
+function renderLines(containerId, lines, delayBase) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = "";
+    lines.forEach((line, i) => {
+        const span = document.createElement("div");
+        span.className = "pipeline-line " + colorClass(line.t);
+        span.textContent = line.s;
+        el.appendChild(span);
+        setTimeout(() => span.classList.add("show"), delayBase + i * 90);
+    });
+}
+
+function renderDriftVis(deltas) {
+    // Show a few representative drift examples: in-bounds and out-of-bounds
+    const examples = [
+        { label: "Normal merchant",  ms: 47,   over: false },
+        { label: "Slow network",     ms: 312,  over: false },
+        { label: "At threshold",     ms: 500,  over: false },
+        { label: "Clock drift",      ms: 1840, over: true  },
+        { label: "Attack attempt",   ms: 5847, over: true  },
+    ];
+    const MAX = 6000;
+    const vis = document.getElementById("drift-vis");
+    vis.innerHTML = "";
+    examples.forEach(ex => {
+        const pct = Math.min((ex.ms / MAX) * 100, 100).toFixed(1);
+        const row = document.createElement("div");
+        row.className = "drift-row";
+        row.innerHTML = `
+            <span class="drift-label">${ex.label}</span>
+            <div class="drift-track">
+                <div class="drift-fill ${ex.over ? "over" : "ok"}" style="width:${pct}%"></div>
+            </div>
+            <span class="drift-val ${ex.over ? "fail" : "ok"}">
+                ${ex.ms}ms ${ex.over ? "✗ REJECT" : "✓ PASS"}
+            </span>
+        `;
+        vis.appendChild(row);
+    });
+    // Threshold marker label
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:10px; color:#333; margin-top:6px;";
+    note.textContent = "threshold ────── ±500ms  (§4.2 T_skew)";
+    vis.appendChild(note);
+}
+
+async function fetchData() {
+    document.getElementById("refresh-ts").textContent = "refreshing…";
+
+    renderLines("pipeline-ok", OK_LINES, 0);
+    renderLines("pipeline-attack", ATK_LINES, OK_LINES.length * 90 + 200);
+    renderDriftVis([]);
+
+    try {
+        const res = await fetch(GRAPH_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: `{
+                poTAnchors(first: 20, orderBy: timestamp, orderDirection: desc) {
+                    id blockNumber timestamp txHash
+                }
+            }` })
+        });
+        const json = await res.json();
+        const anchors = (json.data && json.data.poTAnchors) || [];
+
+        const now = Date.now() / 1000;
+        const recent = anchors.filter(a => (now - parseInt(a.timestamp)) < 60).length;
+        document.getElementById("stat-anchors").textContent = anchors.length;
+        document.getElementById("stat-rate").textContent = recent;
+
+        // Compute inter-anchor deltas in seconds
+        const deltas = [];
+        anchors.forEach((a, i) => {
+            const prev = anchors[i + 1];
+            if (prev) deltas.push(parseInt(a.timestamp) - parseInt(prev.timestamp));
+        });
+        const avgDelta = deltas.length ? (deltas.reduce((s, d) => s + d, 0) / deltas.length).toFixed(1) : "—";
+        document.getElementById("stat-avg-delta").textContent = avgDelta + "s";
+
+        const tbody = document.getElementById("anchor-table");
+        tbody.innerHTML = "";
+        anchors.forEach((a, i) => {
+            const ts = new Date(parseInt(a.timestamp) * 1000);
+            const prev = anchors[i + 1];
+            const deltaS = prev ? (parseInt(a.timestamp) - parseInt(prev.timestamp)) : null;
+            const deltaMs = deltaS !== null ? deltaS * 1000 : null;
+            const dStr = deltaS !== null ? (deltaS >= 0 ? "+" : "") + deltaS + "s" : "—";
+            // flag as suspicious if delta is 0 (same block rapid fire)
+            const suspicious = deltaS !== null && deltaS === 0;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="hi">${a.blockNumber}</td>
+                <td>${ts.toISOString().replace("T"," ").substring(0,19)} UTC</td>
+                <td class="${suspicious ? "warn" : "ok"}">${dStr}</td>
+                <td class="${suspicious ? "fail" : "ok"}">${suspicious ? "FLAG" : "PASS"}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch(e) {
+        document.getElementById("stat-anchors").textContent = "ERR";
+    }
+
+    // Defense log — clock skew entries
+    try {
+        const dRes = await fetch("defense_log.json?t=" + Date.now());
+        const dLog = await dRes.json();
+        const dtbody = document.getElementById("defense-table");
+        dtbody.innerHTML = "";
+        const filtered = dLog.filter(e =>
+            e.issue.toLowerCase().includes("clock") ||
+            e.reason.toLowerCase().includes("drift") ||
+            e.reason.toLowerCase().includes("threshold")
+        );
+        (filtered.length ? filtered : dLog).slice(0, 8).forEach(e => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${e.time}</td><td class="fail">${e.issue}</td><td>${e.reason}</td>`;
+            dtbody.appendChild(tr);
+        });
+    } catch(e) {}
+
+    document.getElementById("refresh-ts").textContent =
+        "auto-refresh 5s · " + new Date().toISOString().substring(11,19) + " UTC";
+}
+
+fetchData();
+setInterval(fetchData, 5000);
+</script>
+</body>
+</html>

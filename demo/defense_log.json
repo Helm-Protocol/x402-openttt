@@ -1,5 +1,10 @@
 [
   {
+    "time": "10:22:36",
+    "issue": "#1205 (HMAC Tamper)",
+    "reason": "HMAC-SHA256 signature mismatch"
+  },
+  {
     "time": "10:22:05",
     "issue": "#1205 (HMAC Tamper)",
     "reason": "HMAC-SHA256 signature mismatch"
@@ -93,10 +98,5 @@
     "time": "10:12:31",
     "issue": "#1195 (Flash Loan)",
     "reason": "Holding duration < 1 block"
-  },
-  {
-    "time": "10:11:59",
-    "issue": "#1632 (Replay Attack)",
-    "reason": "Nonce already seen in cache"
   }
 ]

@@ -180,7 +180,9 @@
                         <tr>
                             <th>Timestamp</th>
                             <th>Agent Persona</th>
-                            <th>Tx / PoT Hash</th>
+                            <th>PoT Hash</th>
+                            <th>Tx Hash</th>
+                            <th>Block</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -293,13 +295,15 @@
                             tr.className = 'new-row-ok';
                             lastKnownHash = txHash;
                         }
+                        const shortTx = txHash.substring(0, 8) + '...' + txHash.substring(60);
                         tr.innerHTML = `
                             <td style="color:#aaa;">${ts.toISOString().substring(11, 19)} UTC</td>
                             <td><span style="color:${agent.color}; font-weight:bold;">${agent.id}</span></td>
-                            <td class="hash" title="${hash}">
-                                ${hash.substring(0, 10)}...${hash.substring(54)}
-                                <a href="${txHashUrl}" target="_blank" class="tx-link">[Tx]</a>
+                            <td class="hash" title="${hash}">${hash ? hash.substring(0, 10) + '...' : 'N/A'}</td>
+                            <td class="hash">
+                                <a href="${txHashUrl}" target="_blank" class="tx-link" title="${txHash}">${shortTx}</a>
                             </td>
+                            <td style="color:#aaa;">${parseInt(anchor.blockNumber).toLocaleString()}</td>
                             <td><span class="status-ok">Verified (HMAC OK)</span></td>
                         `;
                         tbody.appendChild(tr);

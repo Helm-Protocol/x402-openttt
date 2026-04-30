@@ -1,5 +1,10 @@
 [
   {
+    "time": "08:44:39",
+    "issue": "#1205 (HMAC Tamper)",
+    "reason": "HMAC-SHA256 signature mismatch"
+  },
+  {
     "time": "08:44:06",
     "issue": "#1062 (Clock Skew)",
     "reason": "Drift > 5000ms threshold"

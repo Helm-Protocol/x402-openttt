@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTTPS Documentation — Kenosian</title>
+    <style>
+        :root {
+            --accent: #0052ff;
+            --bg: #f4f7f9;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --muted: #666;
+            --border: #e0e4eb;
+            --tag-bg: #f0f4ff;
+            --tag-text: #0052ff;
+            --code-bg: #f4f7f9;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 48px 24px 80px;
+        }
+        .page { max-width: 680px; margin: 0 auto; }
+
+        .site-header { margin-bottom: 40px; }
+        .wordmark {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text);
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .access-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        .access-nav a {
+            color: var(--muted);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .access-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        .access-nav a.active { color: var(--accent); }
+        .nav-sep { color: #ddd; }
+
+        .back-link {
+            display: inline-block;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 32px;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .card h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        .card h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 28px 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .desc {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 4px 0 28px;
+        }
+
+        .endpoint-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+        }
+        .endpoint-method {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+        .endpoint-path {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .endpoint-note {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        pre {
+            font-size: 12px;
+            color: var(--text);
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        code {
+            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+            font-size: 13px;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .cta-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .site-footer {
+            margin-top: 48px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <header class="site-header">
+        <a class="wordmark" href="/">Kenosian</a>
+        <nav class="access-nav">
+            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
+            <span class="nav-sep">·</span>
+            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft</a>
+            <span class="nav-sep">·</span>
+            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/tttps.html" class="active">TTTPS Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/hydra-audit.html">Hydra-Audit Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/hydra-kv.html">Hydra-KV Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="mailto:peter@kenosian.com">Contact</a>
+        </nav>
+    </header>
+
+    <a class="back-link" href="/">← All products</a>
+
+    <!-- Overview -->
+    <div class="card">
+        <div class="card-label">
+            <span>TTTPS — Temporal Token for TLS Protocol</span>
+            <span class="badge">IETF Draft · In Progress</span>
+        </div>
+        <h1>TTTPS Documentation</h1>
+        <p class="desc">
+            TTTPS binds each x402 payment attestation to a verifiable time anchor drawn from
+            multiple independent sources — NIST, Roughtime, and a commitment chain resistant
+            to replay, drift, and Byzantine manipulation. Any counterparty can verify the proof
+            without trusting the issuer's clock.
+        </p>
+        <p class="desc">
+            Open-source reference implementation. IETF draft in active submission.
+        </p>
+
+        <h2>Quick Start</h2>
+        <div class="endpoint-block">
+            <pre>npm install openttt</pre>
+        </div>
+        <p class="desc" style="margin-top:8px;">
+            Full source: <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/x402-openttt</a><br>
+            IETF draft: <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener" style="color:var(--accent);">datatracker.ietf.org/doc/draft-kenosian-tttps/</a>
+        </p>
+
+        <hr class="divider">
+
+        <h2>Public Demo API</h2>
+        <p class="desc">No authentication required. Rate-limited.</p>
+
+        <!-- Generate -->
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/api/demo/pot/generate</div>
+            <div class="endpoint-note">Generate a temporal attestation token. No API key required.</div>
+            <pre><b>Request:</b>
+{
+  "ctx_id": "your-context-id"
+}
+
+<b>Response:</b>
+{
+  "status":         "ok",
+  "ctx_id":         "your-context-id",
+  "timestamp_ms":   1747234567890,
+  "grg_commitment": "a3f9...",
+  "chain_digest":   "b7c2...",
+  "signature":      "ed25519-base64...",
+  "pubkey":         "ed25519-base64..."
+}</pre>
+        </div>
+
+        <!-- Verify -->
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/api/demo/pot/verify</div>
+            <div class="endpoint-note">Verify a token generated by /generate. Paste the full response body.</div>
+            <pre><b>Request:</b>
+(paste full response from /api/demo/pot/generate)
+
+<b>Response:</b>
+{
+  "status":      "ok",
+  "valid":       true,
+  "attack_type": null
+}
+
+<b>On attack detected:</b>
+{
+  "status":      "ok",
+  "valid":       false,
+  "attack_type": "REPLAY"
+}</pre>
+        </div>
+
+        <p class="desc">Live endpoint: <code>https://kenosian.com/api/demo/pot/generate</code></p>
+
+        <hr class="divider">
+
+        <h2>Authenticated API</h2>
+        <p class="desc">Higher rate limits and production SLAs. API key required via <code>X-API-Key</code> header.</p>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/api/pot/generate</div>
+            <div class="endpoint-note">Production token generation. Requires X-API-Key header.</div>
+        </div>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/api/pot/verify</div>
+            <div class="endpoint-note">Production verification. Requires X-API-Key header.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2>Attack Types Detected</h2>
+        <div class="endpoint-block" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);width:140px;">REPLAY</td>
+                    <td style="padding:8px 0;color:var(--muted);">Timestamp reuse detected — token submitted more than once.</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">CLOCK_SKEW</td>
+                    <td style="padding:8px 0;color:var(--muted);">Timestamp drift exceeds acceptable threshold.</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">FLOOD</td>
+                    <td style="padding:8px 0;color:var(--muted);">Rate limit exceeded for this context ID.</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">TAMPER</td>
+                    <td style="padding:8px 0;color:var(--muted);">Ed25519 signature mismatch — payload modified after signing.</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="cta-row">
+            <a class="btn-primary" href="mailto:peter@kenosian.com?subject=TTTPS%20API%20Key%20Request">Request API Key</a>
+            <span style="font-size:13px;color:var(--muted);">For production access or IETF collaboration.</span>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        kenosian.com &nbsp;·&nbsp; peter@kenosian.com
+    </footer>
+
+</div>
+</body>
+</html>

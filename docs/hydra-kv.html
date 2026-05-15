@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydra-KV Documentation — Kenosian</title>
+    <style>
+        :root {
+            --accent: #0052ff;
+            --bg: #f4f7f9;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --muted: #666;
+            --border: #e0e4eb;
+            --tag-bg: #f0f4ff;
+            --tag-text: #0052ff;
+            --code-bg: #f4f7f9;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 48px 24px 80px;
+        }
+        .page { max-width: 680px; margin: 0 auto; }
+
+        .site-header { margin-bottom: 40px; }
+        .wordmark {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--text);
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .access-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+        .access-nav a {
+            color: var(--muted);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .access-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+        .access-nav a.active { color: var(--accent); }
+        .nav-sep { color: #ddd; }
+
+        .back-link {
+            display: inline-block;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 32px;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .card h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        .card h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 28px 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .desc {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 4px 0 28px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .stat-item { flex: 1; min-width: 120px; }
+        .stat-num {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .how-list {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+        .how-list li {
+            font-size: 14px;
+            color: var(--text);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .how-list li:last-child { border-bottom: none; }
+        .step-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            min-width: 18px;
+            padding-top: 2px;
+        }
+
+        .endpoint-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+        }
+        .endpoint-method {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+        .endpoint-path {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .endpoint-note {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        pre {
+            font-size: 12px;
+            color: var(--text);
+            white-space: pre-wrap;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        code {
+            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+            font-size: 13px;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .pricing-tiers {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .pricing-tier {
+            flex: 1;
+            min-width: 140px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .tier-name {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .tier-price {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .tier-desc {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        .cta-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .site-footer {
+            margin-top: 48px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <header class="site-header">
+        <a class="wordmark" href="/">Kenosian</a>
+        <nav class="access-nav">
+            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
+            <span class="nav-sep">·</span>
+            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft</a>
+            <span class="nav-sep">·</span>
+            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/tttps.html">TTTPS Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/hydra-audit.html">Hydra-Audit Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="/docs/hydra-kv.html" class="active">Hydra-KV Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="mailto:peter@kenosian.com">Contact</a>
+        </nav>
+    </header>
+
+    <a class="back-link" href="/">← All products</a>
+
+    <!-- Overview -->
+    <div class="card">
+        <div class="card-label">
+            <span>Hydra-KV</span>
+            <span class="badge">Private Beta</span>
+        </div>
+        <h1>Hydra-KV Documentation</h1>
+        <p class="desc">
+            KV cache compression and smart routing for LLM inference clusters.
+            In distributed LLM setups, prefill and decode nodes continuously transfer
+            KV cache data over the network. At scale, 40–70% of that bandwidth is
+            redundant. Hydra-KV intercepts and compresses that transfer, then routes
+            it through the lowest-latency path across your cluster.
+            No model changes. No infrastructure overhaul.
+        </p>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-num">3.2×</div>
+                <div class="stat-label">compression ratio<br>(CPU loopback, measured)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">95.5%</div>
+                <div class="stat-label">cross-node transfer<br>reduction (CRDT dedup)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">&lt;30ms</div>
+                <div class="stat-label">routing convergence<br>(ECMP, N=4 nodes)</div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <h2>Architecture</h2>
+        <ul class="how-list">
+            <li>
+                <span class="step-num">01</span>
+                Prefill sidecar intercepts outbound KV cache transfers and compresses the payload.
+                Identical blocks are deduplicated via CRDT.
+            </li>
+            <li>
+                <span class="step-num">02</span>
+                Router selects the lowest-latency decode node using real-time GapVec5 five-dimensional
+                network signals.
+            </li>
+            <li>
+                <span class="step-num">03</span>
+                Decode sidecar receives, decompresses in-place, and serves the model. The model sees
+                nothing different.
+            </li>
+        </ul>
+
+        <hr class="divider">
+
+        <h2>REST API — Port 8082</h2>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-path">/health</div>
+            <div class="endpoint-note">Liveness check. Returns "ok".</div>
+        </div>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-path">/metrics</div>
+            <div class="endpoint-note">Prometheus text/plain metrics endpoint.</div>
+        </div>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/kv/route</div>
+            <div class="endpoint-note">Select optimal decode node for a KV cache transfer.</div>
+            <pre><b>Request:</b>
+{
+  "request_id":   1,
+  "prefix_hash":  "abc123",
+  "token_count":  512
+}
+
+<b>Response:</b>
+{
+  "decode_node":          "node-2",
+  "estimated_ms":         18.4,
+  "cache_hit":            true,
+  "optimal_chunk_bytes":  65536,
+  "rho":                  0.94
+}</pre>
+        </div>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/kv/signal</div>
+            <div class="endpoint-note">Push GapVec5 network metrics from sidecars.</div>
+        </div>
+
+        <div class="endpoint-block">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-path">/kv/prefetch</div>
+            <div class="endpoint-note">Submit a prefetch hint ahead of an expected transfer.</div>
+        </div>
+
+        <h2>Example</h2>
+        <div class="endpoint-block">
+            <pre>curl -X POST https://kenosian.com/api/kv/route \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request_id":  1,
+    "prefix_hash": "abc123",
+    "token_count": 512
+  }'</pre>
+        </div>
+
+        <div class="cta-row">
+            <a class="btn-primary" href="mailto:peter@kenosian.com?subject=Hydra-KV%20Early%20Access%20Request">Request Early Access</a>
+            <span style="font-size:13px;color:var(--muted);">Private beta. Integration support included.</span>
+        </div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="card">
+        <h2 style="margin-top:0;">Pricing</h2>
+        <p class="desc">Priced by compressed bytes transferred and cluster size. Early access customers lock in Standard rate for 12 months.</p>
+        <div class="pricing-tiers">
+            <div class="pricing-tier">
+                <div class="tier-name">Early Access</div>
+                <div class="tier-price">Free</div>
+                <div class="tier-desc">Full feature access during beta. Integration support included. Requires early access agreement.</div>
+            </div>
+            <div class="pricing-tier">
+                <div class="tier-name">Standard</div>
+                <div class="tier-price">$799<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
+                <div class="tier-desc">$7,990/yr. Up to 10 nodes. Integration support included.</div>
+            </div>
+            <div class="pricing-tier">
+                <div class="tier-name">Growth</div>
+                <div class="tier-price">$2,499<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
+                <div class="tier-desc">$24,990/yr. Up to 50 nodes. Priority support + SLA.</div>
+            </div>
+            <div class="pricing-tier">
+                <div class="tier-name">Enterprise</div>
+                <div class="tier-price">$9,999<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
+                <div class="tier-desc">Or 18% of documented savings. Unlimited nodes. Dedicated deployment + SLA.</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        kenosian.com &nbsp;·&nbsp; peter@kenosian.com
+    </footer>
+
+</div>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kenosian — x402 Temporal Integrity Protocol</title>
+    <title>Kenosian — Temporal Integrity Protocol</title>
     <style>
         :root {
             --accent: #0052ff;
@@ -404,12 +404,11 @@
                 <span>TTTPS — Temporal Token for TLS Protocol</span>
                 <span style="background:var(--tag-bg);color:var(--tag-text);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 8px;border-radius:4px;text-transform:uppercase;">IETF Draft · In Progress</span>
             </div>
-            <h2 style="font-size:22px;margin-bottom:12px;">x402-compatible cryptographic timestamp protocol</h2>
+            <h2 style="font-size:22px;margin-bottom:12px;">Cryptographic timestamp protocol for distributed systems</h2>
             <p class="desc" style="margin-bottom:24px;">
-                TTTPS binds each x402 payment attestation to a verifiable time anchor drawn from
-                multiple independent sources — NIST, Roughtime, and a commitment chain resistant
-                to replay, drift, and Byzantine manipulation. The result is an audit-grade temporal
-                proof that any counterparty can verify without trusting the issuer's clock.<br><br>
+                TTTPS anchors events to multiple independent time sources — NIST and Roughtime — and
+                produces a cryptographic commitment chain resistant to replay, drift, and Byzantine
+                manipulation. Any counterparty can verify the temporal proof without trusting the issuer's clock.<br><br>
                 Open-source reference implementation. IETF draft in active submission.
                 npm package available. Academic &amp; commercial use welcome.
             </p>
@@ -445,7 +444,7 @@
         <div class="card" style="margin-bottom:32px;">
             <div class="card-label">Live Verifier</div>
             <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6;">
-                Paste any x402 temporal attestation payload to run the verification engine.
+                Paste any TTTPS temporal token payload to run the verification engine.
             </p>
             <textarea id="input"></textarea>
             <button class="btn-verify" onclick="runVerify()">Run Verification Engine</button>
@@ -628,8 +627,8 @@
                     <div class="stat-label">time anchors<br>(NIST, Cloudflare)</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-num">x402</div>
-                    <div class="stat-label">RFC-compatible<br>attestations</div>
+                    <div class="stat-num">RFC-track</div>
+                    <div class="stat-label">IETF-compatible<br>attestations</div>
                 </div>
             </div>
 
@@ -736,7 +735,7 @@
     // ── Verifier ──────────────────────────────────────────────────────────────
 
     document.getElementById('input').value = JSON.stringify({
-        "x402Version": 2,
+        "tttpsVersion": 2,
         "extensions": {
             "temporal-attestation": {
                 "timestampMs": Date.now(),

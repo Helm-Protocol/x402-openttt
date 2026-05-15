@@ -34,6 +34,7 @@
             text-transform: uppercase;
             text-decoration: none;
         }
+        .site-header .tagline { margin-top: 6px; font-size: 13px; color: var(--muted); }
         .access-nav {
             display: flex;
             flex-wrap: wrap;
@@ -192,18 +193,19 @@
 
     <header class="site-header">
         <a class="wordmark" href="/">Kenosian</a>
+        <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
-            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">IETF Draft</a>
-            <span class="nav-sep">·</span>
-            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
+            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">IETF Draft</a>
             <span class="nav-sep">·</span>
             <a href="/docs/tttps.html" class="active">TTTPS Docs</a>
             <span class="nav-sep">·</span>
             <a href="/docs/hydra-audit.html">Hydra-Audit Docs</a>
             <span class="nav-sep">·</span>
             <a href="/docs/hydra-kv.html">Hydra-KV Docs</a>
+            <span class="nav-sep">·</span>
+            <a href="/grafana/" target="_blank" rel="noopener">Grafana</a>
             <span class="nav-sep">·</span>
             <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
@@ -219,7 +221,7 @@
         </div>
         <h1>TTTPS Documentation</h1>
         <p class="desc">
-            TTTPS binds each x402 payment attestation to a verifiable time anchor drawn from
+            TTTPS binds each payment attestation to a verifiable time anchor drawn from
             multiple independent sources — NIST, Roughtime, and a commitment chain resistant
             to replay, drift, and Byzantine manipulation. Any counterparty can verify the proof
             without trusting the issuer's clock.
@@ -233,8 +235,8 @@
             <pre>npm install openttt</pre>
         </div>
         <p class="desc" style="margin-top:8px;">
-            Full source: <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/x402-openttt</a><br>
-            IETF draft: <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/x402-openttt</a> <span style="color:var(--muted);font-size:12px;">(submission in progress)</span>
+            Full source: <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/openttt</a><br>
+            IETF draft: <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/openttt</a> <span style="color:var(--muted);font-size:12px;">(submission in progress)</span>
         </p>
 
         <hr class="divider">

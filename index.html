@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kenosian — Temporal Integrity Protocol</title>
+    <title>Kenosian — Temporal Integrity Infrastructure</title>
     <style>
         :root {
             --accent: #0052ff;
@@ -149,7 +149,7 @@
         .detail-view { display: none; }
         .detail-view.active { display: block; }
 
-        /* ── Card (detail) ── */
+        /* ── Card (detail + landing TTTPS) ── */
         .card {
             background: var(--surface);
             border-radius: 12px;
@@ -179,7 +179,22 @@
             margin-bottom: 28px;
         }
 
-        /* ── Stat row (detail) ── */
+        /* ── Badge ── */
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--tag-text);
+            background: var(--tag-bg);
+            border-radius: 4px;
+            padding: 2px 7px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        /* ── Stat row (detail + TTTPS card) ── */
         .stats {
             display: flex;
             gap: 24px;
@@ -351,6 +366,18 @@
         .error   { background: #fff0f0; color: #cf0000; border: 1px solid #ffdada; display: block !important; }
         pre { font-size: 12px; margin-top: 8px; white-space: pre-wrap; }
 
+        /* ── npm install snippet ── */
+        code.npm-install {
+            display: inline-block;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--text);
+        }
+
         /* ── Footer ── */
         .site-footer {
             margin-top: 48px;
@@ -359,7 +386,7 @@
             text-align: center;
         }
 
-        /* ── Landing view ── */
+        /* ── View visibility ── */
         #view-landing { display: block; }
         #view-hydra-kv { display: none; }
         #view-hydra-audit { display: none; }
@@ -373,11 +400,9 @@
         <div class="wordmark" onclick="showLanding()">Kenosian</div>
         <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
-            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">IETF Draft</a>
-            <span class="nav-sep">·</span>
-            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
+            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">IETF Draft</a>
             <span class="nav-sep">·</span>
             <a href="/docs/tttps.html">TTTPS Docs</a>
             <span class="nav-sep">·</span>
@@ -387,8 +412,6 @@
             <span class="nav-sep">·</span>
             <a href="/grafana/" target="_blank" rel="noopener">Grafana</a>
             <span class="nav-sep">·</span>
-            <a href="/prometheus/" target="_blank" rel="noopener">Prometheus</a>
-            <span class="nav-sep">·</span>
             <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
     </header>
@@ -397,95 +420,60 @@
          VIEW: LANDING
     ══════════════════════════════════════════ -->
     <div id="view-landing">
-
-        <!-- TTTPS Hero -->
-        <div class="card" style="margin-bottom:20px;">
-            <div class="card-label" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-                <span>TTTPS — Temporal Token for TLS Protocol</span>
-                <span style="background:var(--tag-bg);color:var(--tag-text);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 8px;border-radius:4px;text-transform:uppercase;">IETF Draft · In Progress</span>
-            </div>
-            <h2 style="font-size:22px;margin-bottom:12px;">Cryptographic timestamp protocol for distributed systems</h2>
-            <p class="desc" style="margin-bottom:24px;">
-                TTTPS anchors events to multiple independent time sources — NIST and Roughtime — and
-                produces a cryptographic commitment chain resistant to replay, drift, and Byzantine
-                manipulation. Any counterparty can verify the temporal proof without trusting the issuer's clock.<br><br>
-                Open-source reference implementation. IETF draft in active submission.
-                npm package available. Academic &amp; commercial use welcome.
-            </p>
-
-            <div class="stats" style="margin-bottom:28px;">
-                <div class="stat-item">
-                    <div class="stat-num">Ed25519</div>
-                    <div class="stat-label">signature scheme</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">Multi-source</div>
-                    <div class="stat-label">time anchors<br>(NIST, Roughtime)</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">GRG Chain</div>
-                    <div class="stat-label">commitment integrity</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-num">IETF Draft</div>
-                    <div class="stat-label">in progress</div>
-                </div>
-            </div>
-
-            <hr class="divider">
-
-            <div class="cta-row">
-                <a class="btn-primary" href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">View on GitHub</a>
-                <code style="font-size:13px;color:var(--muted);background:#f4f7f9;padding:6px 12px;border-radius:6px;border:1px solid var(--border);">npm install openttt</code>
-            </div>
-        </div>
-
-        <!-- Live Verifier -->
-        <div class="card" style="margin-bottom:32px;">
-            <div class="card-label">Live Verifier</div>
-            <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6;">
-                Paste any TTTPS temporal token payload to run the verification engine.
-            </p>
-            <textarea id="input"></textarea>
-            <button class="btn-verify" onclick="runVerify()">Run Verification Engine</button>
-            <div id="status">
-                <b id="status-title"></b>
-                <pre id="status-body"></pre>
-            </div>
-        </div>
-
-        <!-- Products section -->
-        <p class="section-heading" style="margin-bottom:16px;">Commercial products built on TTTPS</p>
         <div class="product-grid">
 
-            <!-- Hydra-KV card -->
-            <a class="product-card" onclick="showView('hydra-kv')" href="#hydra-kv">
-                <span class="card-arrow">›</span>
-                <div class="card-label">Hydra-KV · Private Beta</div>
-                <h2>KV Cache Compression for LLM Inference</h2>
-                <p class="card-desc">
-                    Drop-in sidecar that compresses and deduplicates KV cache transfers
-                    between prefill and decode nodes. No model changes. No infrastructure overhaul.
+            <!-- TTTPS protocol card -->
+            <div class="card">
+                <div class="card-label">TTTPS · Temporal Token for TLS Protocol <span class="badge">IETF Draft · In Progress</span></div>
+                <h2>Cryptographic timestamp protocol for distributed systems</h2>
+                <p class="desc">
+                    TTTPS anchors events to multiple independent time sources — NIST and Roughtime —
+                    producing a commitment chain resistant to replay, drift, and Byzantine manipulation.
+                    Any counterparty can verify temporal proof without trusting the issuer's clock.
+                    Open-source. IETF draft in active submission.
                 </p>
-                <div class="card-stats">
+
+                <div class="stats">
                     <div class="stat-item">
-                        <span class="stat-num">3.2×</span>
-                        <span class="stat-label">compression ratio</span>
+                        <div class="stat-num">Ed25519</div>
+                        <div class="stat-label">signature scheme</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-num">95.5%</span>
-                        <span class="stat-label">transfer reduction</span>
+                        <div class="stat-num">Multi-source</div>
+                        <div class="stat-label">NIST, Roughtime</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-num">&lt;30ms</span>
-                        <span class="stat-label">routing convergence</span>
+                        <div class="stat-num">GRG Chain</div>
+                        <div class="stat-label">commitment chain</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">IETF Draft</div>
+                        <div class="stat-label">open standard</div>
                     </div>
                 </div>
-            </a>
+
+                <div class="cta-row" style="margin-bottom: 28px;">
+                    <a class="btn-primary" href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">View on GitHub</a>
+                    <code class="npm-install">npm install openttt</code>
+                </div>
+
+                <hr class="divider">
+
+                <p class="section-heading">Live Verifier</p>
+                <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6;">
+                    Paste any TTTPS temporal token payload and run the verification engine live.
+                </p>
+                <textarea id="input"></textarea>
+                <button class="btn-verify" onclick="runVerify()">Run Verification Engine</button>
+                <div id="status">
+                    <b id="status-title"></b>
+                    <pre id="status-body"></pre>
+                </div>
+            </div>
 
             <!-- Hydra-Audit card -->
             <a class="product-card" onclick="showView('hydra-audit')" href="#hydra-audit">
-                <span class="card-arrow">›</span>
+                <span class="card-arrow">&#8250;</span>
                 <div class="card-label">Hydra-Audit · Available</div>
                 <h2>Byzantine Fault Detection &amp; Timestamp Integrity</h2>
                 <p class="card-desc">
@@ -509,6 +497,31 @@
                 </div>
             </a>
 
+            <!-- Hydra-KV card -->
+            <a class="product-card" onclick="showView('hydra-kv')" href="#hydra-kv">
+                <span class="card-arrow">&#8250;</span>
+                <div class="card-label">Hydra-KV · Private Beta</div>
+                <h2>KV Cache Compression for LLM Inference</h2>
+                <p class="card-desc">
+                    Drop-in sidecar that compresses and deduplicates KV cache transfers
+                    between prefill and decode nodes. No model changes. No infrastructure overhaul.
+                </p>
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <span class="stat-num">3.2&times;</span>
+                        <span class="stat-label">compression ratio</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num">95.5%</span>
+                        <span class="stat-label">transfer reduction</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num">&lt;30ms</span>
+                        <span class="stat-label">routing convergence</span>
+                    </div>
+                </div>
+            </a>
+
         </div>
     </div>
 
@@ -517,7 +530,7 @@
     ══════════════════════════════════════════ -->
     <div id="view-hydra-kv">
 
-        <a class="back-link" onclick="showLanding()" href="#"><span class="back-arrow">←</span> All products</a>
+        <a class="back-link" onclick="showLanding()" href="#"><span class="back-arrow">&#8592;</span> All products</a>
 
         <!-- Main card -->
         <div class="card">
@@ -525,8 +538,8 @@
             <h2>KV Cache Compression for LLM Inference</h2>
             <p class="desc">
                 In distributed LLM clusters, prefill and decode nodes continuously transfer
-                KV cache data over the network. At scale, 40–70% of that bandwidth is
-                redundant — repeated tokens, reused context, duplicate embeddings.<br><br>
+                KV cache data over the network. At scale, 40&ndash;70% of that bandwidth is
+                redundant &mdash; repeated tokens, reused context, duplicate embeddings.<br><br>
                 Hydra-KV intercepts that transfer, compresses it with a lattice-based codec,
                 and routes it through the lowest-latency path across your cluster.
                 No model changes. No infrastructure overhaul.
@@ -534,7 +547,7 @@
 
             <div class="stats">
                 <div class="stat-item">
-                    <div class="stat-num">3.2×</div>
+                    <div class="stat-num">3.2&times;</div>
                     <div class="stat-label">compression ratio<br>(CPU loopback, measured)</div>
                 </div>
                 <div class="stat-item">
@@ -580,7 +593,7 @@
             <p class="section-heading">Pricing</p>
             <p style="font-size:14px;color:var(--muted);line-height:1.6;">
                 Pricing is based on compressed bytes transferred and cluster size.
-                Early access customers lock in Standard rate for 12 months.
+                Early access customers lock in preferred rate for 12 months.
             </p>
             <div class="pricing-tiers">
                 <div class="pricing-tier">
@@ -590,8 +603,8 @@
                 </div>
                 <div class="pricing-tier">
                     <div class="tier-name">Enterprise</div>
-                    <div class="tier-price" style="font-size:20px;font-weight:700;">Contact for pricing</div>
-                    <div class="tier-desc">KV cache optimization at production scale. Cross-node deployment, SLA, dedicated support. <a href="mailto:peter@kenosian.com?subject=Hydra-KV%20Enterprise%20Inquiry" style="color:var(--accent);">peter@kenosian.com</a></div>
+                    <div class="tier-price coming-soon">Contact for pricing</div>
+                    <div class="tier-desc">Unlimited nodes. Dedicated deployment, SLA, and priority support. Custom audit chain available.</div>
                 </div>
             </div>
         </div>
@@ -603,18 +616,18 @@
     ══════════════════════════════════════════ -->
     <div id="view-hydra-audit">
 
-        <a class="back-link" onclick="showLanding()" href="#"><span class="back-arrow">←</span> All products</a>
+        <a class="back-link" onclick="showLanding()" href="#"><span class="back-arrow">&#8592;</span> All products</a>
 
         <!-- Main card -->
         <div class="card">
             <div class="card-label">Hydra-Audit · Available</div>
             <h2>Byzantine Fault Detection &amp; Timestamp Integrity</h2>
             <p class="desc">
-                Distributed systems fail in non-obvious ways — clocks drift, nodes lie,
+                Distributed systems fail in non-obvious ways &mdash; clocks drift, nodes lie,
                 audit logs get tampered. Hydra-Audit provides cryptographic proof of when
                 events occurred, detects Byzantine timestamp manipulation, and produces
                 an immutable audit chain anchored to multiple independent time sources.<br><br>
-                Verification engine, REST API, and npm package — drop into any pipeline.
+                Verification engine, REST API, and npm package &mdash; drop into any pipeline.
             </p>
 
             <div class="stats">
@@ -624,11 +637,11 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-num">Multi-source</div>
-                    <div class="stat-label">time anchors<br>(NIST, Cloudflare)</div>
+                    <div class="stat-label">time anchors<br>(NIST, Roughtime)</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-num">RFC-track</div>
-                    <div class="stat-label">IETF-compatible<br>attestations</div>
+                    <div class="stat-num">TTTPS</div>
+                    <div class="stat-label">protocol attestations</div>
                 </div>
             </div>
 
@@ -656,11 +669,9 @@
 
             <div class="cta-row">
                 <a class="btn-primary" href="mailto:peter@kenosian.com?subject=Hydra-Audit%20API%20Access%20Request">Request API Access</a>
-                <span class="cta-note">Byzantine audit tool — contact for integration.</span>
+                <span class="cta-note">Byzantine audit tool &mdash; contact for integration.</span>
             </div>
         </div>
-
-        <!-- Live verifier — available on landing page -->
 
         <!-- Pricing card -->
         <div class="pricing-card">
@@ -676,8 +687,8 @@
                 </div>
                 <div class="pricing-tier">
                     <div class="tier-name">Enterprise</div>
-                    <div class="tier-price" style="font-size:20px;font-weight:700;">Contact for pricing</div>
-                    <div class="tier-desc">Byzantine audit at scale. SLA + on-site deployment options. <a href="mailto:peter@kenosian.com?subject=Hydra-Audit%20Enterprise%20Inquiry" style="color:var(--accent);">peter@kenosian.com</a></div>
+                    <div class="tier-price coming-soon">Contact for pricing</div>
+                    <div class="tier-desc">Unlimited verifications. On-premise deployment. Custom audit chain. Dedicated support + SLA.</div>
                 </div>
             </div>
         </div>
@@ -686,7 +697,7 @@
 
     <!-- Footer -->
     <footer class="site-footer">
-        kenosian.com &nbsp;·&nbsp; peter@kenosian.com
+        kenosian.com &nbsp;&middot;&nbsp; peter@kenosian.com
     </footer>
 
 </div>
@@ -735,12 +746,12 @@
     // ── Verifier ──────────────────────────────────────────────────────────────
 
     document.getElementById('input').value = JSON.stringify({
-        "tttpsVersion": 2,
+        "tttpsVersion": 1,
         "extensions": {
             "temporal-attestation": {
                 "timestampMs": Date.now(),
                 "nonce":  "f4e5d6c7b8a9f4e5d6c7b8a9f4e5d6c7",
-                "sources": ["NIST", "Cloudflare"]
+                "sources": ["NIST", "Roughtime"]
             }
         }
     }, null, 2);

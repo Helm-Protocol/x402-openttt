@@ -1,0 +1,6 @@
+PROGRESS.md
+PLAN.md
+wiki/
+design-samples/
+*.md
+!README.md

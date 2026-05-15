@@ -147,20 +147,20 @@
     <span class="bar-val green">OPERATIONAL</span>
 </div>
 
-<pre>  Stage 2: <span class="amber">Reed-Solomon (4,6) over GF(2^8)</span>
+<pre>  Stage 2: <span class="amber">Systematic Erasure Code</span>
            Input:  Golomb-Rice output
            Output: systematic codeword with redundancy
-           k=4, n=6, can correct up to 1 symbol error</pre>
+           multi-stage error-correction, symbol-level recovery</pre>
 <div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
     <span class="bar-label">           Status</span>
     <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>
     <span class="bar-val green">OPERATIONAL</span>
 </div>
 
-<pre>  Stage 3: <span class="amber">Golay (23,12,7)</span>
-           Input:  RS codeword
-           Output: Golay-encoded block, d_min=7
-           3-error correcting capability</pre>
+<pre>  Stage 3: <span class="amber">Golay Error Correction</span>
+           Input:  systematic erasure code output
+           Output: Golay-encoded block
+           multi-error correcting capability</pre>
 <div class="bar-container" style="margin-left:2px; margin-bottom:10px;">
     <span class="bar-label">           Status</span>
     <div class="bar-track"><div class="bar-fill-green" style="width:100%"></div></div>

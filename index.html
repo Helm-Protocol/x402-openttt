@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kenosian — Infrastructure for LLM Efficiency</title>
+    <title>Kenosian — x402 Temporal Integrity Protocol</title>
     <style>
         :root {
             --accent: #0052ff;
@@ -371,11 +371,11 @@
     <!-- Header -->
     <header class="site-header">
         <div class="wordmark" onclick="showLanding()">Kenosian</div>
-        <div class="tagline">Infrastructure for LLM efficiency — bandwidth, routing, integrity.</div>
+        <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
-            <a href="https://docs.kenosian.com">Docs</a>
+            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="mailto:peter@kenosian.com?subject=API%20Access">API Access</a>
+            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft</a>
             <span class="nav-sep">·</span>
             <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
             <span class="nav-sep">·</span>
@@ -383,7 +383,7 @@
             <span class="nav-sep">·</span>
             <a href="/prometheus/" target="_blank" rel="noopener">Prometheus</a>
             <span class="nav-sep">·</span>
-            <a href="mailto:heime.jorgen@proton.me">Contact</a>
+            <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
     </header>
 
@@ -391,6 +391,66 @@
          VIEW: LANDING
     ══════════════════════════════════════════ -->
     <div id="view-landing">
+
+        <!-- TTTPS Hero -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-label" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                <span>TTTPS — Temporal Token for TLS Protocol</span>
+                <span style="background:var(--tag-bg);color:var(--tag-text);font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 8px;border-radius:4px;text-transform:uppercase;">IETF Draft · In Progress</span>
+            </div>
+            <h2 style="font-size:22px;margin-bottom:12px;">x402-compatible cryptographic timestamp protocol</h2>
+            <p class="desc" style="margin-bottom:24px;">
+                TTTPS binds each x402 payment attestation to a verifiable time anchor drawn from
+                multiple independent sources — NIST, Roughtime, and a commitment chain resistant
+                to replay, drift, and Byzantine manipulation. The result is an audit-grade temporal
+                proof that any counterparty can verify without trusting the issuer's clock.<br><br>
+                Open-source reference implementation. IETF draft in active submission.
+                npm package available. Academic &amp; commercial use welcome.
+            </p>
+
+            <div class="stats" style="margin-bottom:28px;">
+                <div class="stat-item">
+                    <div class="stat-num">Ed25519</div>
+                    <div class="stat-label">signature scheme</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">Multi-source</div>
+                    <div class="stat-label">time anchors<br>(NIST, Roughtime)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">GRG Chain</div>
+                    <div class="stat-label">commitment integrity</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">IETF Draft</div>
+                    <div class="stat-label">in progress</div>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="cta-row">
+                <a class="btn-primary" href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">View on GitHub</a>
+                <code style="font-size:13px;color:var(--muted);background:#f4f7f9;padding:6px 12px;border-radius:6px;border:1px solid var(--border);">npm install openttt</code>
+            </div>
+        </div>
+
+        <!-- Live Verifier -->
+        <div class="card" style="margin-bottom:32px;">
+            <div class="card-label">Live Verifier</div>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6;">
+                Paste any x402 temporal attestation payload to run the verification engine.
+            </p>
+            <textarea id="input"></textarea>
+            <button class="btn-verify" onclick="runVerify()">Run Verification Engine</button>
+            <div id="status">
+                <b id="status-title"></b>
+                <pre id="status-body"></pre>
+            </div>
+        </div>
+
+        <!-- Products section -->
+        <p class="section-heading" style="margin-bottom:16px;">Commercial products built on TTTPS</p>
         <div class="product-grid">
 
             <!-- Hydra-KV card -->
@@ -605,19 +665,7 @@
             </div>
         </div>
 
-        <!-- Live verifier -->
-        <div class="card">
-            <div class="card-label">Live Verifier</div>
-            <p style="font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.6;">
-                Paste any x402 temporal attestation payload and run the verification engine live.
-            </p>
-            <textarea id="input"></textarea>
-            <button class="btn-verify" onclick="runVerify()">Run Verification Engine</button>
-            <div id="status">
-                <b id="status-title"></b>
-                <pre id="status-body"></pre>
-            </div>
-        </div>
+        <!-- Live verifier — available on landing page -->
 
         <!-- Pricing card -->
         <div class="pricing-card">

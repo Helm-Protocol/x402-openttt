@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydra-Audit Documentation — Kenosian</title>
+    <title>Hydra-Audit — Kenosian</title>
     <style>
         :root {
             --accent: #0052ff;
@@ -14,7 +14,6 @@
             --border: #e0e4eb;
             --tag-bg: #f0f4ff;
             --tag-text: #0052ff;
-            --code-bg: #f4f7f9;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -25,25 +24,18 @@
         }
         .page { max-width: 680px; margin: 0 auto; }
 
-        .site-header { margin-bottom: 40px; }
+        .site-header { margin-bottom: 56px; }
         .wordmark {
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            color: var(--text);
-            text-transform: uppercase;
-            text-decoration: none;
+            font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
+            color: var(--text); text-transform: uppercase; text-decoration: none;
         }
+        .site-header .tagline { margin-top: 6px; font-size: 13px; color: var(--muted); }
         .access-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 24px;
-            margin-top: 20px;
-            font-size: 13px;
+            display: flex; flex-wrap: wrap; gap: 8px 24px;
+            margin-top: 20px; font-size: 13px;
         }
         .access-nav a {
-            color: var(--muted);
-            text-decoration: none;
+            color: var(--muted); text-decoration: none;
             border-bottom: 1px solid transparent;
             transition: color 0.15s, border-color 0.15s;
         }
@@ -52,190 +44,81 @@
         .nav-sep { color: #ddd; }
 
         .back-link {
-            display: inline-block;
-            font-size: 13px;
-            color: var(--muted);
-            text-decoration: none;
-            margin-bottom: 32px;
+            display: inline-block; font-size: 13px; color: var(--muted);
+            text-decoration: none; margin-bottom: 32px;
         }
         .back-link:hover { color: var(--accent); }
 
+        /* ── Cards ── */
         .card {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 36px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
+            background: var(--surface); border-radius: 12px; padding: 36px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+        }
+        .pricing-card {
+            background: var(--surface); border-radius: 12px; padding: 36px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
         }
         .card-label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .badge {
-            background: var(--tag-bg);
-            color: var(--tag-text);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            padding: 3px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-        .card h1 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 10px;
-            line-height: 1.3;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
         }
         .card h2 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text);
-            margin: 28px 0 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            font-size: 22px; font-weight: 700; color: var(--text);
+            margin-bottom: 10px; line-height: 1.3;
         }
-        .desc {
-            font-size: 14px;
-            color: var(--muted);
-            line-height: 1.7;
-            margin-bottom: 20px;
-        }
-        .divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 4px 0 28px;
-        }
+        .desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
 
-        .how-list {
-            list-style: none;
-            margin-bottom: 28px;
+        /* ── Stats ── */
+        .stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+        .stat-item { flex: 1; min-width: 120px; }
+        .stat-num { font-size: 32px; font-weight: 800; color: var(--accent); line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+        /* ── Section heading + How-list ── */
+        .section-heading {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
         }
+        .how-list { list-style: none; margin-bottom: 28px; }
         .how-list li {
-            font-size: 14px;
-            color: var(--text);
-            padding: 8px 0;
+            font-size: 14px; color: var(--text); padding: 8px 0;
             border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
+            display: flex; align-items: flex-start; gap: 10px;
         }
         .how-list li:last-child { border-bottom: none; }
         .step-num {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            min-width: 18px;
-            padding-top: 2px;
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            min-width: 18px; padding-top: 2px; flex-shrink: 0;
         }
 
-        .endpoint-block {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 16px;
-            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
-        }
-        .endpoint-method {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.08em;
-            margin-bottom: 4px;
-        }
-        .endpoint-path {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-        .endpoint-note {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        code {
-            font-family: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
-            font-size: 13px;
-            background: var(--code-bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-        }
+        /* ── Divider ── */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 28px; }
 
-        .pricing-tiers {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        .pricing-tier {
-            flex: 1;
-            min-width: 140px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-        }
-        .tier-name {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 10px;
-        }
-        .tier-price {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-        .tier-desc {
-            font-size: 12px;
-            color: var(--muted);
-            line-height: 1.6;
-            margin-top: 8px;
-        }
-
-        .cta-row {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 28px;
-        }
+        /* ── CTA ── */
+        .cta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
         .btn-primary {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 22px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            white-space: nowrap;
+            display: inline-block; background: var(--accent); color: white;
+            border: none; padding: 12px 22px; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            text-decoration: none; white-space: nowrap;
         }
         .btn-primary:hover { opacity: 0.9; }
+        .cta-note { font-size: 13px; color: var(--muted); }
 
-        .site-footer {
-            margin-top: 48px;
-            font-size: 12px;
-            color: var(--muted);
-            text-align: center;
+        /* ── Pricing ── */
+        .pricing-tiers { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+        .pricing-tier {
+            flex: 1; min-width: 140px; border: 1px solid var(--border);
+            border-radius: 10px; padding: 20px;
         }
+        .tier-name {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+        }
+        .tier-price { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 6px; }
+        .tier-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 8px; }
+
+        .site-footer { margin-top: 48px; font-size: 12px; color: var(--muted); text-align: center; }
     </style>
 </head>
 <body>
@@ -243,12 +126,11 @@
 
     <header class="site-header">
         <a class="wordmark" href="/">Kenosian</a>
+        <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
             <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft</a>
-            <span class="nav-sep">·</span>
-            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
+            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">IETF Draft</a>
             <span class="nav-sep">·</span>
             <a href="/docs/tttps.html">TTTPS Docs</a>
             <span class="nav-sep">·</span>
@@ -256,111 +138,114 @@
             <span class="nav-sep">·</span>
             <a href="/docs/hydra-kv.html">Hydra-KV Docs</a>
             <span class="nav-sep">·</span>
+            <a href="https://kenosian.com/grafana/" target="_blank" rel="noopener">Grafana</a>
+            <span class="nav-sep">·</span>
             <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
     </header>
 
     <a class="back-link" href="/">← All products</a>
 
-    <!-- Overview -->
+    <!-- Main card — same structure as #view-hydra-audit in index.html -->
     <div class="card">
-        <div class="card-label">
-            <span>Hydra-Audit</span>
-            <span class="badge">Available</span>
-        </div>
-        <h1>Hydra-Audit Documentation</h1>
+        <div class="card-label">Hydra-Audit · Available</div>
+        <h2>Byzantine Fault Detection &amp; Timestamp Integrity</h2>
         <p class="desc">
-            Byzantine fault detection and timestamp integrity audit layer for distributed systems.
-            Distributed clocks drift. Nodes lie. Audit logs get tampered. Hydra-Audit provides
-            cryptographic proof of when events occurred — anchored to multiple independent time
-            sources — and detects manipulation before it reaches your audit trail.
+            Distributed systems fail in non-obvious ways — clocks drift, nodes lie,
+            audit logs get tampered. Hydra-Audit provides cryptographic proof of when
+            events occurred, detects Byzantine timestamp manipulation, and produces
+            an immutable audit chain anchored to multiple independent time sources.<br><br>
+            Verification engine, REST API, and npm package — drop into any pipeline.
         </p>
 
-        <h2>How it works</h2>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-num">Ed25519</div>
+                <div class="stat-label">signature scheme</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">Multi-source</div>
+                <div class="stat-label">time anchors<br>(NIST, Cloudflare)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">x402</div>
+                <div class="stat-label">RFC-compatible<br>attestations</div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <p class="section-heading">How it works</p>
         <ul class="how-list">
             <li>
                 <span class="step-num">01</span>
-                Call <code>/api/pot/generate</code> with your context ID. A time anchor is collected
-                from multiple independent sources and bound to the payload.
+                Event payload is submitted to the audit endpoint with a context ID.
             </li>
             <li>
                 <span class="step-num">02</span>
-                Store the response as your audit token. Ed25519 signature seals the commitment.
-                HMAC chain links events in sequence.
+                Time anchor is collected from multiple independent sources and bound to the payload.
             </li>
             <li>
                 <span class="step-num">03</span>
-                Call <code>/api/pot/verify</code> at any later point. The engine detects drift,
-                replay, or Byzantine manipulation against the original commitment.
+                Ed25519 commitment is generated. HMAC chain links events in sequence.
+            </li>
+            <li>
+                <span class="step-num">04</span>
+                Any later verification call detects drift, replay, or Byzantine manipulation.
             </li>
         </ul>
 
         <hr class="divider">
 
-        <h2>Attack Types Detected</h2>
-        <div class="endpoint-block" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-                <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);width:140px;">REPLAY</td>
-                    <td style="padding:8px 0;color:var(--muted);">Timestamp reuse — token submitted more than once.</td>
-                </tr>
-                <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">CLOCK_SKEW</td>
-                    <td style="padding:8px 0;color:var(--muted);">Drift exceeds acceptable threshold from multi-source anchors.</td>
-                </tr>
-                <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">FLOOD</td>
-                    <td style="padding:8px 0;color:var(--muted);">Rate limit exceeded for this context ID.</td>
-                </tr>
-                <tr>
-                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--text);">TAMPER</td>
-                    <td style="padding:8px 0;color:var(--muted);">Ed25519 signature mismatch — payload modified after signing.</td>
-                </tr>
-            </table>
-        </div>
+        <p class="section-heading">Attack types detected</p>
+        <ul class="how-list">
+            <li><span class="step-num">REPLAY</span>Token submitted more than once — signature already seen.</li>
+            <li><span class="step-num">DRIFT</span>Timestamp exceeds acceptable drift window from multi-source anchors.</li>
+            <li><span class="step-num">FORGE</span>Ed25519 signature mismatch — payload modified or cross-pool submission.</li>
+            <li><span class="step-num">FLOOD</span>Rate limit exceeded for this IP.</li>
+            <li><span class="step-num">ORDERING</span>Timestamp precedes last seen token for this context.</li>
+        </ul>
 
         <hr class="divider">
 
-        <h2>API Reference</h2>
+        <p class="section-heading">API reference</p>
+        <ul class="how-list">
+            <li>
+                <span class="step-num">POST</span>
+                <span><code style="font-family:monospace;font-size:13px;">/api/demo/pot/generate</code> — Public demo. No API key. Returns PoT token.</span>
+            </li>
+            <li>
+                <span class="step-num">POST</span>
+                <span><code style="font-family:monospace;font-size:13px;">/api/demo/pot/verify</code> — Public demo verification. Paste full generate response.</span>
+            </li>
+            <li>
+                <span class="step-num">POST</span>
+                <span><code style="font-family:monospace;font-size:13px;">/api/pot/generate</code> — Production. Requires <code style="font-family:monospace;font-size:13px;">X-API-Key</code> header.</span>
+            </li>
+            <li>
+                <span class="step-num">POST</span>
+                <span><code style="font-family:monospace;font-size:13px;">/api/pot/verify</code> — Production verification. Requires <code style="font-family:monospace;font-size:13px;">X-API-Key</code> header.</span>
+            </li>
+        </ul>
 
-        <div class="endpoint-block">
-            <div class="endpoint-method">POST</div>
-            <div class="endpoint-path">/api/demo/pot/generate</div>
-            <div class="endpoint-note">Public demo. No API key required. Rate-limited.</div>
-        </div>
-
-        <div class="endpoint-block">
-            <div class="endpoint-method">POST</div>
-            <div class="endpoint-path">/api/demo/pot/verify</div>
-            <div class="endpoint-note">Public demo verification. Paste full generate response.</div>
-        </div>
-
-        <div class="endpoint-block">
-            <div class="endpoint-method">POST</div>
-            <div class="endpoint-path">/api/pot/generate</div>
-            <div class="endpoint-note">Production. Requires X-API-Key header.</div>
-        </div>
-
-        <div class="endpoint-block">
-            <div class="endpoint-method">POST</div>
-            <div class="endpoint-path">/api/pot/verify</div>
-            <div class="endpoint-note">Production verification. Requires X-API-Key header.</div>
-        </div>
-
-        <p class="desc" style="margin-top:4px;">
-            Try the live verifier on the <a href="/" style="color:var(--accent);">home page</a>.
+        <p class="section-heading" style="margin-bottom:8px;">Try it live</p>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6;">
+            The <a href="/" style="color:var(--accent);">home page</a> has an interactive verifier —
+            generate a token and run the verification engine in real time.
         </p>
 
         <div class="cta-row">
             <a class="btn-primary" href="mailto:peter@kenosian.com?subject=Hydra-Audit%20API%20Access%20Request">Request API Access</a>
-            <span style="font-size:13px;color:var(--muted);">Contact for integration and API key.</span>
+            <span class="cta-note">Byzantine audit tool — contact for integration.</span>
         </div>
     </div>
 
-    <!-- Pricing -->
-    <div class="card">
-        <h2 style="margin-top:0;">Pricing</h2>
-        <p class="desc">API access priced by monthly audit volume. npm package always free.</p>
+    <!-- Pricing card — same structure as index.html -->
+    <div class="pricing-card">
+        <p class="section-heading">Pricing</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">
+            API access is priced by monthly audit volume. npm package always free.
+        </p>
         <div class="pricing-tiers">
             <div class="pricing-tier">
                 <div class="tier-name">Developer</div>
@@ -368,19 +253,9 @@
                 <div class="tier-desc">Up to 10K verifications/mo. npm package included. No credit card.</div>
             </div>
             <div class="pricing-tier">
-                <div class="tier-name">Pro</div>
-                <div class="tier-price">$49<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
-                <div class="tier-desc">$490/yr. Up to 500K verifications/mo. Email support.</div>
-            </div>
-            <div class="pricing-tier">
-                <div class="tier-name">Business</div>
-                <div class="tier-price">$349<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
-                <div class="tier-desc">$3,490/yr. Unlimited verifications. SLA + priority support.</div>
-            </div>
-            <div class="pricing-tier">
                 <div class="tier-name">Enterprise</div>
-                <div class="tier-price">$2,999<span style="font-size:14px;font-weight:500;color:var(--muted)">/mo</span></div>
-                <div class="tier-desc">$29,990/yr. On-premise deployment. Custom audit chain. Dedicated support.</div>
+                <div class="tier-price" style="font-size:20px;font-weight:700;">Contact for pricing</div>
+                <div class="tier-desc">Byzantine audit at scale. SLA + on-site deployment options. <a href="mailto:peter@kenosian.com?subject=Hydra-Audit%20Enterprise%20Inquiry" style="color:var(--accent);">peter@kenosian.com</a></div>
             </div>
         </div>
     </div>

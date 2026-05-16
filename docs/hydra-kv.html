@@ -7,14 +7,14 @@
     <style>
         :root {
             --accent: #0052ff;
-            --bg: #f4f7f9;
-            --surface: #ffffff;
-            --text: #1a1a1a;
-            --muted: #666;
-            --border: #e0e4eb;
-            --tag-bg: #f0f4ff;
-            --tag-text: #0052ff;
-            --code-bg: #f4f7f9;
+            --bg: #0a0b0d;
+            --surface: #111214;
+            --text: #f4f7f9;
+            --muted: #888;
+            --border: #2a2a2a;
+            --tag-bg: rgba(0,82,255,0.12);
+            --tag-text: #8ab4f8;
+            --code-bg: #1a1c1f;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -272,7 +272,7 @@
         <a class="wordmark" href="/">Kenosian</a>
         <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
-            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/Heime-Jorgen/Hydra-KV" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
             <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">IETF Draft</a>
             <span class="nav-sep">·</span>
@@ -342,7 +342,7 @@
             </li>
         </ul>
 
-        <div style="background:#f0f4ff;border-left:3px solid #0052ff;border-radius:6px;padding:14px 18px;margin-bottom:28px;font-size:13px;color:#1a1a1a;line-height:1.7;">
+        <div style="background:rgba(0,82,255,0.08);border-left:3px solid #0052ff;border-radius:6px;padding:14px 18px;margin-bottom:28px;font-size:13px;color:#c8d0e0;line-height:1.7;">
             <strong>Data plane vs. control plane:</strong> KV tensor transfers travel directly between
             sidecars over QUIC (sidecar-to-sidecar, no proxy). The REST API on port 8082 is the
             control plane only — routing decisions, GapVec5 signals, and prefetch hints.
@@ -382,7 +382,7 @@
   "estimated_ms":         18.4,
   "cache_hit":            true,
   "optimal_chunk_bytes":  65536,
-  "rho":                  0.94
+  "rho":                  0.45
 }</pre>
         </div>
 

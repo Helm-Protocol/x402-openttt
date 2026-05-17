@@ -400,19 +400,17 @@
         <div class="wordmark" onclick="showLanding()">Kenosian</div>
         <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
+            <a href="/docs/tttps.html">Protocol</a>
+            <span class="nav-sep">·</span>
+            <a href="#" onclick="showLanding();return false;">Products</a>
+            <span class="nav-sep">·</span>
+            <a href="mailto:peter@kenosian.com">Access</a>
+            <span class="nav-sep">·</span>
             <a href="https://github.com/helm-protocol/Hydra-KV" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="https://github.com/helm-protocol/Hydra-KV" target="_blank" rel="noopener">IETF Draft</a>
-            <span class="nav-sep">·</span>
-            <a href="/docs/tttps.html">TTTPS Docs</a>
-            <span class="nav-sep">·</span>
-            <a href="/docs/hydra-audit.html">Hydra-Audit Docs</a>
-            <span class="nav-sep">·</span>
-            <a href="/docs/hydra-kv.html">Hydra-KV Docs</a>
+            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft <span style="font-size:10px;color:#bbb;">(Pending)</span></a>
             <span class="nav-sep">·</span>
             <a href="/grafana/" target="_blank" rel="noopener">Grafana</a>
-            <span class="nav-sep">·</span>
-            <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
     </header>
 
@@ -427,10 +425,13 @@
                 <div class="card-label">TTTPS · Temporal Token for TLS Protocol <span class="badge">IETF Draft · In Progress</span></div>
                 <h2>Cryptographic timestamp protocol for distributed systems</h2>
                 <p class="desc">
-                    TTTPS anchors events to multiple independent time sources — NIST and Roughtime —
-                    producing a commitment chain resistant to replay, drift, and Byzantine manipulation.
-                    Any counterparty can verify temporal proof without trusting the issuer's clock.
-                    Open-source. IETF draft in active submission.
+                    TTTPS (TLS TimeToken Protocol) defines a compact, verifiable timestamp extension
+                    for TLS 1.3 handshakes and post-handshake records. Events are anchored to multiple
+                    independent time sources — NIST and Roughtime — and bound via a GRG commitment
+                    chain (Golomb→Reed-Solomon→Golay→HMAC), producing proofs resistant to replay,
+                    drift, and Byzantine clock manipulation.
+                    Any counterparty can verify temporal integrity without trusting the issuer's clock.
+                    Open-source reference implementation. IETF draft in active submission.
                 </p>
 
                 <div class="stats">
@@ -454,6 +455,7 @@
 
                 <div class="cta-row" style="margin-bottom: 28px;">
                     <a class="btn-primary" href="https://github.com/helm-protocol/Hydra-KV" target="_blank" rel="noopener">View on GitHub</a>
+                    <a class="btn-primary" href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener" style="background:#f0f4ff;color:var(--accent);border:1px solid #cce0ff;">IETF Draft (Pending)</a>
                     <code class="npm-install">npm install openttt</code>
                 </div>
 

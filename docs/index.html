@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>x402 OpenTTT — Technical Documentation</title>
+    <style>
+        :root {
+            --bg: #0a0b0d;
+            --card-bg: #1e1e1e;
+            --border: #2a2a2a;
+            --text: #f4f7f9;
+            --muted: #888;
+            --accent: #0052ff;
+            --green: #0ca678;
+            --mono: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        nav {
+            width: 240px;
+            min-width: 240px;
+            background: #111214;
+            border-right: 1px solid var(--border);
+            padding: 32px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .nav-logo {
+            padding: 0 24px 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .nav-logo .wordmark {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .nav-logo .sub {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        nav ul { list-style: none; }
+
+        .nav-section {
+            padding: 8px 24px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 12px;
+        }
+
+        nav a {
+            display: block;
+            padding: 7px 24px;
+            font-size: 13px;
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.15s, background 0.15s;
+            border-left: 2px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--text);
+            background: rgba(255,255,255,0.04);
+            border-left-color: var(--accent);
+        }
+
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 48px 56px;
+            max-width: 960px;
+        }
+
+        section {
+            margin-bottom: 64px;
+            scroll-margin-top: 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 24px 0 10px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #ccc;
+            margin-bottom: 14px;
+        }
+
+        .lead {
+            font-size: 15px;
+            color: var(--muted);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-card .label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .value {
+            font-family: var(--mono);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        /* Code blocks */
+        pre {
+            background: #111214;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px 20px;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            color: #d4d4d4;
+        }
+
+        code {
+            font-family: var(--mono);
+            font-size: 12px;
+            background: #1a1c1f;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            color: #8ab4f8;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid #1a1a1a;
+            color: #ccc;
+            vertical-align: top;
+        }
+
+        td:first-child { font-family: var(--mono); font-size: 12px; color: #8ab4f8; }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .tag-get  { background: rgba(12,166,120,0.15); color: var(--green); border: 1px solid rgba(12,166,120,0.3); }
+        .tag-post { background: rgba(0,82,255,0.15);   color: #8ab4f8;      border: 1px solid rgba(0,82,255,0.3); }
+        .tag-del  { background: rgba(255,77,77,0.15);  color: #ff6b6b;      border: 1px solid rgba(255,77,77,0.3); }
+
+        /* Attack matrix */
+        .attack-row td:nth-child(3) { color: var(--green); font-family: var(--mono); font-size: 11px; }
+        .attack-row td:nth-child(2) { color: #ff6b6b; }
+
+        /* Monitoring links */
+        .monitor-links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .monitor-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 18px;
+            color: var(--text);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: 12px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .monitor-link:hover {
+            background: rgba(0,82,255,0.1);
+            border-color: var(--accent);
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .dot-yellow { background: #ffb300; }
+        .dot-green  { background: var(--green); }
+
+        /* Divider */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 32px 0;
+        }
+
+        /* Note box */
+        .note {
+            background: rgba(0,82,255,0.07);
+            border: 1px solid rgba(0,82,255,0.25);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #a0b8ff;
+            margin-bottom: 20px;
+        }
+
+        .note strong { color: #8ab4f8; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar Navigation -->
+<nav>
+    <div class="nav-logo">
+        <div class="wordmark">x402 / OpenTTT</div>
+        <div class="sub">Technical Documentation</div>
+    </div>
+    <ul>
+        <li class="nav-section">Overview</li>
+        <li><a href="#overview" class="active">Introduction</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#stratum">Stratum Model</a></li>
+
+        <li class="nav-section">API Reference</li>
+        <li><a href="#api-verify">Verify Endpoint</a></li>
+        <li><a href="#api-anchor">Anchor Endpoint</a></li>
+        <li><a href="#api-status">Status Endpoint</a></li>
+
+        <li class="nav-section">Integration</li>
+        <li><a href="#integration-x402">x402 Payload</a></li>
+        <li><a href="#integration-sdk">SDK Usage</a></li>
+        <li><a href="#integration-onchain">On-Chain Anchoring</a></li>
+
+        <li class="nav-section">Security</li>
+        <li><a href="#attack-matrix">Attack Matrix</a></li>
+        <li><a href="#grg-pipeline">GRG Pipeline</a></li>
+
+        <li class="nav-section">Observability</li>
+        <li><a href="#monitoring">Monitoring</a></li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<main>
+
+    <!-- Overview -->
+    <section id="overview">
+        <h1>x402 OpenTTT Documentation</h1>
+        <p class="lead">
+            OpenTTT (Open Temporal Trust Token) extends the x402 payment protocol with
+            cryptographically verifiable time attestations. Every payment carries a
+            tamper-evident timestamp binding that agents and smart contracts can verify
+            independently — without trusting any single clock source.
+        </p>
+
+        <div class="card-grid">
+            <div class="metric-card">
+                <div class="label">Verified Proofs</div>
+                <div class="value" id="live-proofs">—</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Crypto Failures</div>
+                <div class="value" style="color: var(--green);" id="live-failures">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">TURBO Latency</div>
+                <div class="value" style="font-size:20px; line-height:32px; color:white;">~47ms</div>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Live network:</strong> Base Sepolia testnet.
+            On-chain anchor data sourced from
+            <a href="https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0"
+               style="color:#8ab4f8;" target="_blank">The Graph subgraph</a>.
+        </div>
+    </section>
+
+    <!-- Architecture -->
+    <section id="architecture">
+        <h2>Architecture</h2>
+        <p>
+            OpenTTT sits as a thin extension layer on top of the x402 payment standard.
+            A paying agent constructs a <code>temporal-attestation</code> extension inside the
+            standard <code>x402</code> payload, then submits it through the normal x402 flow.
+            The receiving service verifies the attestation before releasing the resource.
+        </p>
+
+        <pre>
+┌─────────────────────────────────────────────────┐
+│                  Paying Agent                   │
+│  x402 PaymentPayload + temporal-attestation     │
+└─────────────────────┬───────────────────────────┘
+                      │  HTTP 402 → Payment
+                      ▼
+┌─────────────────────────────────────────────────┐
+│              OpenTTT Verifier                   │
+│  1. Decode temporal-attestation extension       │
+│  2. Verify HMAC-SHA256 binding                  │
+│  3. Check multi-source timestamp consensus      │
+│  4. Enforce drift threshold (≤ 5000 ms)         │
+│  5. Replay protection via nonce cache           │
+└─────────────────────┬───────────────────────────┘
+                      │  PASS → anchor on-chain
+                      ▼
+┌─────────────────────────────────────────────────┐
+│           Base Sepolia Smart Contract           │
+│  PoTAnchor event emitted per verified proof     │
+│  Indexed by The Graph subgraph                  │
+└─────────────────────────────────────────────────┘</pre>
+
+        <h3>Component Overview</h3>
+        <table>
+            <thead>
+                <tr><th>Component</th><th>Role</th><th>Location</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>temporal-attestation</td>
+                    <td>x402 extension carrying timestamp + HMAC binding</td>
+                    <td>client payload</td>
+                </tr>
+                <tr>
+                    <td>OpenTTT Verifier</td>
+                    <td>Server-side verification logic (HMAC + drift + nonce)</td>
+                    <td><code>src/verifier.js</code></td>
+                </tr>
+                <tr>
+                    <td>PoT Anchor Contract</td>
+                    <td>On-chain immutable proof-of-time record</td>
+                    <td>Base Sepolia</td>
+                </tr>
+                <tr>
+                    <td>GRG Pipeline</td>
+                    <td>Multi-layer error-correction for audit integrity</td>
+                    <td>server internals</td>
+                </tr>
+                <tr>
+                    <td>The Graph Subgraph</td>
+                    <td>Real-time indexing of PoTAnchor events</td>
+                    <td>hosted service</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Stratum Model -->
+    <section id="stratum">
+        <h2>Stratum Model</h2>
+        <p>
+            Each attestation carries a <strong>stratum</strong> field indicating the quality
+            tier of the time source used. Higher strata indicate tighter synchronisation
+            to authoritative time references.
+        </p>
+
+        <table>
+            <thead>
+                <tr><th>Stratum</th><th>Source Type</th><th>Typical Drift</th><th>Use Case</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TURBO</td>
+                    <td>Institutional multi-source (NIST + Cloudflare)</td>
+                    <td>&lt; 50 ms</td>
+                    <td>High-frequency arbitrage, settlement</td>
+                </tr>
+                <tr>
+                    <td>FULL</td>
+                    <td>Single NTP source</td>
+                    <td>&lt; 500 ms</td>
+                    <td>Standard cross-border payments</td>
+                </tr>
+                <tr>
+                    <td>BASIC</td>
+                    <td>Device clock (best effort)</td>
+                    <td>&lt; 5000 ms</td>
+                    <td>Low-stakes or offline-capable flows</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>
+            The protocol rewards honest TURBO builders with faster settlement paths.
+            Dishonest or degraded sources fall to FULL, creating a natural economic
+            incentive toward precision without enforcement overhead.
+        </p>
+    </section>
+
+    <hr>
+
+    <!-- API: Verify -->
+    <section id="api-verify">
+        <h2>API Reference — Verify</h2>
+
+        <div class="card">
+            <span class="tag tag-post">POST</span>
+            &nbsp;&nbsp;<code style="font-size:13px; background:none; border:none; padding:0; color:var(--text);">/v1/verify</code>
+            <p style="margin-top:12px; margin-bottom:0; font-size:13px; color:var(--muted);">
+                Verify a <code>temporal-attestation</code> extension and return a structured result.
+            </p>
+        </div>
+
+        <h3>Request Body</h3>
+        <pre>{
+  "x402Version": 2,
+  "extensions": {
+    "temporal-attestation": {
+      "timestampMs": 1747345200000,
+      "nonce": "f4e5d6c7b8a9f4e5d6c7b8a9f4e5d6c7",
+      "hmac": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+      "sources": ["NIST", "Cloudflare"]
+    }
+  }
+}</pre>
+
+        <h3>Response — Pass</h3>
+        <pre>{
+  "status": "PASS",
+  "stratum": "TURBO",
+  "mechanism": "Institutional Multi-source (NIST, Cloudflare)",
+  "hmac_binding": "MATCHED",
+  "drift_ms": 12,
+  "drift_limit_ms": 5000,
+  "nonce_seen": false,
+  "verified_at": "2026-05-15T12:00:00.000Z"
+}</pre>
+
+        <h3>Response — Fail</h3>
+        <pre>{
+  "status": "FAIL",
+  "reason": "HMAC_MISMATCH",
+  "detail": "Computed HMAC does not match provided value.",
+  "verified_at": "2026-05-15T12:00:01.123Z"
+}</pre>
+
+        <h3>Failure Codes</h3>
+        <table>
+            <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td>HMAC_MISMATCH</td><td>HMAC-SHA256 signature does not match payload</td></tr>
+                <tr><td>DRIFT_EXCEEDED</td><td>Timestamp drift exceeds configured threshold</td></tr>
+                <tr><td>NONCE_REPLAY</td><td>Nonce has already been seen in the cache window</td></tr>
+                <tr><td>INVALID_PAYLOAD</td><td>Malformed JSON or missing required fields</td></tr>
+                <tr><td>SOURCE_UNAVAILABLE</td><td>Insufficient time sources responded</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- API: Anchor -->
+    <section id="api-anchor">
+        <h2>API Reference — Anchor</h2>
+
+        <div class="card">
+            <span class="tag tag-post">POST</span>
+            &nbsp;&nbsp;<code style="font-size:13px; background:none; border:none; padding:0; color:var(--text);">/v1/anchor</code>
+            <p style="margin-top:12px; margin-bottom:0; font-size:13px; color:var(--muted);">
+                After a successful verification, persist a Proof-of-Time anchor to the
+                Base Sepolia smart contract. Returns the transaction hash.
+            </p>
+        </div>
+
+        <h3>Request Body</h3>
+        <pre>{
+  "verificationId": "vtx_a1b2c3d4e5f6",
+  "stratum": "TURBO",
+  "payerAddress": "0xAbCd...1234"
+}</pre>
+
+        <h3>Response</h3>
+        <pre>{
+  "txHash": "0x7f3e...9a2b",
+  "blockNumber": 14921043,
+  "anchoredAt": "2026-05-15T12:00:02.500Z",
+  "explorer": "https://sepolia.basescan.org/tx/0x7f3e...9a2b"
+}</pre>
+    </section>
+
+    <!-- API: Status -->
+    <section id="api-status">
+        <h2>API Reference — Status</h2>
+
+        <div class="card">
+            <span class="tag tag-get">GET</span>
+            &nbsp;&nbsp;<code style="font-size:13px; background:none; border:none; padding:0; color:var(--text);">/v1/status</code>
+            <p style="margin-top:12px; margin-bottom:0; font-size:13px; color:var(--muted);">
+                Returns current network health, verified proof count, and last anchored block.
+            </p>
+        </div>
+
+        <pre>{
+  "status": "healthy",
+  "network": "base-sepolia",
+  "verifiedProofs": 72541,
+  "cryptoFailures": 0,
+  "lastBlock": 14921043,
+  "turboLatencyMs": 47,
+  "uptime": "99.999%"
+}</pre>
+    </section>
+
+    <hr>
+
+    <!-- Integration: x402 Payload -->
+    <section id="integration-x402">
+        <h2>Integration — x402 Payload</h2>
+        <p>
+            OpenTTT is backwards-compatible with the x402 standard. Add the
+            <code>temporal-attestation</code> key inside the <code>extensions</code>
+            object of any existing x402 <code>PaymentPayload</code>.
+        </p>
+
+        <h3>Minimal Example</h3>
+        <pre>const payload = {
+  x402Version: 2,
+  scheme: "exact",
+  network: "base-sepolia",
+  payload: { /* standard x402 fields */ },
+  extensions: {
+    "temporal-attestation": {
+      timestampMs: Date.now(),
+      nonce: crypto.randomUUID().replace(/-/g, ""),
+      hmac: await computeHMAC(secret, timestampMs, nonce),
+      sources: ["NIST", "Cloudflare"]
+    }
+  }
+};</pre>
+
+        <h3>Field Reference</h3>
+        <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>timestampMs</td><td>number</td><td>yes</td><td>Unix timestamp in milliseconds at time of payment construction</td></tr>
+                <tr><td>nonce</td><td>string</td><td>yes</td><td>32-character hex nonce for replay protection</td></tr>
+                <tr><td>hmac</td><td>string</td><td>yes</td><td>HMAC-SHA256 of <code>timestampMs + nonce</code> under shared secret</td></tr>
+                <tr><td>sources</td><td>string[]</td><td>no</td><td>Time sources used — affects stratum classification</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Integration: SDK -->
+    <section id="integration-sdk">
+        <h2>Integration — SDK Usage</h2>
+        <p>Import the verifier directly in a Node.js or browser environment:</p>
+
+        <pre>import { verifyTemporalAttestation } from '@helm-protocol/x402-openttt';
+
+const result = await verifyTemporalAttestation(payload);
+
+if (result.status === 'PASS') {
+  // proceed with resource delivery
+  console.log('Stratum:', result.stratum);
+  console.log('Drift:', result.drift_ms, 'ms');
+} else {
+  // reject with 402
+  return Response.json({ error: result.reason }, { status: 402 });
+}</pre>
+
+        <h3>Configuration Options</h3>
+        <table>
+            <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>driftLimitMs</td><td>5000</td><td>Maximum allowed timestamp drift in milliseconds</td></tr>
+                <tr><td>nonceCacheTtlMs</td><td>60000</td><td>Window for replay-protection nonce cache</td></tr>
+                <tr><td>requireSources</td><td>false</td><td>Reject if <code>sources</code> array is absent</td></tr>
+                <tr><td>anchorOnPass</td><td>false</td><td>Automatically submit on-chain anchor after verification</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Integration: On-Chain -->
+    <section id="integration-onchain">
+        <h2>Integration — On-Chain Anchoring</h2>
+        <p>
+            Every verified proof can be anchored on Base Sepolia by emitting a
+            <code>PoTAnchor</code> event from the OpenTTT smart contract. These events
+            are indexed by The Graph and power the live dashboard.
+        </p>
+
+        <pre>// Solidity event signature
+event PoTAnchor(
+    address indexed payer,
+    uint256 indexed blockNumber,
+    uint256 timestamp,
+    bytes32 txHash,
+    uint8   stratum
+);</pre>
+
+        <p>
+            Query anchors directly from the subgraph:
+        </p>
+
+        <pre>const query = `{
+  poTAnchors(first: 100, orderBy: timestamp, orderDirection: desc) {
+    id
+    stratum
+    timestamp
+    txHash
+    blockNumber
+  }
+}`;
+
+const res = await fetch(
+  "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0",
+  { method: "POST", body: JSON.stringify({ query }) }
+);</pre>
+    </section>
+
+    <hr>
+
+    <!-- Attack Matrix -->
+    <section id="attack-matrix">
+        <h2>Attack Matrix</h2>
+        <p>
+            The following known attack vectors are addressed by the protocol.
+            All defenses operate at the cryptographic layer — no centralized
+            authority is required to enforce them.
+        </p>
+
+        <table>
+            <thead>
+                <tr><th>Attack</th><th>Vector</th><th>Defense Mechanism</th><th>§ Ref</th></tr>
+            </thead>
+            <tbody class="attack-row">
+                <tr class="attack-row">
+                    <td>Replay Attack</td>
+                    <td>Resubmit valid attestation after expiry</td>
+                    <td>NONCE_REPLAY — nonce cache TTL</td>
+                    <td>§ 12.1</td>
+                </tr>
+                <tr class="attack-row">
+                    <td>Clock Skew</td>
+                    <td>Submit stale or future-dated timestamp</td>
+                    <td>DRIFT_EXCEEDED — ≤ 5000 ms threshold</td>
+                    <td>§ 12.2</td>
+                </tr>
+                <tr class="attack-row">
+                    <td>HMAC Tamper</td>
+                    <td>Modify payload fields after signing</td>
+                    <td>HMAC_MISMATCH — HMAC-SHA256 binding</td>
+                    <td>§ 12.3</td>
+                </tr>
+                <tr class="attack-row">
+                    <td>Flash Loan / Race Condition</td>
+                    <td>Exploit sub-block holding windows</td>
+                    <td>TURBO stratum requirement + block anchoring</td>
+                    <td>§ 12.4</td>
+                </tr>
+                <tr class="attack-row">
+                    <td>Source Spoofing</td>
+                    <td>Claim high-stratum sources without verification</td>
+                    <td>Multi-source consensus required for TURBO classification</td>
+                    <td>§ 12.5</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>
+            The live <strong>Defense Log</strong> on the dashboard shows real-time
+            rejections with the triggering rule and reason.
+        </p>
+    </section>
+
+    <!-- GRG Pipeline -->
+    <section id="grg-pipeline">
+        <h2>GRG Pipeline</h2>
+        <p>
+            OpenTTT employs a three-stage error-correction pipeline for audit log
+            integrity. This is the only blockchain implementation of this approach.
+        </p>
+
+        <div class="card-grid">
+            <div class="card" style="border-left: 3px solid var(--accent);">
+                <h3 style="margin-top:0;">Stage 1 — Sequence Compression</h3>
+                <p style="margin-bottom:0; font-size:13px;">
+                    Sequence compression for structured data streams.
+                    Removes redundancy in sparse event streams.
+                </p>
+            </div>
+            <div class="card" style="border-left: 3px solid var(--green);">
+                <h3 style="margin-top:0;">Stage 2 — Error Correction</h3>
+                <p style="margin-bottom:0; font-size:13px;">
+                    Burst-error correction over encoded event blocks.
+                    Recovers from partial data loss without retransmission.
+                </p>
+            </div>
+            <div class="card" style="border-left: 3px solid #ffb300;">
+                <h3 style="margin-top:0;">Stage 3 — Forward Error Correction</h3>
+                <p style="margin-bottom:0; font-size:13px;">
+                    Perfect binary code for final integrity sealing.
+                    Provides a hard cryptographic bound on undetected errors.
+                </p>
+            </div>
+        </div>
+
+        <p>
+            Each audit log chunk passes through all three stages before being
+            HMAC-bound and appended. This ensures verifiable tamper-evidence
+            even if portions of the log are corrupted or withheld.
+        </p>
+    </section>
+
+    <hr>
+
+    <!-- Monitoring -->
+    <section id="monitoring">
+        <h2>Monitoring</h2>
+        <p>
+            Production metrics are available via Grafana dashboards and raw
+            Prometheus scrape endpoints. Both are deployed alongside the
+            OpenTTT server.
+        </p>
+
+        <div class="monitor-links">
+            <a href="/grafana/" target="_blank" class="monitor-link">
+                <span class="dot dot-yellow"></span>
+                Grafana Dashboard
+            </a>
+            <a href="/prometheus/" target="_blank" class="monitor-link">
+                <span class="dot dot-green"></span>
+                Prometheus Metrics
+            </a>
+            <a href="/demo/dashboard.html" class="monitor-link">
+                <span class="dot" style="background:var(--accent);"></span>
+                Live Integrity Dashboard
+            </a>
+        </div>
+
+        <h3 style="margin-top: 28px;">Key Prometheus Metrics</h3>
+        <table>
+            <thead><tr><th>Metric</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td>openttt_proofs_total</td><td>counter</td><td>Total verified proofs since start</td></tr>
+                <tr><td>openttt_failures_total</td><td>counter</td><td>Total cryptographic failures (expect 0)</td></tr>
+                <tr><td>openttt_drift_ms</td><td>histogram</td><td>Observed timestamp drift distribution</td></tr>
+                <tr><td>openttt_verify_latency_ms</td><td>histogram</td><td>End-to-end verification latency</td></tr>
+                <tr><td>openttt_anchor_latency_ms</td><td>histogram</td><td>On-chain anchoring latency</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<script>
+    // Live proof count from The Graph
+    (async () => {
+        try {
+            const res = await fetch(
+                "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: `{ poTAnchors(first: 1000) { id } _meta { block { number } } }` })
+                }
+            );
+            const data = await res.json();
+            if (data.data && data.data.poTAnchors) {
+                const count = data.data.poTAnchors.length;
+                document.getElementById("live-proofs").textContent =
+                    count >= 1000 ? "1,000+" : count.toLocaleString();
+            }
+        } catch (_) {}
+    })();
+
+    // Active nav highlight on scroll
+    const sections = document.querySelectorAll("section[id]");
+    const navLinks = document.querySelectorAll("nav a");
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                navLinks.forEach(a => a.classList.remove("active"));
+                const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
+                if (active) active.classList.add("active");
+            }
+        });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

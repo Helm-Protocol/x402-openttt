@@ -7,14 +7,14 @@
     <style>
         :root {
             --accent: #0052ff;
-            --bg: #0a0b0d;
-            --surface: #111214;
-            --text: #f4f7f9;
-            --muted: #888;
-            --border: #2a2a2a;
-            --tag-bg: rgba(0,82,255,0.12);
-            --tag-text: #8ab4f8;
-            --code-bg: #1a1c1f;
+            --bg: #f4f7f9;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --muted: #666;
+            --border: #e0e4eb;
+            --tag-bg: #f0f4ff;
+            --tag-text: #0052ff;
+            --code-bg: #f4f7f9;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -34,7 +34,6 @@
             text-transform: uppercase;
             text-decoration: none;
         }
-        .site-header .tagline { margin-top: 6px; font-size: 13px; color: var(--muted); }
         .access-nav {
             display: flex;
             flex-wrap: wrap;
@@ -193,19 +192,18 @@
 
     <header class="site-header">
         <a class="wordmark" href="/">Kenosian</a>
-        <div class="tagline">Temporal integrity infrastructure.</div>
         <nav class="access-nav">
-            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener">GitHub</a>
             <span class="nav-sep">·</span>
-            <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener">IETF Draft</a>
+            <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener">IETF Draft</a>
+            <span class="nav-sep">·</span>
+            <a href="https://www.npmjs.com/package/openttt" target="_blank" rel="noopener">npm</a>
             <span class="nav-sep">·</span>
             <a href="/docs/tttps.html" class="active">TTTPS Docs</a>
             <span class="nav-sep">·</span>
             <a href="/docs/hydra-audit.html">Hydra-Audit Docs</a>
             <span class="nav-sep">·</span>
             <a href="/docs/hydra-kv.html">Hydra-KV Docs</a>
-            <span class="nav-sep">·</span>
-            <a href="/grafana/" target="_blank" rel="noopener">Grafana</a>
             <span class="nav-sep">·</span>
             <a href="mailto:peter@kenosian.com">Contact</a>
         </nav>
@@ -221,7 +219,7 @@
         </div>
         <h1>TTTPS Documentation</h1>
         <p class="desc">
-            TTTPS binds each payment attestation to a verifiable time anchor drawn from
+            TTTPS binds each x402 payment attestation to a verifiable time anchor drawn from
             multiple independent sources — NIST, Roughtime, and a commitment chain resistant
             to replay, drift, and Byzantine manipulation. Any counterparty can verify the proof
             without trusting the issuer's clock.
@@ -235,8 +233,8 @@
             <pre>npm install openttt</pre>
         </div>
         <p class="desc" style="margin-top:8px;">
-            Full source: <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/openttt</a><br>
-            IETF draft: <a href="https://github.com/helm-protocol/openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/openttt</a> <span style="color:var(--muted);font-size:12px;">(submission in progress)</span>
+            Full source: <a href="https://github.com/helm-protocol/x402-openttt" target="_blank" rel="noopener" style="color:var(--accent);">github.com/helm-protocol/x402-openttt</a><br>
+            IETF draft: <a href="https://datatracker.ietf.org/doc/draft-kenosian-tttps/" target="_blank" rel="noopener" style="color:var(--accent);">datatracker.ietf.org/doc/draft-kenosian-tttps/</a>
         </p>
 
         <hr class="divider">

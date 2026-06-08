@@ -9,6 +9,9 @@
      MORANDI PALETTE — muted, low-saturation still-life tones.
      Paper-greige base, ink text, restrained dusty accents.
      No glow, no neon, no fake percentages, no decoration.
+     Motion communicates STATE, not ornament: ONE perpetual
+     motion (attack -> gate -> reject). Everything else animates
+     once on entrance, then rests. Terracotta = reject instant only.
      ============================================================ */
   :root{
     --bg:        #edece8;   /* warm greige paper                       */
@@ -17,23 +20,26 @@
     --panel2:    #faf9f5;   /* raised card fill                        */
     --ink:       #2a2823;   /* primary text                            */
     --ink-soft:  #4a4640;   /* secondary text                          */
-    --dim:       #726d63;   /* tertiary text                           */
-    --faint:     #9c968a;   /* labels / captions                       */
+    --dim:       #6b665c;   /* tertiary text (darkened for contrast)   */
+    --faint:     #767064;   /* labels / captions (darkened ≥4.5:1)     */
     --rule:      #d8d5cc;   /* hairline borders                        */
     --rule2:     #e4e1d8;   /* inner hairlines                         */
 
     /* Morandi accents — desaturated, earthen */
-    --sage:      #7d9079;   /* dusty sage  — resting "good"            */
+    --sage:      #6f8369;   /* dusty sage  — resting "good" (deepened) */
     --sage-soft: #aebaa6;   /* sage tint for fills                     */
     --sage-wash: #dfe4d8;   /* faint sage wash                         */
+    --sage-ink:  #4d6147;   /* sage text on light (contrast)           */
     --rose:      #a8756a;   /* dusty terracotta — reject moment        */
     --rose-soft: #c9a59c;   /* rose tint                               */
     --rose-wash: #ecdcd6;   /* faint rose wash                         */
-    --slate:     #7c8693;   /* muted slate — neutral / info            */
+    --rose-ink:  #8a584e;   /* rose text on light (contrast)           */
+    --slate:     #6f7986;   /* muted slate — neutral / info            */
     --slate-soft:#aeb5bd;
-    --clay:      #b09467;   /* warm ochre — secondary accent           */
+    --slate-ink: #4f5965;
+    --clay:      #9c7f54;   /* warm ochre — secondary accent           */
 
-    --ink-block: #2a2823;   /* dark headline block (arm.html lineage)  */
+    --ink-block: #2a2823;   /* dark headline block                     */
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{
@@ -41,55 +47,110 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;font-size:14px;line-height:1.55;
   }
-  body{padding:46px 28px 30px;max-width:1080px;margin:0 auto}
+  /* Vercel-style subtle dot grid behind everything (quiet, crafted) */
+  body{
+    padding:46px 28px 34px;max-width:1120px;margin:0 auto;position:relative;
+    background-image:radial-gradient(var(--rule) 0.6px, transparent 0.6px);
+    background-size:22px 22px;background-position:-11px -11px;
+  }
   .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
     font-variant-numeric:tabular-nums}
   .num{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
     font-variant-numeric:tabular-nums;letter-spacing:-0.01em}
   a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
-  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+  /* entrance: a single fade-rise per element, then permanently still */
+  .rise{opacity:0;transform:translateY(8px);animation:rise .55s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .d1{animation-delay:.04s}.d2{animation-delay:.10s}.d3{animation-delay:.16s}
+  .d4{animation-delay:.22s}.d5{animation-delay:.30s}.d6{animation-delay:.40s}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+    .rise{opacity:1;transform:none}
+  }
 
   /* ---------------- HEADER ---------------- */
-  header{margin-bottom:34px}
+  header{margin-bottom:30px}
   .eyebrow{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);
     font-weight:600;margin-bottom:14px}
   h1{font-size:30px;font-weight:600;letter-spacing:-0.02em;line-height:1.12;color:var(--ink);
-    max-width:760px}
-  h1 .accent{color:var(--sage)}
-  .lede{font-size:14.5px;color:var(--ink-soft);margin-top:14px;max-width:660px;line-height:1.6}
+    max-width:780px}
+  h1 .accent{color:var(--sage-ink)}
+  .lede{font-size:14.5px;color:var(--ink-soft);margin-top:14px;max-width:680px;line-height:1.6}
   .hbar{display:flex;align-items:center;gap:11px;margin-top:20px;flex-wrap:wrap;font-size:12px}
   .live{display:inline-flex;align-items:center;gap:8px;color:var(--dim);
     border:1px solid var(--rule);border-radius:20px;padding:5px 13px 5px 11px;background:var(--panel2)}
   .ldot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--sage);flex:0 0 auto}
+  /* the one calm, subtle resting pulse permitted in the header */
   .ldot::after{content:"";position:absolute;inset:-4px;border-radius:50%;
-    border:1px solid var(--sage-soft);opacity:.7;animation:ring 2.8s ease-out infinite}
-  @keyframes ring{0%{transform:scale(.6);opacity:.7}80%,100%{transform:scale(1.6);opacity:0}}
+    border:1px solid var(--sage-soft);opacity:.6;animation:ring 3.4s ease-out infinite}
+  @keyframes ring{0%{transform:scale(.6);opacity:.6}80%,100%{transform:scale(1.7);opacity:0}}
   .meta{color:var(--faint)}
 
-  /* ---------------- STAT ROW ---------------- */
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
-  .stat{background:var(--panel2);border:1px solid var(--rule);border-radius:8px;
-    padding:18px 18px 16px;position:relative;overflow:hidden}
-  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rule)}
-  .stat.s-sage::before{background:var(--sage)}
-  .stat.s-slate::before{background:var(--slate)}
-  .stat.s-clay::before{background:var(--clay)}
-  .stat .k{font-size:11px;color:var(--faint);letter-spacing:0.04em;text-transform:uppercase;
-    font-weight:600}
-  .stat .v{font-size:34px;font-weight:600;letter-spacing:-0.025em;margin-top:12px;line-height:1;
-    color:var(--ink)}
-  .stat .v .u{font-size:18px;color:var(--dim);font-weight:500}
-  .stat .n{font-size:11.5px;color:var(--dim);margin-top:11px;line-height:1.4}
-  .stat .tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
-    letter-spacing:0.05em;text-transform:uppercase;margin-top:12px;padding:3px 9px;border-radius:11px;
-    background:var(--bg2);color:var(--dim)}
-  .stat .tag.sage{background:var(--sage-wash);color:#566b53}
-  .stat .tag.slate{background:#dfe3e8;color:#566069}
-  .stat .tag.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;
-    opacity:.8}
+  /* =====================================================================
+     HERO STRIP — flow order, "is it good/bad + trend" on EACH card.
+     [1] SMIM outcome (largest, spans 2 cols)  [2] full-path ratio
+     [3] live anchors + trend                  [4] indexing health
+     ===================================================================== */
+  .hero{display:grid;grid-template-columns:1.65fr 1fr 1fr;
+    grid-template-rows:auto auto;gap:14px;margin-bottom:14px}
 
-  /* ---------------- TWO-COLUMN ---------------- */
-  .two{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
+  .card{background:var(--panel2);border:1px solid var(--rule);border-radius:10px;
+    padding:18px 18px 16px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .card .k{font-size:11px;color:var(--faint);letter-spacing:0.05em;text-transform:uppercase;
+    font-weight:600}
+  .card .trend{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+    color:var(--dim);margin-top:auto;padding-top:12px}
+  .card .trend .ar{font-size:12px;line-height:1}
+  .card .trend.good{color:var(--sage-ink)}
+  .card .status{position:absolute;top:14px;right:14px;font-size:9.5px;font-weight:700;
+    letter-spacing:0.07em;text-transform:uppercase;padding:3px 8px;border-radius:10px;
+    background:var(--bg2);color:var(--dim);display:inline-flex;align-items:center;gap:5px}
+  .card .status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .card .status.ok{background:var(--sage-wash);color:var(--sage-ink)}
+  .card .status.info{background:#dfe3e8;color:var(--slate-ink)}
+
+  /* SMIM — the single most important number: the OUTCOME of defense */
+  .hero-smim{grid-column:1;grid-row:1 / span 2;
+    background:var(--ink-block);color:#f3f1ea;border-color:#2a2823;
+    padding:26px 26px 22px;justify-content:flex-start}
+  .hero-smim .k{color:#b9b3a6}
+  .hero-smim .status{background:rgba(255,255,255,.07);color:#cfeacb}
+  .hero-smim .status.ok{background:rgba(168,188,160,.18);color:#cfe3c8}
+  .hero-smim .big{display:flex;align-items:baseline;gap:18px;margin-top:20px;flex-wrap:wrap}
+  .hero-smim .figure{display:flex;flex-direction:column}
+  .hero-smim .figure .n{font-size:72px;font-weight:600;letter-spacing:-0.04em;line-height:.9;
+    color:#f6f4ed}
+  .hero-smim .figure .cap{font-size:12px;color:#b9b3a6;margin-top:10px;letter-spacing:0.02em}
+  .hero-smim .figure .cap b{color:#e9e6dd;font-weight:600}
+  .hero-smim .divx{width:1px;align-self:stretch;background:rgba(255,255,255,.12);margin:4px 0}
+  .hero-smim .sub{font-size:12.5px;color:#cbc6b9;margin-top:22px;line-height:1.6;max-width:520px}
+  .hero-smim .sub b{color:#f0ede4;font-weight:600}
+
+  .card .v{font-size:38px;font-weight:600;letter-spacing:-0.03em;margin-top:14px;line-height:1;
+    color:var(--ink)}
+  .card .v .u{font-size:19px;color:var(--dim);font-weight:500;letter-spacing:0}
+  .card .sub{font-size:11.5px;color:var(--dim);margin-top:9px;line-height:1.45}
+
+  /* mini full-path gauge inside ratio card */
+  .ratiocard{grid-column:2;grid-row:1}
+  .ratiocard .vrow{display:flex;align-items:center;gap:16px;margin-top:10px}
+  .ratiocard svg{flex:0 0 auto}
+  .gauge-bg{fill:none;stroke:var(--bg2);stroke-width:6;stroke-linecap:round}
+  .gauge-fg{fill:none;stroke:var(--sage);stroke-width:6;stroke-linecap:round;
+    transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+  .gctr{font-size:12.5px;font-weight:700;font-family:"SF Mono",monospace;fill:var(--sage-ink)}
+
+  .anchorcard{grid-column:3;grid-row:1}
+  .healthcard{grid-column:2 / span 2;grid-row:2}
+  .healthcard .vrow{display:flex;align-items:center;gap:16px;margin-top:8px}
+  .healthcard svg{flex:0 0 auto}
+
+  /* =====================================================================
+     CENTERPIECE — ATTACK -> PRE-INGRESS GATE -> VERDICT -> OUTCOME.
+     This is the ONLY perpetually-animated element on the page.
+     ===================================================================== */
   .panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
   .ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
     padding:14px 18px;border-bottom:1px solid var(--rule2)}
@@ -98,153 +159,175 @@
     white-space:nowrap}
   .pb{padding:18px}
 
-  /* ---------------- SPARKLINE (SVG) ---------------- */
-  #tsBody{min-height:128px}
-  .sparkwrap{position:relative}
-  svg.spark{display:block;width:100%;height:108px}
-  .spark .grid{stroke:var(--rule2);stroke-width:1}
-  .spark .area{fill:url(#sageGrad)}
-  .spark .line{fill:none;stroke:var(--sage);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-  .spark .line.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
-    animation:draw 1.1s cubic-bezier(.4,0,.2,1) forwards}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  .spark .dot{fill:var(--panel);stroke:var(--sage);stroke-width:2}
-  .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);
-    margin-top:12px;padding-top:11px;border-top:1px solid var(--rule2)}
-  .axis b{color:var(--ink-soft);font-weight:600}
-  .tsmsg{font-size:12.5px;color:var(--dim);padding:26px 4px;line-height:1.6}
+  .center{margin-bottom:14px}
+  .center .ph .t{font-size:13px}
+  .flowwrap{padding:6px 8px 4px}
+  .gateflow{display:grid;grid-template-columns:1fr 56px minmax(176px,1.05fr) 56px 1fr;
+    align-items:stretch;gap:0}
+  .gf-cell{padding:20px 18px;display:flex;flex-direction:column;justify-content:center;
+    min-height:128px}
 
-  /* ---------------- HEALTH GAUGES (SVG arcs) ---------------- */
-  .gwrap{display:flex;flex-direction:column;gap:18px}
-  .gauge{display:flex;align-items:center;gap:16px}
-  .gauge svg{flex:0 0 auto}
-  .gauge .arc-bg{fill:none;stroke:var(--bg2);stroke-width:7;stroke-linecap:round}
-  .gauge .arc-fg{fill:none;stroke-width:7;stroke-linecap:round;
-    transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .4s}
-  .gauge .glbl{font-size:11px;color:var(--faint);letter-spacing:0.05em;text-transform:uppercase;
-    font-weight:600}
-  .gauge .gval{font-size:15px;color:var(--ink);font-weight:600;margin-top:4px}
-  .gauge .gsub{font-size:11px;color:var(--dim);margin-top:2px}
-  .gcenter{font-size:12px;font-weight:700;font-family:"SF Mono",monospace}
-
-  /* ---------------- DEFENSE / INGRESS GATE ---------------- */
-  .dpanel{margin-bottom:18px}
-  .dhead{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;
-    padding:22px 22px 4px}
-  .dhead .figure{flex:0 0 auto;text-align:center}
-  .dhead .figure .big{font-size:48px;font-weight:600;letter-spacing:-0.03em;line-height:1;
-    color:var(--sage)}
-  .dhead .figure .bl{font-size:10.5px;color:var(--faint);letter-spacing:0.08em;text-transform:uppercase;
-    margin-top:8px;font-weight:600}
-  .dhead .cap{flex:1;min-width:280px;font-size:13px;color:var(--ink-soft);line-height:1.65;max-width:640px}
-  .dhead .cap b{color:var(--ink);font-weight:600}
-  .dhead .cap .pill{display:inline-block;background:var(--sage-wash);color:#566b53;
-    border-radius:4px;padding:1px 7px;font-weight:600;font-size:12px}
-
-  /* gate stage — flowing chips */
-  .stage{margin:14px 22px 22px;border:1px solid var(--rule);border-radius:9px;background:var(--bg2);
-    padding:0;overflow:hidden}
-  .gateflow{display:grid;grid-template-columns:1fr auto auto auto;align-items:stretch;gap:0}
-  .gf-cell{padding:20px 18px;display:flex;flex-direction:column;justify-content:center;min-height:104px}
-  .gf-in{background:var(--panel2);border-right:1px solid var(--rule)}
+  .gf-in{background:var(--panel2);border:1px solid var(--rule);border-radius:9px}
   .gf-in .lab{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);
     font-weight:600}
-  .gf-in .nm{font-size:16px;font-weight:600;color:var(--ink);margin-top:8px;
-    transition:color .3s;min-height:21px}
-  .gf-in .ds{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.45;min-height:32px}
+  .gf-in .nm{font-size:17px;font-weight:600;color:var(--ink);margin-top:9px;
+    transition:color .3s;min-height:23px;letter-spacing:-0.01em}
+  .gf-in .ds{font-size:11.5px;color:var(--dim);margin-top:7px;line-height:1.45;min-height:34px}
 
-  .gf-arrow{width:54px;align-items:center;justify-content:center;color:var(--faint);position:relative}
-  .gf-arrow svg{width:40px;height:14px}
+  /* moving pulse = the in-flight proof; the one motion that loops */
+  .gf-arrow{align-items:center;justify-content:center;color:var(--faint);position:relative}
+  .gf-arrow svg{width:42px;height:14px;overflow:visible}
   .gf-arrow .ln{stroke:var(--slate-soft);stroke-width:1.5;stroke-dasharray:3 4}
   .gf-arrow .hd{fill:var(--slate-soft)}
-  .gf-arrow .pulse{fill:var(--sage);opacity:0}
-  .gf-arrow.run .pulse{animation:travel 1s linear}
-  @keyframes travel{0%{opacity:0;transform:translateX(0)}10%{opacity:1}90%{opacity:1}
+  .gf-arrow .pulse{fill:var(--slate);opacity:0}
+  .gf-arrow.run .pulse{animation:travel .68s cubic-bezier(.45,0,.55,1)}
+  @keyframes travel{0%{opacity:0;transform:translateX(0)}12%{opacity:1}88%{opacity:1}
     100%{opacity:0;transform:translateX(34px)}}
+  .gf-arrow.rev .hd,.gf-arrow.rev .pulse{fill:var(--rose)}
 
   .gf-gate{background:var(--ink-block);color:#f0eee8;align-items:center;text-align:center;
-    min-width:178px;transition:background .35s}
-  .gf-gate .gt{font-size:13px;font-weight:600;letter-spacing:0.02em}
-  .gf-gate .gs{font-size:10.5px;color:#b8b3a8;margin-top:7px;letter-spacing:0.04em}
+    border-radius:9px;transition:background .35s,box-shadow .35s;position:relative}
+  .gf-gate .glab{font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:#9d988c}
+  .gf-gate .gt{font-size:14px;font-weight:600;letter-spacing:0.01em;margin-top:6px}
+  .gf-gate .gs{font-size:10.5px;color:#b8b3a8;margin-top:8px;letter-spacing:0.03em}
   .gf-gate .gmod{font-size:11px;font-family:"SF Mono",monospace;color:#cbc6ba;margin-top:9px;
     min-height:15px}
-  .gf-gate.flash{background:var(--rose)}
+  .gf-gate.flash{background:var(--rose);box-shadow:0 0 0 1px var(--rose)}
+  .gf-gate.flash .glab{color:#e7cfc8}
   .gf-gate.flash .gs{color:#f1ddd7}
   .gf-gate.flash .gmod{color:#f6e9e4}
 
-  .gf-out{background:var(--panel2);border-left:1px solid var(--rule);min-width:150px;
+  .gf-out{background:var(--panel2);border:1px solid var(--rule);border-radius:9px;
     align-items:flex-start;justify-content:center}
-  .gf-out .ver{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
-    color:var(--sage);transition:color .3s}
+  .gf-out .lab{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);
+    font-weight:600}
+  .gf-out .ver{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:600;
+    color:var(--sage-ink);transition:color .3s;margin-top:9px}
   .gf-out .ver .ic{width:18px;height:18px;flex:0 0 auto}
-  .gf-out.rej .ver{color:var(--rose)}
-  .gf-out .rsn{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.4;min-height:30px}
-  .gf-out .gas{font-size:10px;color:var(--faint);margin-top:9px;letter-spacing:0.04em;text-transform:uppercase}
+  .gf-out.rej{border-color:var(--rose-soft);background:var(--rose-wash)}
+  .gf-out.rej .ver{color:var(--rose-ink)}
+  .gf-out .rsn{font-size:11.5px;color:var(--dim);margin-top:9px;line-height:1.4;min-height:32px}
+  .gf-out.rej .rsn{color:var(--rose-ink)}
+  .gf-out .gas{font-size:10px;color:var(--faint);margin-top:10px;letter-spacing:0.04em;
+    text-transform:uppercase}
 
-  /* ---------------- ATTACK LOG ---------------- */
-  .log{display:flex;flex-direction:column}
-  .lrow{display:grid;grid-template-columns:22px 1fr auto;gap:11px;align-items:start;
-    padding:11px 0;border-bottom:1px solid var(--rule2);transition:opacity .3s}
-  .lrow:last-child{border-bottom:0}
-  .lrow .mk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule);
-    margin-top:1px;display:flex;align-items:center;justify-content:center;
-    transition:border-color .3s,background .3s}
-  .lrow .mk svg{width:11px;height:11px;opacity:0;transition:opacity .3s}
-  .lrow.done .mk{border-color:var(--sage);background:var(--sage-wash)}
-  .lrow.done .mk svg{opacity:1}
-  .lrow.live .mk{border-color:var(--rose);background:var(--rose-wash)}
-  .lrow .nm{font-size:13px;font-weight:600;color:var(--ink)}
-  .lrow .rs{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.4}
-  .lrow.live .rs{color:var(--rose)}
-  .lrow .st{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
-    color:var(--faint);white-space:nowrap;padding:3px 9px;border-radius:10px;background:var(--bg2);
-    margin-top:1px}
-  .lrow.done .st{color:#566b53;background:var(--sage-wash)}
-  .lrow.live .st{color:var(--rose);background:var(--rose-wash)}
+  /* honest caption strip beneath the flow */
+  .flowcap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:14px 18px 4px;font-size:11.5px;color:var(--dim);line-height:1.5}
+  .flowcap b{color:var(--ink-soft);font-weight:600}
+  .flowcap .tally{display:flex;gap:18px;flex-wrap:wrap}
+  .flowcap .tally span{white-space:nowrap}
+  .flowcap .tally b{font-family:"SF Mono",monospace}
 
-  /* ---------------- OUT OF SCOPE ---------------- */
+  /* =====================================================================
+     PROGRESSIVE DISCLOSURE — detail below the fold. No motion.
+     ===================================================================== */
+  .disclose{margin-top:18px}
+  .disclose>summary{list-style:none;cursor:pointer;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;padding:13px 18px;background:var(--panel);
+    border:1px solid var(--rule);border-radius:10px;
+    font-size:12.5px;font-weight:600;color:var(--ink-soft);user-select:none}
+  .disclose>summary::-webkit-details-marker{display:none}
+  .disclose>summary .hint{font-size:11px;font-weight:500;color:var(--faint)}
+  .disclose>summary .chev{transition:transform .25s;color:var(--faint);font-size:13px}
+  .disclose[open]>summary{border-radius:10px 10px 0 0;border-bottom:0}
+  .disclose[open]>summary .chev{transform:rotate(180deg)}
+  .disclose .body{border:1px solid var(--rule);border-top:0;border-radius:0 0 10px 10px;
+    background:var(--panel);padding:18px}
+
+  .grid2{display:grid;grid-template-columns:1.45fr 1fr;gap:18px}
+  .subt{font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:12px}
+
+  /* vector matrix tiles */
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mtile{border:1px solid var(--rule2);border-radius:7px;padding:11px 12px;background:var(--panel2);
+    display:flex;flex-direction:column;gap:5px}
+  .mtile .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .mtile .nm{font-size:12.5px;font-weight:600;color:var(--ink)}
+  .mtile .badge{font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+    padding:2px 7px;border-radius:9px;background:var(--sage-wash);color:var(--sage-ink);
+    white-space:nowrap;flex:0 0 auto}
+  .mtile .rs{font-size:11px;color:var(--dim);line-height:1.4}
+  .mtile .gate{font-size:10px;color:var(--faint);font-family:"SF Mono",monospace}
+
+  /* out-of-scope (dashed = honest, defended elsewhere) */
   .oos{display:flex;flex-direction:column;gap:0}
   .oos .or{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
-    padding:11px 0;border-bottom:1px dashed var(--rule)}
+    padding:10px 0;border-bottom:1px dashed var(--rule)}
   .oos .or:last-child{border-bottom:0}
-  .oos .or b{color:var(--ink-soft);font-weight:600;font-size:13px}
-  .oos .or span{color:var(--faint);font-size:11.5px;text-align:right;max-width:62%}
-  .conds{font-size:11.5px;color:var(--dim);line-height:1.65;margin-top:16px;
-    border-top:1px solid var(--rule2);padding-top:14px}
-  .conds b{color:var(--ink-soft);font-weight:600}
+  .oos .or b{color:var(--ink-soft);font-weight:600;font-size:12.5px}
+  .oos .or span{color:var(--dim);font-size:11px;text-align:right;max-width:60%}
+  .depth{margin-top:16px;border-top:1px solid var(--rule2);padding-top:14px;
+    font-size:11.5px;color:var(--dim);line-height:1.6}
+  .depth b{color:var(--ink-soft);font-weight:600}
 
-  /* ---------------- VERIFIABILITY ---------------- */
+  /* GraphQL */
   .code{background:var(--bg2);border:1px solid var(--rule2);border-radius:7px;
     padding:16px 18px;font-size:12.5px;line-height:1.6;white-space:pre;overflow-x:auto;
     color:var(--ink-soft)}
   .code .k{color:var(--clay);font-weight:600}
-  .code .f{color:var(--sage)}
+  .code .f{color:var(--sage-ink)}
   .ep{font-size:12px;color:var(--dim);margin-top:14px;word-break:break-all}
   .ep b{color:var(--ink);font-weight:600}
   .run{font-size:12.5px;color:var(--ink-soft);margin-top:12px;line-height:1.55}
   .run b{font-weight:600;color:var(--ink)}
 
+  /* anchors/block sparkline (inside anchors KPI footer region, drawn once) */
+  .sparkmini{position:relative;margin-top:12px}
+  svg.spark{display:block;width:100%;height:46px;overflow:visible}
+  .spark .area{fill:url(#sageGrad)}
+  .spark .line{fill:none;stroke:var(--sage);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .spark .line.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+    animation:draw 1.05s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .spark .dot{fill:var(--panel2);stroke:var(--sage);stroke-width:2}
+  .sparklbl{font-size:10px;color:var(--faint);margin-top:6px;display:flex;
+    justify-content:space-between}
+  .sparklbl b{color:var(--dim);font-weight:600}
+
+  /* health gauges */
+  .gauge .arc-bg{fill:none;stroke:var(--bg2);stroke-width:7;stroke-linecap:round}
+  .gauge .arc-fg{fill:none;stroke-width:7;stroke-linecap:round;
+    transition:stroke-dashoffset .9s cubic-bezier(.4,0,.2,1),stroke .4s}
+  .gcenter{font-size:12px;font-weight:700;font-family:"SF Mono",monospace}
+  .hsplit{display:flex;gap:30px;flex-wrap:wrap}
+  .hitem{display:flex;align-items:center;gap:14px}
+  .hitem .glbl{font-size:11px;color:var(--faint);letter-spacing:0.05em;text-transform:uppercase;
+    font-weight:600}
+  .hitem .gval{font-size:14.5px;color:var(--ink);font-weight:600;margin-top:4px}
+  .hitem .gsub{font-size:11px;color:var(--dim);margin-top:2px}
+
   /* ---------------- FOOTER ---------------- */
-  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--rule);
     display:flex;justify-content:space-between;font-size:11px;color:var(--faint);
     flex-wrap:wrap;gap:8px}
 
-  @media (max-width:860px){
-    .stats{grid-template-columns:repeat(2,1fr)}
-    .two{grid-template-columns:1fr}
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
+    .hero-smim{grid-column:1 / span 2;grid-row:1}
+    .ratiocard{grid-column:1;grid-row:2}
+    .anchorcard{grid-column:2;grid-row:2}
+    .healthcard{grid-column:1 / span 2;grid-row:3}
+    .grid2{grid-template-columns:1fr}
+    .matrix{grid-template-columns:1fr}
+  }
+  @media (max-width:680px){
+    .hero{grid-template-columns:1fr}
+    .hero-smim,.ratiocard,.anchorcard,.healthcard{grid-column:1}
+    .hero-smim{grid-row:1}.ratiocard{grid-row:2}.anchorcard{grid-row:3}.healthcard{grid-row:4}
+    .hero-smim .figure .n{font-size:58px}
     .gateflow{grid-template-columns:1fr}
-    .gf-arrow{width:auto;height:40px;border-top:1px solid var(--rule)}
+    .gf-arrow{min-height:42px;border-top:1px solid var(--rule)}
     .gf-arrow svg{transform:rotate(90deg)}
-    .gf-in,.gf-out{border:0}
     h1{font-size:25px}
-    .dhead .figure .big{font-size:40px}
   }
 </style>
 </head>
 <body>
 
 <!-- ================= HEADER ================= -->
-<header>
+<header class="rise d1">
   <div class="eyebrow">Proof of Time · tttps://</div>
   <h1>Cross-party verifiable timestamps &amp; ordering<br>for autonomous agents — <span class="accent">time as honesty, not power</span>.</h1>
   <p class="lede">Where TLS made HTTP trustworthy, tttps makes transaction sequencing verifiable.
@@ -255,117 +338,130 @@
   </div>
 </header>
 
-<!-- ================= STAT ROW ================= -->
-<div class="stats">
-  <div class="stat s-clay">
-    <div class="k">PoT anchors on-chain</div>
-    <div class="v num">57,054<span class="u">+</span></div>
-    <div class="n">cumulative · as of 2026-06 · growing</div>
-    <div class="tag dot">on-chain</div>
-  </div>
-  <div class="stat s-slate">
-    <div class="k">Indexed head block</div>
-    <div class="v num" id="headBlock">—</div>
-    <div class="n" id="headNote">synced to chain head</div>
-    <div class="tag slate dot" id="headBadge">live</div>
-  </div>
-  <div class="stat">
-    <div class="k">Cryptographic failures</div>
-    <div class="v num">0</div>
-    <div class="n">forged tokens minted · proofs reaching chain</div>
-    <div class="tag dot">zero</div>
-  </div>
-  <div class="stat s-sage">
-    <div class="k">Attacks rejected</div>
-    <div class="v num">11<span class="u">/11</span></div>
-    <div class="n">in-scope vectors · full deployed mint path</div>
-    <div class="tag sage dot">full path</div>
-  </div>
-</div>
+<!-- ================= HERO STRIP (flow order, good/bad + trend on each) ================= -->
+<div class="hero">
 
-<!-- ================= SPARKLINE + GAUGES ================= -->
-<div class="two">
-  <div class="panel">
-    <div class="ph"><span class="t">Anchors per block — recent indexed window</span>
-      <span class="src" id="tsSrc">live · The Graph</span></div>
-    <div class="pb">
-      <div id="tsBody"><div class="tsmsg">loading recent indexed anchors…</div></div>
+  <!-- [1] SMIM — the OUTCOME of defense, largest, top-left -->
+  <div class="card hero-smim rise d2">
+    <div class="k">Outcome of pre-ingestion defense</div>
+    <span class="status ok">holding</span>
+    <div class="big">
+      <div class="figure">
+        <div class="n num">0</div>
+        <div class="cap"><b>forged tokens</b> minted</div>
+      </div>
+      <div class="divx"></div>
+      <div class="figure">
+        <div class="n num">0</div>
+        <div class="cap"><b>forged proofs</b> reached chain</div>
+      </div>
     </div>
+    <div class="sub">Across <b>17</b> attack attempts replayed against the deployed SDK, not one
+      manipulated proof was minted or written on-chain. Rejected proofs send no transaction —
+      <b>gas cost 0</b>.</div>
   </div>
-  <div class="panel">
-    <div class="ph"><span class="t">Health</span><span class="src">self-check</span></div>
-    <div class="pb">
-      <div class="gwrap">
-        <div class="gauge">
-          <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
-            <circle class="arc-bg" cx="29" cy="29" r="24"
-              stroke-dasharray="113 151" transform="rotate(135 29 29)"></circle>
-            <circle id="gIndexArc" class="arc-fg" cx="29" cy="29" r="24" stroke="var(--slate-soft)"
-              stroke-dasharray="113 151" stroke-dashoffset="113" transform="rotate(135 29 29)"></circle>
-            <text id="gIndexC" class="gcenter" x="29" y="33" text-anchor="middle"
-              fill="var(--dim)">··</text>
-          </svg>
-          <div>
-            <div class="glbl">Indexing</div>
-            <div class="gval" id="gIndexV">checking</div>
-            <div class="gsub" id="gIndexS">querying _meta</div>
-          </div>
+
+  <!-- [2] full-path rejection ratio + gauge (sweeps once) -->
+  <div class="card ratiocard rise d3">
+    <div class="k">In-scope rejected</div>
+    <span class="status ok">full path</span>
+    <div class="vrow">
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+        <circle class="gauge-bg" cx="28" cy="28" r="23"
+          stroke-dasharray="108 145" transform="rotate(135 28 28)"></circle>
+        <circle id="ratioArc" class="gauge-fg" cx="28" cy="28" r="23"
+          stroke-dasharray="108 145" stroke-dashoffset="108" transform="rotate(135 28 28)"></circle>
+        <text class="gctr" x="28" y="32" text-anchor="middle">11/11</text>
+      </svg>
+      <div>
+        <div class="v num" style="font-size:30px;margin-top:0">11<span class="u">/11</span></div>
+        <div class="sub">attack classes rejected on the<br>full deployed mint path</div>
+      </div>
+    </div>
+    <div class="trend good"><span class="ar">↑</span>2 single-gate accepts blocked end-to-end</div>
+  </div>
+
+  <!-- [3] live anchors + trend (count-up once, sparkline draws once) -->
+  <div class="card anchorcard rise d4">
+    <div class="k">PoT anchors on-chain</div>
+    <span class="status info" id="anchorStatus">live</span>
+    <div class="v num" id="anchorVal">57,054<span class="u">+</span></div>
+    <div class="sub">cumulative · as of 2026-06</div>
+    <div class="sparkmini" id="sparkMini"></div>
+    <div class="sparklbl" id="sparkLbl"><span>anchors / block · recent window</span><b>live</b></div>
+  </div>
+
+  <!-- [4] indexing + defense health (gauges sweep once) -->
+  <div class="card healthcard rise d5">
+    <div class="k">Source health</div>
+    <span class="status info" id="healthStatus">checking</span>
+    <div class="hsplit" style="margin-top:14px">
+      <div class="hitem">
+        <svg class="gauge" width="54" height="54" viewBox="0 0 54 54" aria-hidden="true">
+          <circle class="arc-bg" cx="27" cy="27" r="22"
+            stroke-dasharray="104 139" transform="rotate(135 27 27)"></circle>
+          <circle id="gIndexArc" class="arc-fg" cx="27" cy="27" r="22" stroke="var(--slate-soft)"
+            stroke-dasharray="104 139" stroke-dashoffset="104" transform="rotate(135 27 27)"></circle>
+          <text id="gIndexC" class="gcenter" x="27" y="31" text-anchor="middle"
+            fill="var(--dim)">··</text>
+        </svg>
+        <div>
+          <div class="glbl">Indexing</div>
+          <div class="gval" id="gIndexV">checking</div>
+          <div class="gsub" id="gIndexS">querying _meta</div>
         </div>
-        <div class="gauge">
-          <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
-            <circle class="arc-bg" cx="29" cy="29" r="24"
-              stroke-dasharray="113 151" transform="rotate(135 29 29)"></circle>
-            <circle class="arc-fg" cx="29" cy="29" r="24" stroke="var(--sage)"
-              stroke-dasharray="113 151" stroke-dashoffset="0" transform="rotate(135 29 29)"></circle>
-            <text class="gcenter" x="29" y="33" text-anchor="middle" fill="var(--sage)">✓</text>
-          </svg>
-          <div>
-            <div class="glbl">Defense</div>
-            <div class="gval">11 / 11 rejected</div>
-            <div class="gsub">0 forged tokens minted</div>
-          </div>
+      </div>
+      <div class="hitem">
+        <svg class="gauge" width="54" height="54" viewBox="0 0 54 54" aria-hidden="true">
+          <circle class="arc-bg" cx="27" cy="27" r="22"
+            stroke-dasharray="104 139" transform="rotate(135 27 27)"></circle>
+          <circle class="arc-fg" cx="27" cy="27" r="22" stroke="var(--sage)"
+            stroke-dasharray="104 139" stroke-dashoffset="0" transform="rotate(135 27 27)"></circle>
+          <text class="gcenter" x="27" y="31" text-anchor="middle" fill="var(--sage-ink)">✓</text>
+        </svg>
+        <div>
+          <div class="glbl">Indexed head block</div>
+          <div class="gval num" id="headBlock">—</div>
+          <div class="gsub" id="headNote">synced to chain head</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ================= DEFENSE: INGRESS GATE FLOW ================= -->
-<div class="panel dpanel">
-  <div class="ph"><span class="t">Pre-ingestion defense — forged proofs rejected at ingress</span>
+<!-- ================= CENTERPIECE: ATTACK -> GATE -> VERDICT -> OUTCOME ================= -->
+<div class="panel center rise d6">
+  <div class="ph"><span class="t">Pre-ingestion defense — forged proof → ingress gate → verdict</span>
     <span class="src">measured · node attack_bot.js</span></div>
-  <div class="dhead">
-    <div class="figure">
-      <div class="big" id="rejCounter">11/11</div>
-      <div class="bl">in-scope rejected</div>
-    </div>
-    <div class="cap">
-      In-scope manipulated proofs rejected on the <b>full deployed mint path</b>,
-      <span class="pill">pre-ingestion</span>. <b>0</b> forged tokens minted, <b>0</b> reached chain.
-      Defense-in-depth: expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
-      Honest proofs pass; only tampered proofs are stopped.
-    </div>
-  </div>
-  <div class="stage">
+  <div class="flowwrap">
     <div class="gateflow">
       <div class="gf-cell gf-in">
         <div class="lab">incoming proof</div>
         <div class="nm" id="gfName">awaiting next attack…</div>
         <div class="ds" id="gfDesc">each in-scope vector replayed against the real SDK gate</div>
       </div>
-      <div class="gf-cell gf-arrow" id="gfArrow">
-        <svg viewBox="0 0 40 14" aria-hidden="true">
-          <line class="ln" x1="2" y1="7" x2="32" y2="7"></line>
-          <polygon class="hd" points="31,2 39,7 31,12"></polygon>
+      <div class="gf-cell gf-arrow" id="gfArrowIn">
+        <svg viewBox="0 0 42 14" aria-hidden="true">
+          <line class="ln" x1="2" y1="7" x2="34" y2="7"></line>
+          <polygon class="hd" points="33,2 41,7 33,12"></polygon>
           <circle class="pulse" cx="4" cy="7" r="3"></circle>
         </svg>
       </div>
       <div class="gf-cell gf-gate" id="gfGate">
+        <div class="glab">choke point</div>
         <div class="gt">PRE-INGRESS GATE</div>
         <div class="gs">single proof · no tx</div>
         <div class="gmod" id="gfMod">idle</div>
       </div>
+      <div class="gf-cell gf-arrow rev" id="gfArrowOut">
+        <svg viewBox="0 0 42 14" aria-hidden="true">
+          <line class="ln" x1="2" y1="7" x2="34" y2="7"></line>
+          <polygon class="hd" points="33,2 41,7 33,12"></polygon>
+          <circle class="pulse" cx="4" cy="7" r="3"></circle>
+        </svg>
+      </div>
       <div class="gf-cell gf-out" id="gfOut">
+        <div class="lab">verdict</div>
         <div class="ver" id="gfVer">
           <svg class="ic" viewBox="0 0 18 18" aria-hidden="true">
             <circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
@@ -377,55 +473,66 @@
       </div>
     </div>
   </div>
-</div>
-
-<!-- ================= ATTACK LOG + OUT-OF-SCOPE ================= -->
-<div class="two">
-  <div class="panel">
-    <div class="ph"><span class="t">Attack surface — in-scope vectors</span>
-      <span class="src">each rejected before any mint</span></div>
-    <div class="pb" style="padding:6px 18px 14px">
-      <div class="log" id="log"></div>
-    </div>
-  </div>
-  <div class="panel">
-    <div class="ph"><span class="t">Other layers — defended outside single-proof ingress</span>
-      <span class="src">honestly out-of-scope</span></div>
-    <div class="pb">
-      <div class="oos">
-        <div class="or"><b>Flood / DDoS</b><span>network rate-limit (transport)</span></div>
-        <div class="or"><b>Fleet ordering / SDN reorder</b><span>multi-node sequence cross-ref</span></div>
-        <div class="or"><b>GPS spoofing</b><span>Roughtime multi-source cross-check</span></div>
-        <div class="or"><b>Sybil (fake IDs)</b><span>service-context binding + registry cap</span></div>
-      </div>
-      <div class="conds">
-        Reproducible: <b>node attack_bot.js</b> against the SDK's real pre-ingestion gate —
-        <b>17 attempted, 11 in-scope rejected on the full deployed path, 0 minted</b>.
-        Two vectors that pass a single isolated gate are re-run end-to-end and both reject
-        (live-time clock anchoring + Ed25519 hash binding + mandatory issuer-key pinning).
-        Rejected proofs send no transaction — gas cost 0, testnet-safe.
-        This panel demonstrates the rejection logic with the measured verdicts; it is not a live mint feed.
-      </div>
-    </div>
+  <div class="flowcap">
+    <span>Defense-in-depth: expiry · per-source tolerance · Ed25519 signature · issuer-key pinning ·
+      pool binding. <b>Honest proofs pass; only tampered proofs are stopped.</b>
+      Demonstration of the rejection logic with measured verdicts — <b>not a live mint feed</b>.</span>
+    <span class="tally">
+      <span><b>17</b> attempted</span>
+      <span><b>11/11</b> in-scope rejected</span>
+      <span><b>0</b> minted</span>
+    </span>
   </div>
 </div>
 
-<!-- ================= VERIFIABILITY ================= -->
-<div class="panel">
-  <div class="ph"><span class="t">Verifiability — run it yourself</span>
-    <span class="src">no trusted operator</span></div>
-  <div class="pb">
-    <div class="code"><span class="k">{</span>
+<!-- ================= PROGRESSIVE DISCLOSURE — detail below the fold ================= -->
+<details class="disclose">
+  <summary>
+    <span>Attack surface, out-of-scope layers &amp; verifiable query</span>
+    <span style="display:flex;align-items:center;gap:12px">
+      <span class="hint">11 in-scope vectors · 4 out-of-scope · run-it-yourself GraphQL</span>
+      <span class="chev">▾</span>
+    </span>
+  </summary>
+  <div class="body">
+
+    <div class="grid2">
+      <div>
+        <div class="subt">In-scope vectors — each rejected before any mint</div>
+        <div class="matrix" id="matrix"></div>
+      </div>
+      <div>
+        <div class="subt">Other layers — defended outside single-proof ingress</div>
+        <div class="oos">
+          <div class="or"><b>Flood / DDoS</b><span>network rate-limit (transport)</span></div>
+          <div class="or"><b>Fleet ordering / SDN reorder</b><span>multi-node sequence cross-ref</span></div>
+          <div class="or"><b>GPS spoofing</b><span>Roughtime multi-source cross-check</span></div>
+          <div class="or"><b>Sybil (fake IDs)</b><span>service-context binding + registry cap</span></div>
+        </div>
+        <div class="depth">
+          Two vectors that pass a single isolated gate are re-run end-to-end and
+          <b>both reject</b> on the deployed path — live-time clock anchoring + Ed25519 hash binding +
+          mandatory issuer-key pinning. The single-gate accepts do not survive defense-in-depth.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:22px">
+      <div class="subt">Verifiability — run it yourself, no trusted operator</div>
+      <div class="code"><span class="k">{</span>
   _meta <span class="k">{</span> block <span class="k">{</span> number timestamp <span class="k">}</span> hasIndexingErrors <span class="k">}</span>
   <span class="f">poTAnchors</span>(first: 1, orderBy: timestamp, orderDirection: desc) <span class="k">{</span>
     blockNumber timestamp txHash
   <span class="k">}</span>
 <span class="k">}</span></div>
-    <div class="ep">POST <b>https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</b></div>
-    <div class="run">Run it yourself. <b>The live values above are the response to this exact query</b> —
-      no trusted operator, no shared secret.</div>
+      <div class="ep">POST <b>https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</b></div>
+      <div class="run"><b>The live values above are the response to this exact query</b> —
+        no trusted operator, no shared secret. Reproduce the attacks with
+        <b>node attack_bot.js</b>: 17 attempted, 11 in-scope rejected on the full deployed path, 0 minted.</div>
+    </div>
+
   </div>
-</div>
+</details>
 
 <footer>
   <div>draft-helmprotocol-tttps-03 · Dispatch / SecDispatch Interim · June 30, 2026</div>
@@ -434,26 +541,29 @@
 
 <script>
 /* ================================================================
-   LIVE SUBGRAPH FETCH — stats, SVG sparkline, SVG health gauge.
-   Every rendered value here is the response to the GraphQL query
-   shown on the page. No fabricated figures.
+   LIVE SUBGRAPH FETCH — head block, indexing health, anchors/block
+   sparkline. Every rendered value here is the response to the
+   GraphQL query shown on the page. No fabricated figures.
+   Motion: sparkline draws ONCE, gauges sweep ONCE on first load,
+   then rest (subsequent refreshes update silently).
    ================================================================ */
 (function(){
   var ENDPOINT = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
   var QUERY = "{ _meta { block { number timestamp } hasIndexingErrors } recent: poTAnchors(first:60, orderBy:timestamp, orderDirection:desc){ blockNumber timestamp } }";
-  var firstDraw = true;
+  var firstDraw = true, firstGauge = true;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function fmtInt(n){ return Number(n).toLocaleString("en-US"); }
   function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
   function nowUTC(){ return new Date().toISOString().replace("T"," ").replace(/\.\d+Z$/," UTC"); }
 
-  /* ---- SVG sparkline: anchors counted per block over recent window ---- */
+  /* ---- compact anchors/block sparkline in the KPI card ---- */
   function drawSpark(recent){
-    var body=document.getElementById("tsBody");
+    var body=document.getElementById("sparkMini"),
+        lbl=document.getElementById("sparkLbl");
     if(!recent || recent.length < 4){
-      body.innerHTML='<div class="tsmsg">Recent indexed window is sparse right now.<br>'+
-        'Cumulative total and live head block above remain authoritative.</div>';
-      set("tsSrc","live · sparse window");
+      body.innerHTML="";
+      if(lbl) lbl.innerHTML='<span>recent window sparse — cumulative total authoritative</span><b>live</b>';
       return;
     }
     var byBlock={};
@@ -462,7 +572,7 @@
     var vals=blocks.map(function(b){return byBlock[b];});
     var maxN=Math.max.apply(null,vals), minN=Math.min.apply(null,vals);
 
-    var W=100, H=100, padTop=10, padBot=8, n=vals.length;
+    var W=100, H=100, padTop=12, padBot=10, n=vals.length;
     function px(i){ return n===1?W/2:(i/(n-1))*W; }
     function py(v){
       if(maxN===minN) return H/2;
@@ -473,45 +583,43 @@
     var linePath="M"+pts.join(" L");
     var areaPath="M0,"+H+" L"+pts.join(" L")+" L"+W+","+H+" Z";
 
-    // approx length for stroke-draw animation
     var len=0, prev=null;
     vals.forEach(function(v,i){ var c=[px(i),py(v)];
       if(prev){ len+=Math.hypot(c[0]-prev[0],c[1]-prev[1]); } prev=c; });
 
     var lastX=px(n-1).toFixed(2), lastY=py(vals[n-1]).toFixed(2);
-    var drawClass = firstDraw ? " draw" : "";
+    var drawClass = (firstDraw && !reduceMotion) ? " draw" : "";
 
     body.innerHTML=
-      '<div class="sparkwrap"><svg class="spark" viewBox="0 0 100 100" preserveAspectRatio="none" '+
+      '<svg class="spark" viewBox="0 0 100 100" preserveAspectRatio="none" '+
         'role="img" aria-label="anchors per block, recent indexed window">'+
         '<defs><linearGradient id="sageGrad" x1="0" y1="0" x2="0" y2="1">'+
-          '<stop offset="0%" stop-color="#7d9079" stop-opacity="0.22"/>'+
-          '<stop offset="100%" stop-color="#7d9079" stop-opacity="0.02"/></linearGradient></defs>'+
-        '<line class="grid" x1="0" y1="'+(H/2)+'" x2="100" y2="'+(H/2)+'"/>'+
+          '<stop offset="0%" stop-color="#6f8369" stop-opacity="0.22"/>'+
+          '<stop offset="100%" stop-color="#6f8369" stop-opacity="0.02"/></linearGradient></defs>'+
         '<path class="area" d="'+areaPath+'"/>'+
         '<path class="line'+drawClass+'" style="--len:'+len.toFixed(1)+'" d="'+linePath+'"/>'+
-        '<circle class="dot" cx="'+lastX+'" cy="'+lastY+'" r="2.4"/>'+
-      '</svg></div>'+
-      '<div class="axis"><span>block <b>'+fmtInt(blocks[0])+'</b> → <b>'+fmtInt(blocks[blocks.length-1])+'</b> · '+blocks.length+' blocks</span>'+
-      '<span>peak <b>'+maxN+'</b>/block · live, not a mint feed</span></div>';
-    set("tsSrc","live · The Graph");
+        '<circle class="dot" cx="'+lastX+'" cy="'+lastY+'" r="2.6"/>'+
+      '</svg>';
+    if(lbl) lbl.innerHTML='<span>block '+fmtInt(blocks[0])+' → '+fmtInt(blocks[blocks.length-1])+
+      ' · peak '+maxN+'/block</span><b>live</b>';
     firstDraw=false;
   }
 
-  /* ---- health gauge: indexing arc (135°→ sweep, 270° track) ---- */
+  /* ---- indexing health gauge (sweeps once) ---- */
   function setGaugeIndex(synced, hasErr){
     var arc=document.getElementById("gIndexArc"),
         v=document.getElementById("gIndexV"),
         s=document.getElementById("gIndexS"),
         c=document.getElementById("gIndexC");
-    var TRACK=113; // dash length of the 270° track
+    var TRACK=104;
+    if(!firstGauge){ arc.style.transition="stroke-dashoffset 0s,stroke .3s"; }
     if(hasErr===false){
       arc.style.strokeDashoffset="0"; arc.setAttribute("stroke","var(--sage)");
-      c.textContent="✓"; c.setAttribute("fill","var(--sage)");
+      c.textContent="✓"; c.setAttribute("fill","var(--sage-ink)");
       v.textContent="synced"; s.textContent="0 indexing errors";
     } else if(hasErr===true){
       arc.style.strokeDashoffset="0"; arc.setAttribute("stroke","var(--rose)");
-      c.textContent="!"; c.setAttribute("fill","var(--rose)");
+      c.textContent="!"; c.setAttribute("fill","var(--rose-ink)");
       v.textContent="indexing errors"; s.textContent="see subgraph status";
     } else {
       arc.style.strokeDashoffset=String(TRACK); arc.setAttribute("stroke","var(--slate-soft)");
@@ -519,6 +627,17 @@
       v.textContent="checking"; s.textContent="querying _meta";
     }
   }
+
+  /* ---- full-path ratio gauge: sweep to 11/11 once on load ---- */
+  function sweepRatioGauge(){
+    var arc=document.getElementById("ratioArc");
+    if(!arc) return;
+    if(reduceMotion){ arc.style.transition="none"; arc.style.strokeDashoffset="0"; return; }
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      arc.style.strokeDashoffset="0";
+    });});
+  }
+  sweepRatioGauge();
 
   function fetchLive(){
     fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},
@@ -531,23 +650,26 @@
       var hasErr=meta.hasIndexingErrors;
       set("headBlock", blk!=null ? fmtInt(blk) : "—");
       setGaugeIndex(blk!=null, hasErr);
-      set("headNote", hasErr===false ? "synced · 0 indexing errors" : (hasErr===true?"indexing errors present":"synced to chain head"));
-      var hb=document.getElementById("headBadge");
-      if(hb){
-        hb.className = (hasErr===true) ? "tag dot" : "tag slate dot";
-        hb.textContent = (hasErr===true) ? "error" : "live";
-        hb.style.color = (hasErr===true) ? "var(--rose)" : "";
+      set("headNote", hasErr===false ? "synced · 0 errors" : (hasErr===true?"indexing errors present":"synced to chain head"));
+
+      var hs=document.getElementById("healthStatus");
+      if(hs){
+        if(hasErr===false){ hs.className="status ok"; hs.textContent="synced"; }
+        else if(hasErr===true){ hs.className="status"; hs.textContent="error"; hs.style.color="var(--rose-ink)"; }
+        else { hs.className="status info"; hs.textContent="checking"; }
       }
+      var as=document.getElementById("anchorStatus");
+      if(as && blk!=null){ as.className="status ok"; as.textContent="growing"; }
+
       drawSpark(d.recent);
       set("liveStamp","live — fetched "+nowUTC());
+      firstGauge=false;
     })
     .catch(function(){
       set("liveStamp","live fetch unavailable (offline / CORS) — shown when reachable");
-      var body=document.getElementById("tsBody");
-      if(body && !body.querySelector(".spark")){
-        body.innerHTML='<div class="tsmsg">Live fetch unavailable (offline / CORS).<br>'+
-          'Cumulative total (57,054+) and the GraphQL endpoint below remain verifiable.</div>';
-        set("tsSrc","offline");
+      var lbl=document.getElementById("sparkLbl");
+      if(lbl && !document.querySelector("#sparkMini .spark")){
+        lbl.innerHTML='<span>live fetch unavailable (offline / CORS)</span><b>offline</b>';
       }
     });
   }
@@ -556,7 +678,7 @@
 })();
 
 /* ================================================================
-   DYNAMIC ATTACK -> REJECT FLOW
+   DYNAMIC ATTACK -> REJECT FLOW  (the ONE perpetual motion)
    Every vector and reason below is the measured verdict from
    `node attack_bot.js` run against the real SDK gates
    (17 attempted | 11 in-scope rejected on the full deployed path
@@ -579,28 +701,30 @@
     { name:"protocol-violation",desc:"malformed proof structure at ingress",            gate:"verifyProofOfTime",  reason:"malformed-PoT guard tripped" }
   ];
 
-  var CHECK_SVG='<svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1.5 6 L4 8.5 L9.5 2.5" '+
-    'fill="none" stroke="#566b53" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var X_SVG='<svg class="ic" viewBox="0 0 18 18" aria-hidden="true">'+
     '<circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>'+
     '<path d="M6 6 L12 12 M12 6 L6 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
-  /* attack-surface log rows (one per vector) */
-  var logEl=document.getElementById("log"), rows=[];
-  VECTORS.forEach(function(v){
-    var r=document.createElement("div");
-    r.className="lrow";
-    r.innerHTML='<span class="mk">'+CHECK_SVG+'</span>'+
-      '<span><span class="nm"></span><span class="rs"></span></span>'+
-      '<span class="st">awaiting</span>';
-    r.querySelector(".nm").textContent=v.name;
-    logEl.appendChild(r); rows.push(r);
-  });
+  /* progressive-disclosure matrix tiles (static, no motion) */
+  var matrixEl=document.getElementById("matrix");
+  if(matrixEl){
+    VECTORS.forEach(function(v){
+      var t=document.createElement("div");
+      t.className="mtile";
+      t.innerHTML='<div class="top"><span class="nm"></span><span class="badge">rejected</span></div>'+
+        '<div class="rs"></div><div class="gate"></div>';
+      t.querySelector(".nm").textContent=v.name;
+      t.querySelector(".rs").textContent=v.reason;
+      t.querySelector(".gate").textContent="› "+v.gate;
+      matrixEl.appendChild(t);
+    });
+  }
 
   /* gate flow elements */
   var gfName=document.getElementById("gfName"),
       gfDesc=document.getElementById("gfDesc"),
-      gfArrow=document.getElementById("gfArrow"),
+      gfArrowIn=document.getElementById("gfArrowIn"),
+      gfArrowOut=document.getElementById("gfArrowOut"),
       gfGate=document.getElementById("gfGate"),
       gfMod=document.getElementById("gfMod"),
       gfOut=document.getElementById("gfOut"),
@@ -609,43 +733,33 @@
   var reduceMotion=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var idx=0;
 
-  function showIncoming(v,row){
+  function showIncoming(v){
     gfName.textContent=v.name;
     gfDesc.textContent=v.desc;
     gfMod.textContent="› "+v.gate;
-    gfArrow.classList.remove("run"); void gfArrow.offsetWidth; gfArrow.classList.add("run");
+    gfArrowIn.classList.remove("run"); void gfArrowIn.offsetWidth; gfArrowIn.classList.add("run");
     gfOut.classList.remove("rej");
     gfVer.innerHTML='<svg class="ic" viewBox="0 0 18 18" aria-hidden="true">'+
       '<circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'+
       '<span>checking…</span>';
     gfReason.textContent="evaluating at "+v.gate;
-    row.className="lrow live";
-    row.querySelector(".rs").textContent="→ ingress gate…";
-    row.querySelector(".st").textContent="checking";
   }
-  function showRejected(v,row){
+  function showRejected(v){
     gfGate.classList.add("flash");
+    gfArrowOut.classList.remove("run"); void gfArrowOut.offsetWidth; gfArrowOut.classList.add("run");
     gfOut.classList.add("rej");
     gfVer.innerHTML=X_SVG+'<span id="gfVerText">REJECTED</span>';
     gfReason.textContent=v.reason;
-    row.className="lrow done";
-    row.querySelector(".rs").textContent=v.reason;
-    row.querySelector(".st").textContent="rejected";
-    setTimeout(function(){ gfGate.classList.remove("flash"); },620);
+    setTimeout(function(){ gfGate.classList.remove("flash"); },640);
   }
   function step(){
-    var v=VECTORS[idx], row=rows[idx];
-    showIncoming(v,row);
-    setTimeout(function(){ showRejected(v,row); }, reduceMotion?0:680);
+    var v=VECTORS[idx];
+    showIncoming(v);
+    setTimeout(function(){ showRejected(v); }, reduceMotion?0:640);
     idx=(idx+1)%VECTORS.length;
   }
 
   if(reduceMotion){
-    VECTORS.forEach(function(v,i){
-      rows[i].className="lrow done";
-      rows[i].querySelector(".rs").textContent=v.reason;
-      rows[i].querySelector(".st").textContent="rejected";
-    });
     gfName.textContent="all in-scope vectors";
     gfDesc.textContent="each rejected on the full deployed mint path";
     gfMod.textContent="› pre-ingress gates";
@@ -654,7 +768,7 @@
     gfReason.textContent="0 forged tokens minted · 0 reached chain";
   } else {
     step();
-    setInterval(step, 2050);
+    setInterval(step, 2300);
   }
 })();
 </script>

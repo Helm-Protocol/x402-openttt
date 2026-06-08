@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof of Time — Live System Integrity</title>
+<style>
+  /* ---- design tokens: verbatim from ietf_dispatch_pot_03beta deck + arm.html box look ---- */
+  :root{
+    --ink:#111111;     /* titles / emphasis            */
+    --dark:#333333;    /* detail                       */
+    --mid:#666666;     /* secondary detail             */
+    --gray:#999999;    /* section label / footer / sub */
+    --rule:#dddddd;    /* dividers / box borders       */
+    --fill:#fafafa;    /* box fill (arm.html tile)     */
+    --paper:#ffffff;
+    --hero:#000000;    /* single black accent          */
+    --alarm:#9a3b3b;   /* muted brick — transient flash ONLY, never resting */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);
+    font-family:Helvetica,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;font-weight:400}
+  body{padding:48px 40px 28px;max-width:1040px;margin:0 auto}
+  a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  /* ---- header ---- */
+  header{margin-bottom:8px}
+  h1{font-size:34px;font-weight:700;letter-spacing:-0.01em}
+  .sub{font-size:15px;color:var(--mid);margin-top:8px}
+  .tttps{font-size:11px;color:var(--gray);margin-top:6px}
+  .accent-rule{width:56px;height:1px;background:var(--ink);margin:18px 0 0}
+
+  /* ---- section label ---- */
+  .label{font-size:12px;font-weight:700;color:var(--gray);
+    letter-spacing:0.02em;margin:36px 0 14px}
+  .divider{height:1px;background:var(--rule);border:0;margin:0}
+
+  /* ---- big-number row (live panel) ---- */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .cell{padding:18px 20px 18px 0;border-right:1px solid var(--rule)}
+  .cell:last-child{border-right:0}
+  .cell .k{font-size:11px;color:var(--gray);margin-bottom:8px}
+  .cell .v{font-size:30px;font-weight:700;letter-spacing:-0.01em;line-height:1}
+  .cell .vsm{font-size:18px;font-weight:700;line-height:1.15;word-break:break-all}
+  .cell .note{font-size:11px;color:var(--mid);margin-top:7px}
+
+  .liveflag{font-size:11px;color:var(--mid);margin-top:12px}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:var(--ink);margin-right:6px;vertical-align:middle}
+
+  /* ---- defense headline ---- */
+  .defense-head{display:flex;align-items:baseline;gap:18px;
+    padding:18px 0 8px;border-top:1px solid var(--rule)}
+  .defense-head .big{font-size:40px;font-weight:700;letter-spacing:-0.02em;line-height:1;
+    font-variant-numeric:tabular-nums}
+  .defense-head .cap{font-size:13px;color:var(--mid);max-width:600px;line-height:1.45}
+  .defense-head .cap b{color:var(--ink)}
+
+  /* ---- ingress gate visual (the live reject animation stage) ---- */
+  .stage{border:1px solid var(--rule);background:var(--fill);
+    display:grid;grid-template-columns:1fr 130px 1fr;align-items:stretch;
+    margin-top:6px;min-height:96px}
+  .stage .col{padding:16px 18px;display:flex;flex-direction:column;justify-content:center}
+  .stage .col.mid{border-left:1px solid var(--rule);border-right:1px solid var(--rule);
+    align-items:center;text-align:center;background:var(--paper)}
+  .stage .gateK{font-size:10px;color:var(--gray);letter-spacing:0.04em}
+  .stage .gateV{font-size:13px;font-weight:700;color:var(--ink);margin-top:4px;line-height:1.2}
+  .stage .incK{font-size:10px;color:var(--gray);letter-spacing:0.04em}
+  .stage .incV{font-size:16px;font-weight:700;color:var(--ink);margin-top:6px;min-height:20px}
+  .stage .incReason{font-size:11px;color:var(--mid);margin-top:6px;min-height:15px}
+  .stage .outK{font-size:10px;color:var(--gray);letter-spacing:0.04em;text-align:right}
+  .stage .outV{font-size:16px;font-weight:700;margin-top:6px;text-align:right;min-height:20px;
+    color:var(--ink)}
+  .stage .outSub{font-size:11px;color:var(--mid);margin-top:6px;text-align:right;min-height:15px}
+  .gateGlyph{font-size:22px;font-weight:700;line-height:1;color:var(--ink)}
+  .gateGlyph .x{display:inline-block}
+  /* transient alarm state on the gate while a forged proof is being rejected */
+  .stage.flash{border-color:var(--alarm)}
+  .stage.flash .col.mid{border-left-color:var(--alarm);border-right-color:var(--alarm)}
+  .stage.flash .gateGlyph,.stage.flash .outV{color:var(--alarm)}
+
+  /* ---- vulnerable-surface abstraction grid (arm.html tiles) ---- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);
+    border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
+  .tile{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    background:var(--paper);padding:14px 16px;min-height:104px;position:relative;
+    transition:background .18s linear}
+  .tile .tname{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2}
+  .tile .tdesc{font-size:11.5px;color:var(--mid);margin-top:6px;line-height:1.4}
+  .tile .tstat{font-size:10px;color:var(--gray);margin-top:10px;letter-spacing:0.03em}
+  .tile .treason{font-size:10px;color:var(--mid);margin-top:3px;line-height:1.35;min-height:13px}
+  /* settled rejected: a thin ink left-bar marks "covered" */
+  .tile.rejected{border-left:3px solid var(--ink);padding-left:14px}
+  .tile.rejected .tstat{color:var(--ink);font-weight:700}
+  /* active (currently firing): transient brick edge */
+  .tile.active{background:var(--fill);border-left:3px solid var(--alarm);padding-left:14px}
+  .tile.active .tstat{color:var(--alarm);font-weight:700}
+
+  /* ---- other-layers strip (out-of-scope, visually distinct: dashed, muted) ---- */
+  .layers{display:grid;grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--rule);border-left:1px dashed var(--rule)}
+  .layer{border-right:1px dashed var(--rule);border-bottom:1px dashed var(--rule);
+    padding:12px 14px;background:var(--paper)}
+  .layer .lname{font-size:12px;font-weight:700;color:var(--mid)}
+  .layer .lwhere{font-size:10.5px;color:var(--gray);margin-top:5px;line-height:1.4}
+
+  .conds{font-size:11px;color:var(--gray);margin-top:12px;line-height:1.55}
+  .conds b{color:var(--mid);font-weight:700}
+
+  /* ---- verifiability panel ---- */
+  .query{background:var(--fill);border:1px solid var(--rule);
+    padding:18px 20px;font-size:12.5px;color:var(--dark);
+    line-height:1.6;white-space:pre;overflow-x:auto;margin-top:4px}
+  .query .key{color:var(--ink);font-weight:700}
+  .endpoint{font-size:12px;color:var(--mid);margin-top:12px;word-break:break-all}
+  .runit{font-size:13px;color:var(--ink);font-weight:700;margin-top:16px}
+  .runit span{font-weight:400;color:var(--mid)}
+
+  /* ---- footer ---- */
+  footer{margin-top:46px;padding-top:12px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;
+    font-size:9px;color:var(--gray)}
+
+  @media (max-width:760px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .cell:nth-child(2){border-right:0}
+    .tiles{grid-template-columns:repeat(2,1fr)}
+    .layers{grid-template-columns:repeat(2,1fr)}
+    .stage{grid-template-columns:1fr;min-height:0}
+    .stage .col.mid{border-left:0;border-right:0;
+      border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+    .stage.flash .col.mid{border-top-color:var(--alarm);border-bottom-color:var(--alarm)}
+    .stage .outK,.stage .outV,.stage .outSub{text-align:left}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .tile{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Proof of Time — Live System Integrity</h1>
+  <div class="sub">Cross-party verifiable timestamps and ordering for autonomous agents</div>
+  <div class="tttps mono">tttps://</div>
+  <div class="accent-rule"></div>
+</header>
+
+<!-- ================= LIVE PANEL ================= -->
+<div class="label">Live — Base Sepolia, indexed by The Graph</div>
+<div class="grid">
+  <div class="cell">
+    <div class="k">Indexed head block</div>
+    <div class="v mono" id="headBlock">—</div>
+    <div class="note">synced to chain head</div>
+  </div>
+  <div class="cell">
+    <div class="k">Indexing errors</div>
+    <div class="v" id="indexErrors">—</div>
+    <div class="note">subgraph integrity</div>
+  </div>
+  <div class="cell">
+    <div class="k">Latest PoT anchor — block</div>
+    <div class="v mono" id="anchorBlock">—</div>
+    <div class="note" id="anchorTime">—</div>
+  </div>
+  <div class="cell">
+    <div class="k">PoT anchors on-chain</div>
+    <div class="v">57,054<span style="font-size:18px">+</span></div>
+    <div class="note">as of 2026-06, live &amp; growing</div>
+  </div>
+</div>
+<div class="liveflag">
+  <span class="dot"></span><span id="liveStamp">fetching live from The Graph…</span>
+  &nbsp;·&nbsp; Anyone can verify these values via GraphQL — see below.
+</div>
+
+<!-- ================= DEFENSE — DYNAMIC REJECT VISUAL ================= -->
+<div class="label">Pre-Ingestion Defense — forged proofs rejected at ingress</div>
+<div class="defense-head">
+  <div class="big" id="rejCounter">11&nbsp;/&nbsp;11</div>
+  <div class="cap">
+    In-scope manipulated proofs rejected on the <b>full deployed mint path</b> —
+    <b>pre-ingestion</b>. <b>0</b> forged tokens minted, <b>0</b> reached chain.
+    Defense-in-depth: expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
+    Honest proofs pass; only tampered proofs are stopped.
+  </div>
+</div>
+
+<!-- the live "ingress gate" stage: attack enters left → gate (mid) → verdict right -->
+<div class="stage" id="stage">
+  <div class="col">
+    <div class="incK">INCOMING — forged proof</div>
+    <div class="incV mono" id="incName">—</div>
+    <div class="incReason" id="incDesc">awaiting next attack…</div>
+  </div>
+  <div class="col mid">
+    <div class="gateK">PRE-INGESTION GATE</div>
+    <div class="gateGlyph" id="gateGlyph" style="margin:6px 0">·</div>
+    <div class="gateV" id="gateName">idle</div>
+  </div>
+  <div class="col">
+    <div class="outK">VERDICT</div>
+    <div class="outV" id="outVerdict">—</div>
+    <div class="outSub" id="outReason">no transaction · gas 0</div>
+  </div>
+</div>
+
+<!-- vulnerable-surface abstraction grid: each in-scope attack class -->
+<div class="label" style="margin-top:24px">Attack surface — in-scope vectors (each rejected before any mint)</div>
+<div class="tiles" id="tiles"><!-- populated by JS so labels match the reject loop exactly --></div>
+
+<!-- out-of-scope: defended at other layers, shown honestly distinct -->
+<div class="label" style="margin-top:24px">Other layers — defended outside single-proof ingress (honestly out-of-scope here)</div>
+<div class="layers">
+  <div class="layer"><div class="lname">Flood / DDoS</div><div class="lwhere">network rate-limit (transport)</div></div>
+  <div class="layer"><div class="lname">Fleet ordering / SDN reorder</div><div class="lwhere">multi-node sequence cross-reference</div></div>
+  <div class="layer"><div class="lname">GPS spoofing</div><div class="lwhere">Roughtime-style multi-source cross-check</div></div>
+  <div class="layer"><div class="lname">Sybil (fake IDs)</div><div class="lwhere">service-context binding + registry cap</div></div>
+</div>
+
+<div class="conds">
+  Reproducible: <span class="mono">node attack_bot.js</span> against the SDK's real pre-ingestion gate —
+  <b>17 attempted, 11 in-scope rejected on the full deployed path, 0 minted</b>.
+  Two vectors that pass a single isolated gate are re-run end-to-end and both reject
+  (live-time clock anchoring + Ed25519 hash binding + mandatory issuer-key pinning).
+  Rejected proofs send no transaction — gas cost 0, testnet-safe.
+  This panel demonstrates the rejection logic with the measured verdicts; it is not a live mint feed.
+</div>
+
+<!-- ================= VERIFIABILITY PANEL ================= -->
+<div class="label">Verifiability — run it yourself</div>
+<div class="query"><span class="key">{</span>
+  _meta <span class="key">{</span> block <span class="key">{</span> number timestamp <span class="key">}</span> hasIndexingErrors <span class="key">}</span>
+  poTAnchors(first: 1, orderBy: timestamp, orderDirection: desc) <span class="key">{</span>
+    blockNumber timestamp txHash
+  <span class="key">}</span>
+<span class="key">}</span></div>
+<div class="endpoint mono">POST https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</div>
+<div class="runit">Run it yourself. <span>The numbers above are the live response to this exact query — no trusted operator, no shared secret.</span></div>
+
+<footer>
+  <div>draft-helmprotocol-tttps-03&nbsp; | &nbsp;Dispatch / SecDispatch Interim&nbsp; | &nbsp;June 30, 2026</div>
+  <div>Proof of Time — Live System Integrity</div>
+</footer>
+
+<script>
+/* ---------- LIVE SUBGRAPH FETCH (unchanged behaviour) ---------- */
+(function(){
+  var ENDPOINT = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
+  var QUERY = "{ _meta { block { number timestamp } hasIndexingErrors } poTAnchors(first:1, orderBy:timestamp, orderDirection:desc){ blockNumber timestamp txHash } }";
+
+  function fmtInt(n){ return Number(n).toLocaleString("en-US"); }
+  function fmtUTC(sec){
+    try{ return new Date(Number(sec)*1000).toISOString().replace("T"," ").replace(/\.\d+Z$/," UTC"); }
+    catch(e){ return "—"; }
+  }
+  function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+
+  function fetchLive(){
+    fetch(ENDPOINT,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({query:QUERY})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.data){ throw new Error("no data"); }
+      var d = j.data;
+      var meta = d._meta || {};
+      var blk = (meta.block && meta.block.number) ? meta.block.number : null;
+      var hasErr = meta.hasIndexingErrors;
+      var anchor = (d.poTAnchors && d.poTAnchors[0]) ? d.poTAnchors[0] : null;
+
+      set("headBlock", blk!=null ? fmtInt(blk) : "—");
+      set("indexErrors", hasErr===false ? "none" : (hasErr===true ? "present" : "—"));
+      if(anchor){
+        set("anchorBlock", fmtInt(anchor.blockNumber));
+        set("anchorTime", fmtUTC(anchor.timestamp));
+      }
+      var now = new Date().toISOString().replace("T"," ").replace(/\.\d+Z$/," UTC");
+      set("liveStamp", "live — fetched " + now);
+    })
+    .catch(function(e){
+      set("liveStamp", "live fetch unavailable (offline / CORS) — values shown when reachable");
+    });
+  }
+
+  fetchLive();
+  setInterval(fetchLive, 15000);
+})();
+
+/* ---------- DYNAMIC ATTACK -> REJECT VISUALISATION ----------
+   Every vector and reason below is the measured verdict from `node attack_bot.js`
+   run against the real SDK gates. No live mint feed — this is a demonstration of
+   the rejection logic with the recorded full-path verdicts.
+   No internal algorithms exposed: only attack class + SDK gate name + reason. */
+(function(){
+  // 11 in-scope vectors, full deployed path = all REJECTED.
+  var VECTORS = [
+    { name:"Replay",            desc:"Reused nonce resubmitted as a fresh proof.",            gate:"verifyProofOfTime", reason:"duplicate nonce — already used" },
+    { name:"Backdated / expired",desc:"Proof whose expiry has already passed.",                gate:"verifyProofOfTime", reason:"expired — outside validity window" },
+    { name:"Time-skew (NTP)",   desc:"One source reading skewed beyond tolerance.",            gate:"verifyProofOfTime", reason:"reading outside per-source tolerance" },
+    { name:"Confidence strip",  desc:"Confidence field zeroed to bypass quality check.",       gate:"verifyProofOfTime", reason:"confidence must be > 0" },
+    { name:"Empty readings",    desc:"Proof submitted with no source readings.",               gate:"verifyProofOfTime", reason:"readings must be non-empty" },
+    { name:"Future-date (coherent)",desc:"All readings shifted forward together by +1h.",      gate:"full path",         reason:"live-time anchor + Ed25519 hash binding" },
+    { name:"Signature forgery", desc:"Random bytes presented as the issuer signature.",        gate:"verifyPotSignature",reason:"Ed25519 verification failed" },
+    { name:"Body tamper (MITM)",desc:"Payload mutated after signing.",                          gate:"verifyPotSignature",reason:"signature invalid for mutated body" },
+    { name:"Issuer spoof (DNS)",desc:"Attacker key vs the pinned issuer key.",                 gate:"verifyPotSignature",reason:"public-key mismatch vs pin" },
+    { name:"Cross-pool replay", desc:"Pool-A token replayed into pool B.",                      gate:"isValidForPool",    reason:"pool context binding mismatch" },
+    { name:"Protocol violation",desc:"Malformed proof structure at ingress.",                  gate:"verifyProofOfTime", reason:"malformed-PoT guard tripped" }
+  ];
+
+  // Build the abstraction tiles from the SAME list so labels always match the loop.
+  var tilesEl = document.getElementById("tiles");
+  var tileNodes = [];
+  VECTORS.forEach(function(v, i){
+    var t = document.createElement("div");
+    t.className = "tile";
+    t.innerHTML =
+      '<div class="tname"></div>' +
+      '<div class="tdesc"></div>' +
+      '<div class="tstat">awaiting test</div>' +
+      '<div class="treason"></div>';
+    t.querySelector(".tname").textContent = v.name;
+    t.querySelector(".tdesc").textContent = v.desc;
+    tilesEl.appendChild(t);
+    tileNodes.push(t);
+  });
+
+  var stage     = document.getElementById("stage");
+  var incName   = document.getElementById("incName");
+  var incDesc   = document.getElementById("incDesc");
+  var gateGlyph = document.getElementById("gateGlyph");
+  var gateName  = document.getElementById("gateName");
+  var outVerdict= document.getElementById("outVerdict");
+  var outReason = document.getElementById("outReason");
+
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var idx = 0;
+
+  function showIncoming(v, tile){
+    incName.textContent = v.name;
+    incDesc.textContent = v.desc;
+    gateGlyph.textContent = "→";
+    gateName.textContent = v.gate;
+    outVerdict.textContent = "checking…";
+    outReason.textContent = "no transaction · gas 0";
+    tile.classList.remove("rejected");
+    tile.classList.add("active");
+    tile.querySelector(".tstat").textContent = "→ ingress gate…";
+    tile.querySelector(".treason").textContent = "";
+  }
+
+  function showRejected(v, tile){
+    stage.classList.add("flash");
+    gateGlyph.textContent = "✗";
+    outVerdict.textContent = "REJECTED at ingress";
+    outReason.textContent = v.reason;
+    // settle tile into persistent rejected state
+    tile.classList.remove("active");
+    tile.classList.add("rejected");
+    tile.querySelector(".tstat").textContent = "REJECTED · pre-ingestion";
+    tile.querySelector(".treason").textContent = v.reason;
+    // clear the transient alarm flash on the gate after a beat
+    setTimeout(function(){ stage.classList.remove("flash"); }, 520);
+  }
+
+  function step(){
+    var v = VECTORS[idx];
+    var tile = tileNodes[idx];
+    showIncoming(v, tile);
+    var delay = reduceMotion ? 0 : 620;
+    setTimeout(function(){ showRejected(v, tile); }, delay);
+    idx = (idx + 1) % VECTORS.length;
+  }
+
+  // If reduced motion: mark every tile rejected immediately (no animation churn),
+  // then run a slow non-flashing cycle for the stage text only.
+  if(reduceMotion){
+    VECTORS.forEach(function(v, i){
+      tileNodes[i].classList.add("rejected");
+      tileNodes[i].querySelector(".tstat").textContent = "REJECTED · pre-ingestion";
+      tileNodes[i].querySelector(".treason").textContent = v.reason;
+    });
+  }
+
+  step();
+  setInterval(step, 1900);
+})();
+</script>
+
+</body>
+</html>

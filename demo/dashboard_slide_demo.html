@@ -3,305 +3,246 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Proof of Time — System Integrity Dashboard</title>
+<title>Proof of Time — tttps:// system integrity</title>
 <style>
-  /* ---- design tokens: monotone, ietf_dispatch_pot_03beta deck + arm.html box look ---- */
+  /* ---- restrained terminal palette: paper-ink monochrome, two muted Morandi accents ---- */
   :root{
-    --ink:#111111;     /* titles / big numbers          */
-    --dark:#333333;    /* detail                        */
-    --mid:#666666;     /* secondary detail              */
-    --gray:#999999;    /* panel label / footer / sub    */
-    --rule:#dddddd;    /* dividers / panel borders      */
-    --fill:#fafafa;    /* panel header / tile fill      */
-    --paper:#ffffff;
-    --ok:#3c6e47;      /* muted green — resting "good" status, used sparingly */
-    --okline:#5a8a64;  /* sparkline / gauge stroke        */
-    --alarm:#9a3b3b;   /* muted brick — alert / reject     */
+    --bg:#f2f1ee;        /* warm paper, not pure white            */
+    --panel:#fbfaf8;     /* panel fill                            */
+    --ink:#23211d;       /* primary mono text                     */
+    --dim:#6f6b63;       /* secondary text                        */
+    --faint:#a39e94;     /* labels / comments                     */
+    --rule:#ddd9d1;      /* hairline borders                      */
+    --rule2:#ece9e3;     /* inner hairlines                       */
+    --ok:#5a7a5e;        /* muted sage — resting "good"           */
+    --okdim:#8aa08c;     /* sparkline fill                        */
+    --alarm:#9a4b3b;     /* muted brick — reject flash            */
+    --grid:#e6e2da;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:#f4f4f4;color:var(--ink);
-    font-family:Helvetica,"Helvetica Neue",Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;font-weight:400}
-  body{padding:40px 36px 26px;max-width:1080px;margin:0 auto}
+  html,body{background:var(--bg);color:var(--ink);
+    font-family:"SF Mono","SFMono-Regular",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    -webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
+  body{padding:30px 26px 22px;max-width:980px;margin:0 auto}
   a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
-  .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+  .cursor{display:inline-block;width:7px;height:13px;background:var(--ok);
+    margin-left:2px;vertical-align:-2px;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  @media (prefers-reduced-motion: reduce){.cursor{animation:none}}
 
-  /* ---- header ---- */
-  header{margin-bottom:22px}
-  h1{font-size:30px;font-weight:700;letter-spacing:-0.01em}
-  .sub{font-size:14px;color:var(--mid);margin-top:7px}
-  .hbar{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
-  .tttps{font-size:11px;color:var(--gray)}
-  .livepill{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--mid);
-    background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:5px 10px}
-  .livedot{width:7px;height:7px;border-radius:50%;background:var(--ok);
-    box-shadow:0 0 0 0 rgba(60,110,71,.5);animation:pulse 2.4s ease-out infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(60,110,71,.45)}70%{box-shadow:0 0 0 6px rgba(60,110,71,0)}100%{box-shadow:0 0 0 0 rgba(60,110,71,0)}}
+  /* ---- header: a restrained terminal banner ---- */
+  header{border:1px solid var(--rule);background:var(--panel);border-radius:4px;
+    padding:14px 16px;margin-bottom:14px}
+  .banner{color:var(--ink);font-size:12.5px;white-space:pre;line-height:1.35;letter-spacing:0}
+  .sub{color:var(--dim);font-size:12px;margin-top:8px}
+  .hbar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;font-size:11px}
+  .live{display:inline-flex;align-items:center;gap:7px;color:var(--dim);
+    border:1px solid var(--rule);border-radius:3px;padding:3px 9px;background:var(--bg)}
+  .ldot{width:7px;height:7px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 0 0 rgba(90,122,94,.5);animation:pulse 2.6s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(90,122,94,.4)}70%{box-shadow:0 0 0 6px rgba(90,122,94,0)}100%{box-shadow:0 0 0 0 rgba(90,122,94,0)}}
+  .meta{color:var(--faint)}
 
-  /* ---- Grafana-style panel primitives ---- */
-  .panel{background:var(--paper);border:1px solid var(--rule);border-radius:4px;
-    overflow:hidden;display:flex;flex-direction:column}
-  .panel > .phead{font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.04em;
-    text-transform:uppercase;padding:9px 14px;border-bottom:1px solid var(--rule);
-    background:var(--fill);display:flex;justify-content:space-between;align-items:center}
-  .phead .src{font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);font-size:10px}
-  .pbody{padding:16px 14px;flex:1}
+  /* ---- panel primitive ---- */
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+    margin-bottom:14px;overflow:hidden}
+  .ph{font-size:11px;color:var(--faint);padding:8px 13px;border-bottom:1px solid var(--rule2);
+    display:flex;justify-content:space-between;align-items:center;letter-spacing:0.02em}
+  .ph .src{color:var(--faint)}
+  .ph::before{content:"› ";color:var(--ok)}
+  .pb{padding:14px 13px}
 
-  /* row helpers */
-  .row{display:grid;gap:12px;margin-bottom:12px}
-  .r4{grid-template-columns:repeat(4,1fr)}
-  .r2{grid-template-columns:2fr 1fr}
-  .r2eq{grid-template-columns:1fr 1fr}
+  /* ---- stat row (big mono numbers) ---- */
+  .r4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .stat{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:12px 13px}
+  .stat .k{font-size:10.5px;color:var(--faint);letter-spacing:0.02em}
+  .stat .k::before{content:"› ";color:var(--ok)}
+  .stat .v{font-size:30px;font-weight:600;letter-spacing:-0.01em;margin-top:8px;line-height:1}
+  .stat .v .u{font-size:17px;color:var(--dim)}
+  .stat .n{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.35}
+  .stat .bdg{font-size:10px;color:var(--ok);margin-top:8px}
+  .stat .bdg::before{content:"[ "} .stat .bdg::after{content:" ]"}
+  .stat .bdg.alert{color:var(--alarm)}
 
-  /* ---- stat panel (big number, Grafana stat look) ---- */
-  .stat .pbody{display:flex;flex-direction:column;justify-content:center;min-height:96px}
-  .stat .v{font-size:38px;font-weight:700;letter-spacing:-0.02em;line-height:1;
-    font-variant-numeric:tabular-nums}
-  .stat .v .u{font-size:20px;font-weight:700;color:var(--mid)}
-  .stat .v.sm{font-size:24px}
-  .stat .note{font-size:11px;color:var(--mid);margin-top:9px;line-height:1.35}
-  .stat .badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;
-    font-weight:700;margin-top:10px;letter-spacing:0.02em}
-  .badge .b-dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
-  .badge.ok{color:var(--ok)} .badge.ok .b-dot{background:var(--ok)}
-  .badge.alert{color:var(--alarm)} .badge.alert .b-dot{background:var(--alarm)}
+  /* ---- ascii sparkline ---- */
+  .spark{font-size:18px;letter-spacing:1px;line-height:1.1;color:var(--ok);
+    white-space:pre;overflow-x:auto;padding:6px 0 4px}
+  .axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);
+    margin-top:6px;border-top:1px solid var(--rule2);padding-top:7px}
+  .axis b{color:var(--dim);font-weight:600}
+  .tsmsg{font-size:12px;color:var(--dim);padding:18px 2px;line-height:1.5}
 
-  /* ---- time-series panel ---- */
-  .ts .pbody{padding:14px 14px 10px}
-  .ts svg{display:block;width:100%;height:118px}
-  .ts .tsfoot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--gray);
-    margin-top:8px;line-height:1.4}
-  .ts .tsfoot b{color:var(--mid);font-weight:700}
-  .ts .tsmsg{font-size:11px;color:var(--mid);padding:30px 4px;text-align:center;line-height:1.5}
+  /* ---- ascii gauges ---- */
+  .gauges{font-size:13px;line-height:1.9;white-space:pre}
+  .gauges .bar{color:var(--ok)}
+  .gauges .lbl{color:var(--faint)}
+  .gauges .val{color:var(--ink)}
 
-  /* ---- gauge panel ---- */
-  .gauges .pbody{display:flex;gap:8px;align-items:center;justify-content:space-around;
-    flex-wrap:wrap;min-height:118px}
-  .gauge{text-align:center;flex:1;min-width:120px}
-  .gauge svg{display:block;margin:0 auto}
-  .gauge .gv{font-size:17px;font-weight:700;line-height:1;margin-top:-30px}
-  .gauge .gl{font-size:10.5px;color:var(--gray);margin-top:18px;letter-spacing:0.02em}
-  .gauge .gl b{color:var(--mid);font-weight:700}
+  .two{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
 
-  /* ---- defense headline (inside panel) ---- */
-  .defense .pbody{padding:16px 16px 14px}
-  .defense .dhead{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
-  .defense .big{font-size:42px;font-weight:700;letter-spacing:-0.02em;line-height:1;
-    font-variant-numeric:tabular-nums}
-  .defense .cap{font-size:12.5px;color:var(--mid);max-width:660px;line-height:1.5}
-  .defense .cap b{color:var(--ink)}
+  /* ---- defense headline ---- */
+  .dhead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+  .dhead .big{font-size:34px;font-weight:600;letter-spacing:-0.01em;line-height:1}
+  .dhead .cap{font-size:11.5px;color:var(--dim);max-width:640px;line-height:1.55}
+  .dhead .cap b{color:var(--ink);font-weight:600}
 
-  /* ---- ingress gate stage (live reject animation) ---- */
-  .stage{border:1px solid var(--rule);background:var(--fill);border-radius:3px;
-    display:grid;grid-template-columns:1fr 132px 1fr;align-items:stretch;
-    margin-top:14px;min-height:96px;transition:border-color .25s linear}
-  .stage .col{padding:15px 16px;display:flex;flex-direction:column;justify-content:center}
-  .stage .col.mid{border-left:1px solid var(--rule);border-right:1px solid var(--rule);
-    align-items:center;text-align:center;background:var(--paper);transition:border-color .25s linear}
-  .stage .gateK,.stage .incK,.stage .outK{font-size:10px;color:var(--gray);letter-spacing:0.04em}
-  .stage .outK{text-align:right}
-  .stage .gateV{font-size:13px;font-weight:700;color:var(--ink);margin-top:4px;line-height:1.2}
-  .stage .incV{font-size:16px;font-weight:700;color:var(--ink);margin-top:6px;min-height:20px}
-  .stage .incReason{font-size:11px;color:var(--mid);margin-top:6px;min-height:15px;line-height:1.35}
-  .stage .outV{font-size:16px;font-weight:700;margin-top:6px;text-align:right;min-height:20px;color:var(--ink)}
-  .stage .outSub{font-size:11px;color:var(--mid);margin-top:6px;text-align:right;min-height:15px;line-height:1.35}
-  .gateGlyph{font-size:22px;font-weight:700;line-height:1;color:var(--ink);margin:6px 0}
+  /* ---- ascii ingress gate stage (live flow animation) ---- */
+  .stage{border:1px solid var(--rule);border-radius:3px;background:var(--bg);
+    padding:14px 14px;font-size:12.5px;line-height:1.6;white-space:pre;overflow-x:auto;
+    transition:border-color .25s linear}
+  .stage .gateblk{color:var(--dim)}
+  .stage .flow{color:var(--faint)}
+  .stage .inc{color:var(--ink)}
+  .stage .verdict{color:var(--ok)}
+  .stage .x{color:var(--ok);font-weight:600}
   .stage.flash{border-color:var(--alarm)}
-  .stage.flash .col.mid{border-left-color:var(--alarm);border-right-color:var(--alarm)}
-  .stage.flash .gateGlyph,.stage.flash .outV{color:var(--alarm)}
+  .stage.flash .x{color:var(--alarm)}
+  .stage.flash .gateblk{color:var(--alarm)}
 
-  /* ---- attack-surface tiles (status panel) ---- */
-  .tiles{display:grid;grid-template-columns:repeat(3,1fr);
-    border-top:1px solid var(--rule);border-left:1px solid var(--rule);margin-top:14px}
-  .tile{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);
-    background:var(--paper);padding:13px 15px;min-height:100px;position:relative;
-    transition:background .18s linear}
-  .tile .tname{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2}
-  .tile .tdesc{font-size:11px;color:var(--mid);margin-top:6px;line-height:1.4}
-  .tile .tstat{font-size:10px;color:var(--gray);margin-top:9px;letter-spacing:0.03em}
-  .tile .treason{font-size:10px;color:var(--mid);margin-top:3px;line-height:1.35;min-height:13px}
-  .tile.rejected{border-left:3px solid var(--ok);padding-left:13px}
-  .tile.rejected .tstat{color:var(--ok);font-weight:700}
-  .tile.active{background:var(--fill);border-left:3px solid var(--alarm);padding-left:13px}
-  .tile.active .tstat{color:var(--alarm);font-weight:700}
+  /* ---- attack surface log lines ---- */
+  .log{font-size:12px;line-height:1.65;white-space:pre-wrap}
+  .lrow{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;
+    padding:5px 0;border-bottom:1px solid var(--rule2)}
+  .lrow:last-child{border-bottom:0}
+  .lrow .mark{color:var(--faint)}
+  .lrow.done .mark{color:var(--ok);font-weight:600}
+  .lrow.live .mark{color:var(--alarm);font-weight:600}
+  .lrow .nm{color:var(--ink)}
+  .lrow .rs{color:var(--dim);font-size:10.5px}
+  .lrow.live .rs{color:var(--alarm)}
+  .lrow .st{color:var(--faint);font-size:10px;text-align:right;white-space:nowrap}
+  .lrow.done .st{color:var(--ok)}
+  .lrow.live .st{color:var(--alarm)}
 
-  /* ---- out-of-scope strip (dashed, muted) ---- */
-  .layers{display:grid;grid-template-columns:repeat(4,1fr);
-    border-top:1px solid var(--rule);border-left:1px dashed var(--rule);margin-top:14px}
-  .layer{border-right:1px dashed var(--rule);border-bottom:1px dashed var(--rule);
-    padding:11px 13px;background:var(--paper)}
-  .layer .lname{font-size:12px;font-weight:700;color:var(--mid)}
-  .layer .lwhere{font-size:10.5px;color:var(--gray);margin-top:5px;line-height:1.4}
+  /* ---- out-of-scope (dim, dashed) ---- */
+  .oos{font-size:11.5px;line-height:1.65;color:var(--dim)}
+  .oos .or{padding:4px 0;border-bottom:1px dashed var(--rule);display:flex;
+    justify-content:space-between;gap:10px}
+  .oos .or:last-child{border-bottom:0}
+  .oos .or b{color:var(--ink);font-weight:600}
+  .oos .or span{color:var(--faint);font-size:10.5px;text-align:right}
 
-  .conds{font-size:11px;color:var(--gray);margin-top:14px;line-height:1.55}
-  .conds b{color:var(--mid);font-weight:700}
+  .conds{font-size:11px;color:var(--faint);line-height:1.6;margin-top:12px;
+    border-top:1px solid var(--rule2);padding-top:11px}
+  .conds b{color:var(--dim);font-weight:600}
 
-  /* ---- verifiability panel ---- */
-  .query{background:var(--fill);border:1px solid var(--rule);border-radius:3px;
-    padding:16px 18px;font-size:12.5px;color:var(--dark);
-    line-height:1.6;white-space:pre;overflow-x:auto}
-  .query .key{color:var(--ink);font-weight:700}
-  .endpoint{font-size:12px;color:var(--mid);margin-top:12px;word-break:break-all}
-  .runit{font-size:13px;color:var(--ink);font-weight:700;margin-top:14px}
-  .runit span{font-weight:400;color:var(--mid)}
+  /* ---- verifiability ---- */
+  .query{background:var(--bg);border:1px solid var(--rule2);border-radius:3px;
+    padding:13px 15px;font-size:12px;color:var(--dim);line-height:1.55;
+    white-space:pre;overflow-x:auto}
+  .query .k{color:var(--ink);font-weight:600}
+  .query .c{color:var(--faint)}
+  .ep{font-size:11.5px;color:var(--dim);margin-top:11px;word-break:break-all}
+  .ep b{color:var(--ink);font-weight:600}
+  .run{font-size:12px;color:var(--ink);font-weight:600;margin-top:11px}
+  .run span{font-weight:400;color:var(--dim)}
 
-  /* ---- footer ---- */
-  footer{margin-top:34px;padding-top:12px;border-top:1px solid var(--rule);
-    display:flex;justify-content:space-between;font-size:9px;color:var(--gray)}
+  footer{margin-top:24px;padding-top:11px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;font-size:9.5px;color:var(--faint);
+    flex-wrap:wrap;gap:6px}
 
-  @media (max-width:820px){
+  @media (max-width:780px){
     .r4{grid-template-columns:repeat(2,1fr)}
-    .r2,.r2eq{grid-template-columns:1fr}
-    .tiles{grid-template-columns:repeat(2,1fr)}
-    .layers{grid-template-columns:repeat(2,1fr)}
-    .stage{grid-template-columns:1fr;min-height:0}
-    .stage .col.mid{border-left:0;border-right:0;
-      border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-    .stage.flash .col.mid{border-top-color:var(--alarm);border-bottom-color:var(--alarm)}
-    .stage .outK,.stage .outV,.stage .outSub{text-align:left}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .tile{transition:none}.livedot{animation:none}
+    .two{grid-template-columns:1fr}
+    .banner{font-size:10px}
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Proof of Time — System Integrity</h1>
-  <div class="sub">Cross-party verifiable timestamps and ordering for autonomous agents</div>
+<div class="banner">╔═ PROOF OF TIME · tttps:// ════════════════════ system integrity ═╗</div>
+  <div class="sub">$ Cross-party verifiable timestamps &amp; ordering for autonomous agents<span class="cursor"></span></div>
   <div class="hbar">
-    <span class="tttps mono">tttps://</span>
-    <span class="livepill"><span class="livedot"></span><span id="liveStamp">fetching live from The Graph…</span></span>
-    <span class="tttps">Base Sepolia · indexed by The Graph · anyone can verify (GraphQL below)</span>
+    <span class="live"><span class="ldot"></span><span id="liveStamp">connecting to The Graph…</span></span>
+    <span class="meta">Base Sepolia · indexed by The Graph · anyone can verify (GraphQL below)</span>
   </div>
 </header>
 
-<!-- ================= ROW 1: STAT PANELS ================= -->
-<div class="row r4">
-  <div class="panel stat">
-    <div class="phead">PoT anchors on-chain</div>
-    <div class="pbody">
-      <div class="v">57,054<span class="u">+</span></div>
-      <div class="note">cumulative, as of 2026-06 — live &amp; growing</div>
-      <div class="badge ok"><span class="b-dot"></span>ON-CHAIN</div>
-    </div>
+<!-- ================= STAT ROW ================= -->
+<div class="r4">
+  <div class="stat">
+    <div class="k">PoT anchors on-chain</div>
+    <div class="v">57,054<span class="u">+</span></div>
+    <div class="n">cumulative · as of 2026-06 · growing</div>
+    <div class="bdg">on-chain</div>
   </div>
-  <div class="panel stat">
-    <div class="phead">Indexed head block</div>
-    <div class="pbody">
-      <div class="v mono" id="headBlock">—</div>
-      <div class="note" id="headNote">synced to chain head</div>
-      <div class="badge ok" id="headBadge"><span class="b-dot"></span>LIVE</div>
-    </div>
+  <div class="stat">
+    <div class="k">indexed head block</div>
+    <div class="v" id="headBlock">—</div>
+    <div class="n" id="headNote">synced to chain head</div>
+    <div class="bdg" id="headBadge">live</div>
   </div>
-  <div class="panel stat">
-    <div class="phead">Cryptographic failures</div>
-    <div class="pbody">
-      <div class="v">0</div>
-      <div class="note">forged tokens minted · proofs reaching chain</div>
-      <div class="badge ok"><span class="b-dot"></span>ZERO</div>
-    </div>
+  <div class="stat">
+    <div class="k">cryptographic failures</div>
+    <div class="v">0</div>
+    <div class="n">forged tokens minted · proofs reaching chain</div>
+    <div class="bdg">zero</div>
   </div>
-  <div class="panel stat">
-    <div class="phead">Attacks rejected</div>
-    <div class="pbody">
-      <div class="v">11&nbsp;/&nbsp;11</div>
-      <div class="note">in-scope vectors · full deployed mint path</div>
-      <div class="badge ok"><span class="b-dot"></span>FULL</div>
-    </div>
+  <div class="stat">
+    <div class="k">attacks rejected</div>
+    <div class="v">11<span class="u">/11</span></div>
+    <div class="n">in-scope vectors · full deployed mint path</div>
+    <div class="bdg">full</div>
   </div>
 </div>
 
-<!-- ================= ROW 2: TIME-SERIES + GAUGES ================= -->
-<div class="row r2">
-  <div class="panel ts">
-    <div class="phead">PoT anchors per block — recent indexed window
-      <span class="src" id="tsSrc">live · The Graph</span></div>
-    <div class="pbody" id="tsBody">
+<!-- ================= SPARKLINE + GAUGES ================= -->
+<div class="two">
+  <div class="panel">
+    <div class="ph">anchors/block — recent indexed window<span class="src" id="tsSrc">live · The Graph</span></div>
+    <div class="pb" id="tsBody">
       <div class="tsmsg" id="tsMsg">loading recent indexed anchors…</div>
     </div>
   </div>
-  <div class="panel gauges">
-    <div class="phead">Health</div>
-    <div class="pbody">
-      <div class="gauge" id="gIndex">
-        <svg width="96" height="62" viewBox="0 0 96 62" aria-hidden="true">
-          <path d="M8 56 A40 40 0 0 1 88 56" fill="none" stroke="#e6e6e6" stroke-width="8" stroke-linecap="round"/>
-          <path id="gIndexArc" d="M8 56 A40 40 0 0 1 88 56" fill="none" stroke="var(--okline)" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="126"/>
-        </svg>
-        <div class="gv" id="gIndexV" style="color:var(--mid)">—</div>
-        <div class="gl">Indexing<br><b id="gIndexL">checking…</b></div>
-      </div>
-      <div class="gauge" id="gDef">
-        <svg width="96" height="62" viewBox="0 0 96 62" aria-hidden="true">
-          <path d="M8 56 A40 40 0 0 1 88 56" fill="none" stroke="#e6e6e6" stroke-width="8" stroke-linecap="round"/>
-          <path d="M8 56 A40 40 0 0 1 88 56" fill="none" stroke="var(--okline)" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="0"/>
-        </svg>
-        <div class="gv" style="color:var(--ok)">11/11</div>
-        <div class="gl">Defense<br><b style="color:var(--ok)">full path · 0 minted</b></div>
-      </div>
+  <div class="panel">
+    <div class="ph">health<span class="src">self-check</span></div>
+    <div class="pb">
+      <div class="gauges" id="gauges"><span class="lbl">indexing  </span><span class="bar" id="gIndexBar">[··········]</span> <span class="val" id="gIndexV">checking</span>
+<span class="lbl">defense   </span><span class="bar">[██████████]</span> <span class="val" style="color:var(--ok)">11/11 · 0 minted</span></div>
     </div>
   </div>
 </div>
 
-<!-- ================= ROW 3: DEFENSE PANEL (dynamic reject) ================= -->
-<div class="panel defense" style="margin-bottom:12px">
-  <div class="phead">Pre-ingestion defense — forged proofs rejected at ingress
-    <span class="src">measured · node attack_bot.js</span></div>
-  <div class="pbody">
+<!-- ================= DEFENSE: ASCII INGRESS GATE FLOW ================= -->
+<div class="panel">
+  <div class="ph">pre-ingestion defense — forged proofs rejected at ingress<span class="src">measured · node attack_bot.js</span></div>
+  <div class="pb">
     <div class="dhead">
-      <div class="big" id="rejCounter">11&nbsp;/&nbsp;11</div>
+      <div class="big" id="rejCounter">11/11</div>
       <div class="cap">
-        In-scope manipulated proofs rejected on the <b>full deployed mint path</b> —
-        <b>pre-ingestion</b>. <b>0</b> forged tokens minted, <b>0</b> reached chain.
-        Defense-in-depth: expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
+        In-scope manipulated proofs rejected on the <b>full deployed mint path</b>, <b>pre-ingestion</b>.
+        <b>0</b> forged tokens minted, <b>0</b> reached chain. Defense-in-depth:
+        expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
         Honest proofs pass; only tampered proofs are stopped.
       </div>
     </div>
-
-    <!-- live ingress gate stage: attack enters left -> gate (mid) -> verdict right -->
-    <div class="stage" id="stage">
-      <div class="col">
-        <div class="incK">INCOMING — forged proof</div>
-        <div class="incV mono" id="incName">—</div>
-        <div class="incReason" id="incDesc">awaiting next attack…</div>
-      </div>
-      <div class="col mid">
-        <div class="gateK">PRE-INGESTION GATE</div>
-        <div class="gateGlyph" id="gateGlyph">·</div>
-        <div class="gateV" id="gateName">idle</div>
-      </div>
-      <div class="col">
-        <div class="outK">VERDICT</div>
-        <div class="outV" id="outVerdict">—</div>
-        <div class="outSub" id="outReason">no transaction · gas 0</div>
-      </div>
-    </div>
+    <div class="stage" id="stage"><span class="inc" id="flowLine">  awaiting next attack…</span>
+<span class="flow" id="flowGate1">  [ idle ]            ──────▶  ║                  ║</span>
+<span class="flow" id="flowGate2">                              ║ PRE-INGRESS GATE ║  ─────▶  —</span>
+<span class="flow" id="flowGate3">                              ║                  ║  no tx · gas 0</span></div>
   </div>
 </div>
 
-<!-- ================= ROW 4: ATTACK SURFACE STATUS PANELS ================= -->
-<div class="row r2eq">
+<!-- ================= ATTACK SURFACE LOG + OUT-OF-SCOPE ================= -->
+<div class="two">
   <div class="panel">
-    <div class="phead">Attack surface — in-scope vectors
-      <span class="src">each rejected before any mint</span></div>
-    <div class="pbody" style="padding:0">
-      <div class="tiles" id="tiles" style="border-top:0;margin-top:0"><!-- JS-built, labels match the loop --></div>
+    <div class="ph">attack surface — in-scope vectors<span class="src">each rejected before any mint</span></div>
+    <div class="pb" style="padding:6px 13px 12px">
+      <div class="log" id="log"><!-- JS-built --></div>
     </div>
   </div>
   <div class="panel">
-    <div class="phead">Other layers — defended outside single-proof ingress
-      <span class="src">honestly out-of-scope here</span></div>
-    <div class="pbody" style="padding:0">
-      <div class="layers" style="border-top:0;margin-top:0">
-        <div class="layer"><div class="lname">Flood / DDoS</div><div class="lwhere">network rate-limit (transport)</div></div>
-        <div class="layer"><div class="lname">Fleet ordering / SDN reorder</div><div class="lwhere">multi-node sequence cross-reference</div></div>
-        <div class="layer"><div class="lname">GPS spoofing</div><div class="lwhere">Roughtime-style multi-source cross-check</div></div>
-        <div class="layer"><div class="lname">Sybil (fake IDs)</div><div class="lwhere">service-context binding + registry cap</div></div>
+    <div class="ph">other layers — defended outside single-proof ingress<span class="src">honestly out-of-scope</span></div>
+    <div class="pb" style="padding:10px 13px 12px">
+      <div class="oos">
+        <div class="or"><b>Flood / DDoS</b><span>network rate-limit (transport)</span></div>
+        <div class="or"><b>Fleet ordering / SDN reorder</b><span>multi-node sequence cross-ref</span></div>
+        <div class="or"><b>GPS spoofing</b><span>Roughtime multi-source cross-check</span></div>
+        <div class="or"><b>Sybil (fake IDs)</b><span>service-context binding + registry cap</span></div>
       </div>
-      <div class="conds" style="padding:14px 14px 16px;margin-top:0">
-        Reproducible: <span class="mono">node attack_bot.js</span> against the SDK's real pre-ingestion gate —
+      <div class="conds">
+        Reproducible: <b>node attack_bot.js</b> against the SDK's real pre-ingestion gate —
         <b>17 attempted, 11 in-scope rejected on the full deployed path, 0 minted</b>.
         Two vectors that pass a single isolated gate are re-run end-to-end and both reject
         (live-time clock anchoring + Ed25519 hash binding + mandatory issuer-key pinning).
@@ -312,95 +253,73 @@
   </div>
 </div>
 
-<!-- ================= ROW 5: VERIFIABILITY PANEL ================= -->
-<div class="panel" style="margin-bottom:12px">
-  <div class="phead">Verifiability — run it yourself<span class="src">no trusted operator</span></div>
-  <div class="pbody">
-    <div class="query"><span class="key">{</span>
-  _meta <span class="key">{</span> block <span class="key">{</span> number timestamp <span class="key">}</span> hasIndexingErrors <span class="key">}</span>
-  poTAnchors(first: 1, orderBy: timestamp, orderDirection: desc) <span class="key">{</span>
+<!-- ================= VERIFIABILITY ================= -->
+<div class="panel">
+  <div class="ph">verifiability — run it yourself<span class="src">no trusted operator</span></div>
+  <div class="pb">
+    <div class="query"><span class="k">{</span>
+  _meta <span class="k">{</span> block <span class="k">{</span> number timestamp <span class="k">}</span> hasIndexingErrors <span class="k">}</span>
+  poTAnchors(first: 1, orderBy: timestamp, orderDirection: desc) <span class="k">{</span>
     blockNumber timestamp txHash
-  <span class="key">}</span>
-<span class="key">}</span></div>
-    <div class="endpoint mono">POST https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</div>
-    <div class="runit">Run it yourself. <span>The live values above are the response to this exact query — no trusted operator, no shared secret.</span></div>
+  <span class="k">}</span>
+<span class="k">}</span></div>
+    <div class="ep">$ POST <b>https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</b></div>
+    <div class="run">Run it yourself. <span>The live values above are the response to this exact query — no trusted operator, no shared secret.</span></div>
   </div>
 </div>
 
 <footer>
   <div>draft-helmprotocol-tttps-03&nbsp; | &nbsp;Dispatch / SecDispatch Interim&nbsp; | &nbsp;June 30, 2026</div>
-  <div>Proof of Time — System Integrity</div>
+  <div>Proof of Time — system integrity</div>
 </footer>
 
 <script>
-/* ---------- LIVE SUBGRAPH FETCH: stats, gauge, time-series ---------- */
+/* ---------- LIVE SUBGRAPH FETCH: stats, ascii gauge, ascii sparkline ---------- */
 (function(){
   var ENDPOINT = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
-  // one query feeds: head/errors (stat+gauge), latest anchor, and recent anchors (real time-series)
   var QUERY = "{ _meta { block { number timestamp } hasIndexingErrors } recent: poTAnchors(first:60, orderBy:timestamp, orderDirection:desc){ blockNumber timestamp } }";
+  var SPARK = "▁▂▃▅▇█".split(""); // ▁▂▃▅▇█
 
   function fmtInt(n){ return Number(n).toLocaleString("en-US"); }
   function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
   function nowUTC(){ return new Date().toISOString().replace("T"," ").replace(/\.\d+Z$/," UTC"); }
 
-  // draw an honest sparkline: anchors counted per block over the recent indexed window
-  function drawTimeSeries(recent){
-    var body = document.getElementById("tsBody");
+  // ASCII sparkline: anchors counted per block over the recent indexed window
+  function drawSpark(recent){
+    var body=document.getElementById("tsBody");
     if(!recent || recent.length < 4){
-      body.innerHTML = '<div class="tsmsg">Recent indexed window is sparse right now.<br>'+
+      body.innerHTML='<div class="tsmsg">Recent indexed window is sparse right now.<br>'+
         'Cumulative total and live head block above remain authoritative.</div>';
       set("tsSrc","live · sparse window");
       return;
     }
-    // bucket anchors by blockNumber (oldest -> newest)
-    var byBlock = {};
+    var byBlock={};
     recent.forEach(function(a){ var b=Number(a.blockNumber); byBlock[b]=(byBlock[b]||0)+1; });
-    var blocks = Object.keys(byBlock).map(Number).sort(function(a,b){return a-b;});
-    var pts = blocks.map(function(b){ return {block:b, n:byBlock[b]}; });
-    var maxN = Math.max.apply(null, pts.map(function(p){return p.n;}));
-    var W=560, H=118, padL=8, padR=8, padT=10, padB=18, n=pts.length;
-    var iw=W-padL-padR, ih=H-padT-padB;
-    function x(i){ return padL + (n===1?iw/2:(i/(n-1))*iw); }
-    function y(v){ return padT + ih - (maxN===0?0:(v/maxN)*ih); }
-    var line="", area="M"+x(0)+" "+(padT+ih);
-    pts.forEach(function(p,i){
-      var px=x(i).toFixed(1), py=y(p.n).toFixed(1);
-      line += (i===0?"M":"L")+px+" "+py+" ";
-      area += "L"+px+" "+py+" ";
-    });
-    area += "L"+x(n-1)+" "+(padT+ih)+" Z";
-    var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="PoT anchors per block over the recent indexed window">';
-    // baseline
-    svg+='<line x1="'+padL+'" y1="'+(padT+ih)+'" x2="'+(W-padR)+'" y2="'+(padT+ih)+'" stroke="#eee" stroke-width="1"/>';
-    svg+='<path d="'+area+'" fill="rgba(90,138,100,0.10)" stroke="none"/>';
-    svg+='<path d="'+line+'" fill="none" stroke="var(--okline)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>';
-    // endpoint dot
-    svg+='<circle cx="'+x(n-1).toFixed(1)+'" cy="'+y(pts[n-1].n).toFixed(1)+'" r="2.6" fill="var(--okline)"/>';
-    svg+='</svg>';
-    body.innerHTML = svg +
-      '<div class="tsfoot"><span>block <b>'+fmtInt(blocks[0])+'</b> → <b>'+fmtInt(blocks[blocks.length-1])+'</b> · '+n+' blocks</span>'+
-      '<span>peak <b>'+maxN+'</b> anchors/block · live data, not a mint feed</span></div>';
+    var blocks=Object.keys(byBlock).map(Number).sort(function(a,b){return a-b;});
+    var vals=blocks.map(function(b){return byBlock[b];});
+    var maxN=Math.max.apply(null,vals), minN=Math.min.apply(null,vals);
+    var line=vals.map(function(v){
+      if(maxN===minN) return SPARK[SPARK.length-1];
+      var idx=Math.round((v-minN)/(maxN-minN)*(SPARK.length-1));
+      return SPARK[idx];
+    }).join("");
+    body.innerHTML='<div class="spark" role="img" aria-label="anchors per block, recent indexed window">'+line+'</div>'+
+      '<div class="axis"><span>block <b>'+fmtInt(blocks[0])+'</b> → <b>'+fmtInt(blocks[blocks.length-1])+'</b> · '+blocks.length+' blocks</span>'+
+      '<span>peak <b>'+maxN+'</b>/block · live, not a mint feed</span></div>';
     set("tsSrc","live · The Graph");
   }
 
   function setGaugeIndex(synced, hasErr){
-    var arc = document.getElementById("gIndexArc");
-    var v = document.getElementById("gIndexV");
-    var l = document.getElementById("gIndexL");
+    var bar=document.getElementById("gIndexBar"), v=document.getElementById("gIndexV");
     if(hasErr===false){
-      arc.setAttribute("stroke-dashoffset","0");       // full arc
-      arc.setAttribute("stroke","var(--okline)");
-      v.textContent="OK"; v.style.color="var(--ok)";
-      l.textContent="synced · 0 errors"; l.style.color="var(--ok)";
+      bar.textContent="[██████████]"; bar.style.color="var(--ok)";
+      v.textContent="synced · 0 errors"; v.style.color="var(--ok)";
     } else if(hasErr===true){
-      arc.setAttribute("stroke-dashoffset","0");
-      arc.setAttribute("stroke","var(--alarm)");
-      v.textContent="ERR"; v.style.color="var(--alarm)";
-      l.textContent="indexing errors"; l.style.color="var(--alarm)";
+      bar.textContent="[██████████]"; bar.style.color="var(--alarm)";
+      v.textContent="indexing errors"; v.style.color="var(--alarm)";
     } else {
-      arc.setAttribute("stroke-dashoffset","63");       // half (unknown)
-      v.textContent="—"; v.style.color="var(--mid)";
-      l.textContent="checking…"; l.style.color="var(--mid)";
+      bar.textContent="[·····?····]"; bar.style.color="var(--faint)";
+      v.textContent="checking"; v.style.color="var(--dim)";
     }
   }
 
@@ -417,15 +336,15 @@
       setGaugeIndex(blk!=null, hasErr);
       set("headNote", hasErr===false ? "synced · 0 indexing errors" : (hasErr===true?"indexing errors present":"synced to chain head"));
       var hb=document.getElementById("headBadge");
-      if(hb){ hb.className = (hasErr===true) ? "badge alert" : "badge ok";
-        hb.lastChild.textContent = (hasErr===true) ? "ERROR" : "LIVE"; }
-      drawTimeSeries(d.recent);
-      set("liveStamp", "live — fetched "+nowUTC());
+      if(hb){ hb.className = (hasErr===true) ? "bdg alert" : "bdg";
+        hb.textContent = (hasErr===true) ? "error" : "live"; }
+      drawSpark(d.recent);
+      set("liveStamp","live — fetched "+nowUTC());
     })
     .catch(function(){
-      set("liveStamp","live fetch unavailable (offline / CORS) — values shown when reachable");
+      set("liveStamp","live fetch unavailable (offline / CORS) — shown when reachable");
       var body=document.getElementById("tsBody");
-      if(body && !body.querySelector("svg")){
+      if(body && !body.querySelector(".spark")){
         body.innerHTML='<div class="tsmsg">Live fetch unavailable (offline / CORS).<br>'+
           'Cumulative total (57,054+) and the GraphQL endpoint below remain verifiable.</div>';
         set("tsSrc","offline");
@@ -436,7 +355,7 @@
   setInterval(fetchLive, 15000);
 })();
 
-/* ---------- DYNAMIC ATTACK -> REJECT VISUALISATION ----------
+/* ---------- DYNAMIC ASCII ATTACK -> REJECT FLOW ----------
    Every vector and reason below is the measured verdict from `node attack_bot.js`
    run against the real SDK gates (17 attempted | 11 in-scope rejected, full deployed
    path | 0 minted). No live mint feed — this is a demonstration of the rejection
@@ -444,68 +363,78 @@
    only attack class + SDK gate name + reason. */
 (function(){
   var VECTORS = [
-    { name:"Replay",             desc:"Reused nonce resubmitted as a fresh proof.",       gate:"verifyProofOfTime", reason:"duplicate nonce — already used" },
-    { name:"Backdated / expired",desc:"Proof whose expiry has already passed.",            gate:"verifyProofOfTime", reason:"expired — outside validity window" },
-    { name:"Time-skew (NTP)",    desc:"One source reading skewed beyond tolerance.",       gate:"verifyProofOfTime", reason:"reading outside per-source tolerance" },
-    { name:"Confidence strip",   desc:"Confidence field zeroed to bypass quality check.",  gate:"verifyProofOfTime", reason:"confidence must be > 0" },
-    { name:"Empty readings",     desc:"Proof submitted with no source readings.",          gate:"verifyProofOfTime", reason:"readings must be non-empty" },
-    { name:"Future-date (coherent)",desc:"All readings shifted forward together by +1h.",  gate:"full path",         reason:"live-time anchor + Ed25519 hash binding" },
-    { name:"Signature forgery",  desc:"Random bytes presented as the issuer signature.",   gate:"verifyPotSignature",reason:"Ed25519 verification failed" },
-    { name:"Body tamper (MITM)", desc:"Payload mutated after signing.",                     gate:"verifyPotSignature",reason:"signature invalid for mutated body" },
-    { name:"Issuer spoof (DNS)", desc:"Attacker key vs the pinned issuer key.",            gate:"verifyPotSignature",reason:"public-key mismatch vs pin" },
-    { name:"Cross-pool replay",  desc:"Pool-A token replayed into pool B.",                 gate:"isValidForPool",    reason:"pool context binding mismatch" },
-    { name:"Protocol violation", desc:"Malformed proof structure at ingress.",              gate:"verifyProofOfTime", reason:"malformed-PoT guard tripped" }
+    { name:"replay",            desc:"reused nonce resubmitted as a fresh proof",      gate:"verifyProofOfTime",  reason:"duplicate nonce — already used" },
+    { name:"backdated/expired", desc:"proof whose expiry has already passed",          gate:"verifyProofOfTime",  reason:"expired — outside validity window" },
+    { name:"time-skew (NTP)",   desc:"one source reading skewed beyond tolerance",     gate:"verifyProofOfTime",  reason:"reading outside per-source tolerance" },
+    { name:"confidence-strip",  desc:"confidence field zeroed to bypass quality check",gate:"verifyProofOfTime",  reason:"confidence must be > 0" },
+    { name:"empty-readings",    desc:"proof submitted with no source readings",        gate:"verifyProofOfTime",  reason:"readings must be non-empty" },
+    { name:"future-date",       desc:"all readings shifted forward together by +1h",   gate:"full path",          reason:"live-time anchor + Ed25519 hash binding" },
+    { name:"signature-forgery", desc:"random bytes presented as issuer signature",     gate:"verifyPotSignature", reason:"Ed25519 verification failed" },
+    { name:"body-tamper (MITM)",desc:"payload mutated after signing",                  gate:"verifyPotSignature", reason:"signature invalid for mutated body" },
+    { name:"issuer-spoof (DNS)",desc:"attacker key vs the pinned issuer key",          gate:"verifyPotSignature", reason:"public-key mismatch vs pin" },
+    { name:"cross-pool replay", desc:"pool-A token replayed into pool B",              gate:"isValidForPool",     reason:"pool context binding mismatch" },
+    { name:"protocol-violation",desc:"malformed proof structure at ingress",           gate:"verifyProofOfTime",  reason:"malformed-PoT guard tripped" }
   ];
 
-  var tilesEl=document.getElementById("tiles"), tileNodes=[];
+  // --- attack-surface log lines (one per vector) ---
+  var logEl=document.getElementById("log"), rows=[];
   VECTORS.forEach(function(v){
-    var t=document.createElement("div");
-    t.className="tile";
-    t.innerHTML='<div class="tname"></div><div class="tdesc"></div>'+
-                '<div class="tstat">awaiting test</div><div class="treason"></div>';
-    t.querySelector(".tname").textContent=v.name;
-    t.querySelector(".tdesc").textContent=v.desc;
-    tilesEl.appendChild(t); tileNodes.push(t);
+    var r=document.createElement("div");
+    r.className="lrow";
+    r.innerHTML='<span class="mark">·</span>'+
+      '<span><span class="nm"></span><br><span class="rs"></span></span>'+
+      '<span class="st">awaiting</span>';
+    r.querySelector(".nm").textContent=v.name;
+    logEl.appendChild(r); rows.push(r);
   });
 
+  // --- ascii ingress gate flow stage ---
   var stage=document.getElementById("stage"),
-      incName=document.getElementById("incName"), incDesc=document.getElementById("incDesc"),
-      gateGlyph=document.getElementById("gateGlyph"), gateName=document.getElementById("gateName"),
-      outVerdict=document.getElementById("outVerdict"), outReason=document.getElementById("outReason");
+      flowLine=document.getElementById("flowLine"),
+      flowGate1=document.getElementById("flowGate1"),
+      flowGate2=document.getElementById("flowGate2"),
+      flowGate3=document.getElementById("flowGate3");
   var reduceMotion=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var idx=0;
 
-  function showIncoming(v,tile){
-    incName.textContent=v.name; incDesc.textContent=v.desc;
-    gateGlyph.textContent="→"; gateName.textContent=v.gate;
-    outVerdict.textContent="checking…"; outReason.textContent="no transaction · gas 0";
-    tile.classList.remove("rejected"); tile.classList.add("active");
-    tile.querySelector(".tstat").textContent="→ ingress gate…";
-    tile.querySelector(".treason").textContent="";
+  function pad(s,n){ s=String(s); while(s.length<n) s+=" "; return s.slice(0,n); }
+
+  function showIncoming(v,row){
+    flowLine.textContent="  incoming › "+v.name+" — "+v.desc;
+    flowGate1.textContent="  ["+pad(v.name,16)+"]  ──────▶  ║                  ║";
+    flowGate2.textContent="                              ║ PRE-INGRESS GATE ║  ──"+(reduceMotion?"✗":"·")+"──▶  "+(reduceMotion?"REJECTED":"checking…");
+    flowGate3.textContent="                              ║ "+pad(v.gate,16)+" ║  no tx · gas 0";
+    row.className="lrow live";
+    row.querySelector(".mark").textContent="▶";
+    row.querySelector(".rs").textContent="→ ingress gate…";
+    row.querySelector(".st").textContent="checking";
   }
-  function showRejected(v,tile){
-    stage.classList.add("flash"); gateGlyph.textContent="✗";
-    outVerdict.textContent="REJECTED at ingress"; outReason.textContent=v.reason;
-    tile.classList.remove("active"); tile.classList.add("rejected");
-    tile.querySelector(".tstat").textContent="REJECTED · pre-ingestion";
-    tile.querySelector(".treason").textContent=v.reason;
-    setTimeout(function(){ stage.classList.remove("flash"); },520);
+  function showRejected(v,row){
+    stage.classList.add("flash");
+    flowGate2.textContent="                              ║ PRE-INGRESS GATE ║  ──✗──▶  REJECTED · "+v.reason;
+    row.className="lrow done";
+    row.querySelector(".mark").textContent="✗";
+    row.querySelector(".rs").textContent=v.reason;
+    row.querySelector(".st").textContent="REJECTED";
+    setTimeout(function(){ stage.classList.remove("flash"); },560);
   }
   function step(){
-    var v=VECTORS[idx], tile=tileNodes[idx];
-    showIncoming(v,tile);
-    setTimeout(function(){ showRejected(v,tile); }, reduceMotion?0:620);
+    var v=VECTORS[idx], row=rows[idx];
+    showIncoming(v,row);
+    setTimeout(function(){ showRejected(v,row); }, reduceMotion?0:640);
     idx=(idx+1)%VECTORS.length;
   }
+
   if(reduceMotion){
     VECTORS.forEach(function(v,i){
-      tileNodes[i].classList.add("rejected");
-      tileNodes[i].querySelector(".tstat").textContent="REJECTED · pre-ingestion";
-      tileNodes[i].querySelector(".treason").textContent=v.reason;
+      rows[i].className="lrow done";
+      rows[i].querySelector(".mark").textContent="✗";
+      rows[i].querySelector(".rs").textContent=v.reason;
+      rows[i].querySelector(".st").textContent="REJECTED";
     });
   }
   step();
-  setInterval(step, 1900);
+  setInterval(step, 1950);
 })();
 </script>
 

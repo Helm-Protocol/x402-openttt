@@ -5,236 +5,393 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proof of Time — tttps:// system integrity</title>
 <style>
-  /* ---- restrained terminal palette: paper-ink monochrome, two muted Morandi accents ---- */
+  /* ============================================================
+     MORANDI PALETTE — muted, low-saturation still-life tones.
+     Paper-greige base, ink text, restrained dusty accents.
+     No glow, no neon, no fake percentages, no decoration.
+     ============================================================ */
   :root{
-    --bg:#f2f1ee;        /* warm paper, not pure white            */
-    --panel:#fbfaf8;     /* panel fill                            */
-    --ink:#23211d;       /* primary mono text                     */
-    --dim:#6f6b63;       /* secondary text                        */
-    --faint:#a39e94;     /* labels / comments                     */
-    --rule:#ddd9d1;      /* hairline borders                      */
-    --rule2:#ece9e3;     /* inner hairlines                       */
-    --ok:#5a7a5e;        /* muted sage — resting "good"           */
-    --okdim:#8aa08c;     /* sparkline fill                        */
-    --alarm:#9a4b3b;     /* muted brick — reject flash            */
-    --grid:#e6e2da;
+    --bg:        #edece8;   /* warm greige paper                       */
+    --bg2:       #e6e4de;   /* recessed wells                          */
+    --panel:     #f5f4f0;   /* card fill                               */
+    --panel2:    #faf9f5;   /* raised card fill                        */
+    --ink:       #2a2823;   /* primary text                            */
+    --ink-soft:  #4a4640;   /* secondary text                          */
+    --dim:       #726d63;   /* tertiary text                           */
+    --faint:     #9c968a;   /* labels / captions                       */
+    --rule:      #d8d5cc;   /* hairline borders                        */
+    --rule2:     #e4e1d8;   /* inner hairlines                         */
+
+    /* Morandi accents — desaturated, earthen */
+    --sage:      #7d9079;   /* dusty sage  — resting "good"            */
+    --sage-soft: #aebaa6;   /* sage tint for fills                     */
+    --sage-wash: #dfe4d8;   /* faint sage wash                         */
+    --rose:      #a8756a;   /* dusty terracotta — reject moment        */
+    --rose-soft: #c9a59c;   /* rose tint                               */
+    --rose-wash: #ecdcd6;   /* faint rose wash                         */
+    --slate:     #7c8693;   /* muted slate — neutral / info            */
+    --slate-soft:#aeb5bd;
+    --clay:      #b09467;   /* warm ochre — secondary accent           */
+
+    --ink-block: #2a2823;   /* dark headline block (arm.html lineage)  */
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--ink);
-    font-family:"SF Mono","SFMono-Regular",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
-    -webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
-  body{padding:30px 26px 22px;max-width:980px;margin:0 auto}
+  html,body{
+    background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;font-size:14px;line-height:1.55;
+  }
+  body{padding:46px 28px 30px;max-width:1080px;margin:0 auto}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+    font-variant-numeric:tabular-nums}
+  .num{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums;letter-spacing:-0.01em}
   a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
-  .cursor{display:inline-block;width:7px;height:13px;background:var(--ok);
-    margin-left:2px;vertical-align:-2px;animation:blink 1.1s steps(1) infinite}
-  @keyframes blink{50%{opacity:0}}
-  @media (prefers-reduced-motion: reduce){.cursor{animation:none}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
-  /* ---- header: a restrained terminal banner ---- */
-  header{border:1px solid var(--rule);background:var(--panel);border-radius:4px;
-    padding:14px 16px;margin-bottom:14px}
-  .banner{color:var(--ink);font-size:12.5px;white-space:pre;line-height:1.35;letter-spacing:0}
-  .sub{color:var(--dim);font-size:12px;margin-top:8px}
-  .hbar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;font-size:11px}
-  .live{display:inline-flex;align-items:center;gap:7px;color:var(--dim);
-    border:1px solid var(--rule);border-radius:3px;padding:3px 9px;background:var(--bg)}
-  .ldot{width:7px;height:7px;border-radius:50%;background:var(--ok);
-    box-shadow:0 0 0 0 rgba(90,122,94,.5);animation:pulse 2.6s ease-out infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(90,122,94,.4)}70%{box-shadow:0 0 0 6px rgba(90,122,94,0)}100%{box-shadow:0 0 0 0 rgba(90,122,94,0)}}
+  /* ---------------- HEADER ---------------- */
+  header{margin-bottom:34px}
+  .eyebrow{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);
+    font-weight:600;margin-bottom:14px}
+  h1{font-size:30px;font-weight:600;letter-spacing:-0.02em;line-height:1.12;color:var(--ink);
+    max-width:760px}
+  h1 .accent{color:var(--sage)}
+  .lede{font-size:14.5px;color:var(--ink-soft);margin-top:14px;max-width:660px;line-height:1.6}
+  .hbar{display:flex;align-items:center;gap:11px;margin-top:20px;flex-wrap:wrap;font-size:12px}
+  .live{display:inline-flex;align-items:center;gap:8px;color:var(--dim);
+    border:1px solid var(--rule);border-radius:20px;padding:5px 13px 5px 11px;background:var(--panel2)}
+  .ldot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--sage);flex:0 0 auto}
+  .ldot::after{content:"";position:absolute;inset:-4px;border-radius:50%;
+    border:1px solid var(--sage-soft);opacity:.7;animation:ring 2.8s ease-out infinite}
+  @keyframes ring{0%{transform:scale(.6);opacity:.7}80%,100%{transform:scale(1.6);opacity:0}}
   .meta{color:var(--faint)}
 
-  /* ---- panel primitive ---- */
-  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;
-    margin-bottom:14px;overflow:hidden}
-  .ph{font-size:11px;color:var(--faint);padding:8px 13px;border-bottom:1px solid var(--rule2);
-    display:flex;justify-content:space-between;align-items:center;letter-spacing:0.02em}
-  .ph .src{color:var(--faint)}
-  .ph::before{content:"› ";color:var(--ok)}
-  .pb{padding:14px 13px}
+  /* ---------------- STAT ROW ---------------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+  .stat{background:var(--panel2);border:1px solid var(--rule);border-radius:8px;
+    padding:18px 18px 16px;position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rule)}
+  .stat.s-sage::before{background:var(--sage)}
+  .stat.s-slate::before{background:var(--slate)}
+  .stat.s-clay::before{background:var(--clay)}
+  .stat .k{font-size:11px;color:var(--faint);letter-spacing:0.04em;text-transform:uppercase;
+    font-weight:600}
+  .stat .v{font-size:34px;font-weight:600;letter-spacing:-0.025em;margin-top:12px;line-height:1;
+    color:var(--ink)}
+  .stat .v .u{font-size:18px;color:var(--dim);font-weight:500}
+  .stat .n{font-size:11.5px;color:var(--dim);margin-top:11px;line-height:1.4}
+  .stat .tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
+    letter-spacing:0.05em;text-transform:uppercase;margin-top:12px;padding:3px 9px;border-radius:11px;
+    background:var(--bg2);color:var(--dim)}
+  .stat .tag.sage{background:var(--sage-wash);color:#566b53}
+  .stat .tag.slate{background:#dfe3e8;color:#566069}
+  .stat .tag.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;
+    opacity:.8}
 
-  /* ---- stat row (big mono numbers) ---- */
-  .r4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-  .stat{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:12px 13px}
-  .stat .k{font-size:10.5px;color:var(--faint);letter-spacing:0.02em}
-  .stat .k::before{content:"› ";color:var(--ok)}
-  .stat .v{font-size:30px;font-weight:600;letter-spacing:-0.01em;margin-top:8px;line-height:1}
-  .stat .v .u{font-size:17px;color:var(--dim)}
-  .stat .n{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.35}
-  .stat .bdg{font-size:10px;color:var(--ok);margin-top:8px}
-  .stat .bdg::before{content:"[ "} .stat .bdg::after{content:" ]"}
-  .stat .bdg.alert{color:var(--alarm)}
+  /* ---------------- TWO-COLUMN ---------------- */
+  .two{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+  .ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:14px 18px;border-bottom:1px solid var(--rule2)}
+  .ph .t{font-size:12.5px;font-weight:600;color:var(--ink-soft);letter-spacing:0.01em}
+  .ph .src{font-size:10.5px;color:var(--faint);letter-spacing:0.03em;text-transform:uppercase;
+    white-space:nowrap}
+  .pb{padding:18px}
 
-  /* ---- ascii sparkline ---- */
-  .spark{font-size:18px;letter-spacing:1px;line-height:1.1;color:var(--ok);
-    white-space:pre;overflow-x:auto;padding:6px 0 4px}
-  .axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);
-    margin-top:6px;border-top:1px solid var(--rule2);padding-top:7px}
-  .axis b{color:var(--dim);font-weight:600}
-  .tsmsg{font-size:12px;color:var(--dim);padding:18px 2px;line-height:1.5}
+  /* ---------------- SPARKLINE (SVG) ---------------- */
+  #tsBody{min-height:128px}
+  .sparkwrap{position:relative}
+  svg.spark{display:block;width:100%;height:108px}
+  .spark .grid{stroke:var(--rule2);stroke-width:1}
+  .spark .area{fill:url(#sageGrad)}
+  .spark .line{fill:none;stroke:var(--sage);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .spark .line.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+    animation:draw 1.1s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .spark .dot{fill:var(--panel);stroke:var(--sage);stroke-width:2}
+  .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);
+    margin-top:12px;padding-top:11px;border-top:1px solid var(--rule2)}
+  .axis b{color:var(--ink-soft);font-weight:600}
+  .tsmsg{font-size:12.5px;color:var(--dim);padding:26px 4px;line-height:1.6}
 
-  /* ---- ascii gauges ---- */
-  .gauges{font-size:13px;line-height:1.9;white-space:pre}
-  .gauges .bar{color:var(--ok)}
-  .gauges .lbl{color:var(--faint)}
-  .gauges .val{color:var(--ink)}
+  /* ---------------- HEALTH GAUGES (SVG arcs) ---------------- */
+  .gwrap{display:flex;flex-direction:column;gap:18px}
+  .gauge{display:flex;align-items:center;gap:16px}
+  .gauge svg{flex:0 0 auto}
+  .gauge .arc-bg{fill:none;stroke:var(--bg2);stroke-width:7;stroke-linecap:round}
+  .gauge .arc-fg{fill:none;stroke-width:7;stroke-linecap:round;
+    transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .4s}
+  .gauge .glbl{font-size:11px;color:var(--faint);letter-spacing:0.05em;text-transform:uppercase;
+    font-weight:600}
+  .gauge .gval{font-size:15px;color:var(--ink);font-weight:600;margin-top:4px}
+  .gauge .gsub{font-size:11px;color:var(--dim);margin-top:2px}
+  .gcenter{font-size:12px;font-weight:700;font-family:"SF Mono",monospace}
 
-  .two{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
-
-  /* ---- defense headline ---- */
-  .dhead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:12px}
-  .dhead .big{font-size:34px;font-weight:600;letter-spacing:-0.01em;line-height:1}
-  .dhead .cap{font-size:11.5px;color:var(--dim);max-width:640px;line-height:1.55}
+  /* ---------------- DEFENSE / INGRESS GATE ---------------- */
+  .dpanel{margin-bottom:18px}
+  .dhead{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;
+    padding:22px 22px 4px}
+  .dhead .figure{flex:0 0 auto;text-align:center}
+  .dhead .figure .big{font-size:48px;font-weight:600;letter-spacing:-0.03em;line-height:1;
+    color:var(--sage)}
+  .dhead .figure .bl{font-size:10.5px;color:var(--faint);letter-spacing:0.08em;text-transform:uppercase;
+    margin-top:8px;font-weight:600}
+  .dhead .cap{flex:1;min-width:280px;font-size:13px;color:var(--ink-soft);line-height:1.65;max-width:640px}
   .dhead .cap b{color:var(--ink);font-weight:600}
+  .dhead .cap .pill{display:inline-block;background:var(--sage-wash);color:#566b53;
+    border-radius:4px;padding:1px 7px;font-weight:600;font-size:12px}
 
-  /* ---- ascii ingress gate stage (live flow animation) ---- */
-  .stage{border:1px solid var(--rule);border-radius:3px;background:var(--bg);
-    padding:14px 14px;font-size:12.5px;line-height:1.6;white-space:pre;overflow-x:auto;
-    transition:border-color .25s linear}
-  .stage .gateblk{color:var(--dim)}
-  .stage .flow{color:var(--faint)}
-  .stage .inc{color:var(--ink)}
-  .stage .verdict{color:var(--ok)}
-  .stage .x{color:var(--ok);font-weight:600}
-  .stage.flash{border-color:var(--alarm)}
-  .stage.flash .x{color:var(--alarm)}
-  .stage.flash .gateblk{color:var(--alarm)}
+  /* gate stage — flowing chips */
+  .stage{margin:14px 22px 22px;border:1px solid var(--rule);border-radius:9px;background:var(--bg2);
+    padding:0;overflow:hidden}
+  .gateflow{display:grid;grid-template-columns:1fr auto auto auto;align-items:stretch;gap:0}
+  .gf-cell{padding:20px 18px;display:flex;flex-direction:column;justify-content:center;min-height:104px}
+  .gf-in{background:var(--panel2);border-right:1px solid var(--rule)}
+  .gf-in .lab{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);
+    font-weight:600}
+  .gf-in .nm{font-size:16px;font-weight:600;color:var(--ink);margin-top:8px;
+    transition:color .3s;min-height:21px}
+  .gf-in .ds{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.45;min-height:32px}
 
-  /* ---- attack surface log lines ---- */
-  .log{font-size:12px;line-height:1.65;white-space:pre-wrap}
-  .lrow{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;
-    padding:5px 0;border-bottom:1px solid var(--rule2)}
+  .gf-arrow{width:54px;align-items:center;justify-content:center;color:var(--faint);position:relative}
+  .gf-arrow svg{width:40px;height:14px}
+  .gf-arrow .ln{stroke:var(--slate-soft);stroke-width:1.5;stroke-dasharray:3 4}
+  .gf-arrow .hd{fill:var(--slate-soft)}
+  .gf-arrow .pulse{fill:var(--sage);opacity:0}
+  .gf-arrow.run .pulse{animation:travel 1s linear}
+  @keyframes travel{0%{opacity:0;transform:translateX(0)}10%{opacity:1}90%{opacity:1}
+    100%{opacity:0;transform:translateX(34px)}}
+
+  .gf-gate{background:var(--ink-block);color:#f0eee8;align-items:center;text-align:center;
+    min-width:178px;transition:background .35s}
+  .gf-gate .gt{font-size:13px;font-weight:600;letter-spacing:0.02em}
+  .gf-gate .gs{font-size:10.5px;color:#b8b3a8;margin-top:7px;letter-spacing:0.04em}
+  .gf-gate .gmod{font-size:11px;font-family:"SF Mono",monospace;color:#cbc6ba;margin-top:9px;
+    min-height:15px}
+  .gf-gate.flash{background:var(--rose)}
+  .gf-gate.flash .gs{color:#f1ddd7}
+  .gf-gate.flash .gmod{color:#f6e9e4}
+
+  .gf-out{background:var(--panel2);border-left:1px solid var(--rule);min-width:150px;
+    align-items:flex-start;justify-content:center}
+  .gf-out .ver{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    color:var(--sage);transition:color .3s}
+  .gf-out .ver .ic{width:18px;height:18px;flex:0 0 auto}
+  .gf-out.rej .ver{color:var(--rose)}
+  .gf-out .rsn{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.4;min-height:30px}
+  .gf-out .gas{font-size:10px;color:var(--faint);margin-top:9px;letter-spacing:0.04em;text-transform:uppercase}
+
+  /* ---------------- ATTACK LOG ---------------- */
+  .log{display:flex;flex-direction:column}
+  .lrow{display:grid;grid-template-columns:22px 1fr auto;gap:11px;align-items:start;
+    padding:11px 0;border-bottom:1px solid var(--rule2);transition:opacity .3s}
   .lrow:last-child{border-bottom:0}
-  .lrow .mark{color:var(--faint)}
-  .lrow.done .mark{color:var(--ok);font-weight:600}
-  .lrow.live .mark{color:var(--alarm);font-weight:600}
-  .lrow .nm{color:var(--ink)}
-  .lrow .rs{color:var(--dim);font-size:10.5px}
-  .lrow.live .rs{color:var(--alarm)}
-  .lrow .st{color:var(--faint);font-size:10px;text-align:right;white-space:nowrap}
-  .lrow.done .st{color:var(--ok)}
-  .lrow.live .st{color:var(--alarm)}
+  .lrow .mk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule);
+    margin-top:1px;display:flex;align-items:center;justify-content:center;
+    transition:border-color .3s,background .3s}
+  .lrow .mk svg{width:11px;height:11px;opacity:0;transition:opacity .3s}
+  .lrow.done .mk{border-color:var(--sage);background:var(--sage-wash)}
+  .lrow.done .mk svg{opacity:1}
+  .lrow.live .mk{border-color:var(--rose);background:var(--rose-wash)}
+  .lrow .nm{font-size:13px;font-weight:600;color:var(--ink)}
+  .lrow .rs{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.4}
+  .lrow.live .rs{color:var(--rose)}
+  .lrow .st{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+    color:var(--faint);white-space:nowrap;padding:3px 9px;border-radius:10px;background:var(--bg2);
+    margin-top:1px}
+  .lrow.done .st{color:#566b53;background:var(--sage-wash)}
+  .lrow.live .st{color:var(--rose);background:var(--rose-wash)}
 
-  /* ---- out-of-scope (dim, dashed) ---- */
-  .oos{font-size:11.5px;line-height:1.65;color:var(--dim)}
-  .oos .or{padding:4px 0;border-bottom:1px dashed var(--rule);display:flex;
-    justify-content:space-between;gap:10px}
+  /* ---------------- OUT OF SCOPE ---------------- */
+  .oos{display:flex;flex-direction:column;gap:0}
+  .oos .or{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+    padding:11px 0;border-bottom:1px dashed var(--rule)}
   .oos .or:last-child{border-bottom:0}
-  .oos .or b{color:var(--ink);font-weight:600}
-  .oos .or span{color:var(--faint);font-size:10.5px;text-align:right}
+  .oos .or b{color:var(--ink-soft);font-weight:600;font-size:13px}
+  .oos .or span{color:var(--faint);font-size:11.5px;text-align:right;max-width:62%}
+  .conds{font-size:11.5px;color:var(--dim);line-height:1.65;margin-top:16px;
+    border-top:1px solid var(--rule2);padding-top:14px}
+  .conds b{color:var(--ink-soft);font-weight:600}
 
-  .conds{font-size:11px;color:var(--faint);line-height:1.6;margin-top:12px;
-    border-top:1px solid var(--rule2);padding-top:11px}
-  .conds b{color:var(--dim);font-weight:600}
-
-  /* ---- verifiability ---- */
-  .query{background:var(--bg);border:1px solid var(--rule2);border-radius:3px;
-    padding:13px 15px;font-size:12px;color:var(--dim);line-height:1.55;
-    white-space:pre;overflow-x:auto}
-  .query .k{color:var(--ink);font-weight:600}
-  .query .c{color:var(--faint)}
-  .ep{font-size:11.5px;color:var(--dim);margin-top:11px;word-break:break-all}
+  /* ---------------- VERIFIABILITY ---------------- */
+  .code{background:var(--bg2);border:1px solid var(--rule2);border-radius:7px;
+    padding:16px 18px;font-size:12.5px;line-height:1.6;white-space:pre;overflow-x:auto;
+    color:var(--ink-soft)}
+  .code .k{color:var(--clay);font-weight:600}
+  .code .f{color:var(--sage)}
+  .ep{font-size:12px;color:var(--dim);margin-top:14px;word-break:break-all}
   .ep b{color:var(--ink);font-weight:600}
-  .run{font-size:12px;color:var(--ink);font-weight:600;margin-top:11px}
-  .run span{font-weight:400;color:var(--dim)}
+  .run{font-size:12.5px;color:var(--ink-soft);margin-top:12px;line-height:1.55}
+  .run b{font-weight:600;color:var(--ink)}
 
-  footer{margin-top:24px;padding-top:11px;border-top:1px solid var(--rule);
-    display:flex;justify-content:space-between;font-size:9.5px;color:var(--faint);
-    flex-wrap:wrap;gap:6px}
+  /* ---------------- FOOTER ---------------- */
+  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;font-size:11px;color:var(--faint);
+    flex-wrap:wrap;gap:8px}
 
-  @media (max-width:780px){
-    .r4{grid-template-columns:repeat(2,1fr)}
+  @media (max-width:860px){
+    .stats{grid-template-columns:repeat(2,1fr)}
     .two{grid-template-columns:1fr}
-    .banner{font-size:10px}
+    .gateflow{grid-template-columns:1fr}
+    .gf-arrow{width:auto;height:40px;border-top:1px solid var(--rule)}
+    .gf-arrow svg{transform:rotate(90deg)}
+    .gf-in,.gf-out{border:0}
+    h1{font-size:25px}
+    .dhead .figure .big{font-size:40px}
   }
 </style>
 </head>
 <body>
 
+<!-- ================= HEADER ================= -->
 <header>
-<div class="banner">╔═ PROOF OF TIME · tttps:// ════════════════════ system integrity ═╗</div>
-  <div class="sub">$ Cross-party verifiable timestamps &amp; ordering for autonomous agents<span class="cursor"></span></div>
+  <div class="eyebrow">Proof of Time · tttps://</div>
+  <h1>Cross-party verifiable timestamps &amp; ordering<br>for autonomous agents — <span class="accent">time as honesty, not power</span>.</h1>
+  <p class="lede">Where TLS made HTTP trustworthy, tttps makes transaction sequencing verifiable.
+    No trusted operator, no shared secret. Anyone can re-run the query below.</p>
   <div class="hbar">
     <span class="live"><span class="ldot"></span><span id="liveStamp">connecting to The Graph…</span></span>
-    <span class="meta">Base Sepolia · indexed by The Graph · anyone can verify (GraphQL below)</span>
+    <span class="meta">Base Sepolia · indexed by The Graph · GraphQL verifiable below</span>
   </div>
 </header>
 
 <!-- ================= STAT ROW ================= -->
-<div class="r4">
-  <div class="stat">
+<div class="stats">
+  <div class="stat s-clay">
     <div class="k">PoT anchors on-chain</div>
-    <div class="v">57,054<span class="u">+</span></div>
+    <div class="v num">57,054<span class="u">+</span></div>
     <div class="n">cumulative · as of 2026-06 · growing</div>
-    <div class="bdg">on-chain</div>
+    <div class="tag dot">on-chain</div>
   </div>
-  <div class="stat">
-    <div class="k">indexed head block</div>
-    <div class="v" id="headBlock">—</div>
+  <div class="stat s-slate">
+    <div class="k">Indexed head block</div>
+    <div class="v num" id="headBlock">—</div>
     <div class="n" id="headNote">synced to chain head</div>
-    <div class="bdg" id="headBadge">live</div>
+    <div class="tag slate dot" id="headBadge">live</div>
   </div>
   <div class="stat">
-    <div class="k">cryptographic failures</div>
-    <div class="v">0</div>
+    <div class="k">Cryptographic failures</div>
+    <div class="v num">0</div>
     <div class="n">forged tokens minted · proofs reaching chain</div>
-    <div class="bdg">zero</div>
+    <div class="tag dot">zero</div>
   </div>
-  <div class="stat">
-    <div class="k">attacks rejected</div>
-    <div class="v">11<span class="u">/11</span></div>
+  <div class="stat s-sage">
+    <div class="k">Attacks rejected</div>
+    <div class="v num">11<span class="u">/11</span></div>
     <div class="n">in-scope vectors · full deployed mint path</div>
-    <div class="bdg">full</div>
+    <div class="tag sage dot">full path</div>
   </div>
 </div>
 
 <!-- ================= SPARKLINE + GAUGES ================= -->
 <div class="two">
   <div class="panel">
-    <div class="ph">anchors/block — recent indexed window<span class="src" id="tsSrc">live · The Graph</span></div>
-    <div class="pb" id="tsBody">
-      <div class="tsmsg" id="tsMsg">loading recent indexed anchors…</div>
+    <div class="ph"><span class="t">Anchors per block — recent indexed window</span>
+      <span class="src" id="tsSrc">live · The Graph</span></div>
+    <div class="pb">
+      <div id="tsBody"><div class="tsmsg">loading recent indexed anchors…</div></div>
     </div>
   </div>
   <div class="panel">
-    <div class="ph">health<span class="src">self-check</span></div>
+    <div class="ph"><span class="t">Health</span><span class="src">self-check</span></div>
     <div class="pb">
-      <div class="gauges" id="gauges"><span class="lbl">indexing  </span><span class="bar" id="gIndexBar">[··········]</span> <span class="val" id="gIndexV">checking</span>
-<span class="lbl">defense   </span><span class="bar">[██████████]</span> <span class="val" style="color:var(--ok)">11/11 · 0 minted</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- ================= DEFENSE: ASCII INGRESS GATE FLOW ================= -->
-<div class="panel">
-  <div class="ph">pre-ingestion defense — forged proofs rejected at ingress<span class="src">measured · node attack_bot.js</span></div>
-  <div class="pb">
-    <div class="dhead">
-      <div class="big" id="rejCounter">11/11</div>
-      <div class="cap">
-        In-scope manipulated proofs rejected on the <b>full deployed mint path</b>, <b>pre-ingestion</b>.
-        <b>0</b> forged tokens minted, <b>0</b> reached chain. Defense-in-depth:
-        expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
-        Honest proofs pass; only tampered proofs are stopped.
+      <div class="gwrap">
+        <div class="gauge">
+          <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+            <circle class="arc-bg" cx="29" cy="29" r="24"
+              stroke-dasharray="113 151" transform="rotate(135 29 29)"></circle>
+            <circle id="gIndexArc" class="arc-fg" cx="29" cy="29" r="24" stroke="var(--slate-soft)"
+              stroke-dasharray="113 151" stroke-dashoffset="113" transform="rotate(135 29 29)"></circle>
+            <text id="gIndexC" class="gcenter" x="29" y="33" text-anchor="middle"
+              fill="var(--dim)">··</text>
+          </svg>
+          <div>
+            <div class="glbl">Indexing</div>
+            <div class="gval" id="gIndexV">checking</div>
+            <div class="gsub" id="gIndexS">querying _meta</div>
+          </div>
+        </div>
+        <div class="gauge">
+          <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+            <circle class="arc-bg" cx="29" cy="29" r="24"
+              stroke-dasharray="113 151" transform="rotate(135 29 29)"></circle>
+            <circle class="arc-fg" cx="29" cy="29" r="24" stroke="var(--sage)"
+              stroke-dasharray="113 151" stroke-dashoffset="0" transform="rotate(135 29 29)"></circle>
+            <text class="gcenter" x="29" y="33" text-anchor="middle" fill="var(--sage)">✓</text>
+          </svg>
+          <div>
+            <div class="glbl">Defense</div>
+            <div class="gval">11 / 11 rejected</div>
+            <div class="gsub">0 forged tokens minted</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="stage" id="stage"><span class="inc" id="flowLine">  awaiting next attack…</span>
-<span class="flow" id="flowGate1">  [ idle ]            ──────▶  ║                  ║</span>
-<span class="flow" id="flowGate2">                              ║ PRE-INGRESS GATE ║  ─────▶  —</span>
-<span class="flow" id="flowGate3">                              ║                  ║  no tx · gas 0</span></div>
   </div>
 </div>
 
-<!-- ================= ATTACK SURFACE LOG + OUT-OF-SCOPE ================= -->
+<!-- ================= DEFENSE: INGRESS GATE FLOW ================= -->
+<div class="panel dpanel">
+  <div class="ph"><span class="t">Pre-ingestion defense — forged proofs rejected at ingress</span>
+    <span class="src">measured · node attack_bot.js</span></div>
+  <div class="dhead">
+    <div class="figure">
+      <div class="big" id="rejCounter">11/11</div>
+      <div class="bl">in-scope rejected</div>
+    </div>
+    <div class="cap">
+      In-scope manipulated proofs rejected on the <b>full deployed mint path</b>,
+      <span class="pill">pre-ingestion</span>. <b>0</b> forged tokens minted, <b>0</b> reached chain.
+      Defense-in-depth: expiry + per-source tolerance + Ed25519 signature + issuer-key pinning.
+      Honest proofs pass; only tampered proofs are stopped.
+    </div>
+  </div>
+  <div class="stage">
+    <div class="gateflow">
+      <div class="gf-cell gf-in">
+        <div class="lab">incoming proof</div>
+        <div class="nm" id="gfName">awaiting next attack…</div>
+        <div class="ds" id="gfDesc">each in-scope vector replayed against the real SDK gate</div>
+      </div>
+      <div class="gf-cell gf-arrow" id="gfArrow">
+        <svg viewBox="0 0 40 14" aria-hidden="true">
+          <line class="ln" x1="2" y1="7" x2="32" y2="7"></line>
+          <polygon class="hd" points="31,2 39,7 31,12"></polygon>
+          <circle class="pulse" cx="4" cy="7" r="3"></circle>
+        </svg>
+      </div>
+      <div class="gf-cell gf-gate" id="gfGate">
+        <div class="gt">PRE-INGRESS GATE</div>
+        <div class="gs">single proof · no tx</div>
+        <div class="gmod" id="gfMod">idle</div>
+      </div>
+      <div class="gf-cell gf-out" id="gfOut">
+        <div class="ver" id="gfVer">
+          <svg class="ic" viewBox="0 0 18 18" aria-hidden="true">
+            <circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+          </svg>
+          <span id="gfVerText">standby</span>
+        </div>
+        <div class="rsn" id="gfReason">verdicts recorded from the deployed path</div>
+        <div class="gas">no tx · gas 0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ATTACK LOG + OUT-OF-SCOPE ================= -->
 <div class="two">
   <div class="panel">
-    <div class="ph">attack surface — in-scope vectors<span class="src">each rejected before any mint</span></div>
-    <div class="pb" style="padding:6px 13px 12px">
-      <div class="log" id="log"><!-- JS-built --></div>
+    <div class="ph"><span class="t">Attack surface — in-scope vectors</span>
+      <span class="src">each rejected before any mint</span></div>
+    <div class="pb" style="padding:6px 18px 14px">
+      <div class="log" id="log"></div>
     </div>
   </div>
   <div class="panel">
-    <div class="ph">other layers — defended outside single-proof ingress<span class="src">honestly out-of-scope</span></div>
-    <div class="pb" style="padding:10px 13px 12px">
+    <div class="ph"><span class="t">Other layers — defended outside single-proof ingress</span>
+      <span class="src">honestly out-of-scope</span></div>
+    <div class="pb">
       <div class="oos">
         <div class="or"><b>Flood / DDoS</b><span>network rate-limit (transport)</span></div>
         <div class="or"><b>Fleet ordering / SDN reorder</b><span>multi-node sequence cross-ref</span></div>
@@ -255,36 +412,42 @@
 
 <!-- ================= VERIFIABILITY ================= -->
 <div class="panel">
-  <div class="ph">verifiability — run it yourself<span class="src">no trusted operator</span></div>
+  <div class="ph"><span class="t">Verifiability — run it yourself</span>
+    <span class="src">no trusted operator</span></div>
   <div class="pb">
-    <div class="query"><span class="k">{</span>
+    <div class="code"><span class="k">{</span>
   _meta <span class="k">{</span> block <span class="k">{</span> number timestamp <span class="k">}</span> hasIndexingErrors <span class="k">}</span>
-  poTAnchors(first: 1, orderBy: timestamp, orderDirection: desc) <span class="k">{</span>
+  <span class="f">poTAnchors</span>(first: 1, orderBy: timestamp, orderDirection: desc) <span class="k">{</span>
     blockNumber timestamp txHash
   <span class="k">}</span>
 <span class="k">}</span></div>
-    <div class="ep">$ POST <b>https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</b></div>
-    <div class="run">Run it yourself. <span>The live values above are the response to this exact query — no trusted operator, no shared secret.</span></div>
+    <div class="ep">POST <b>https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0</b></div>
+    <div class="run">Run it yourself. <b>The live values above are the response to this exact query</b> —
+      no trusted operator, no shared secret.</div>
   </div>
 </div>
 
 <footer>
-  <div>draft-helmprotocol-tttps-03&nbsp; | &nbsp;Dispatch / SecDispatch Interim&nbsp; | &nbsp;June 30, 2026</div>
+  <div>draft-helmprotocol-tttps-03 · Dispatch / SecDispatch Interim · June 30, 2026</div>
   <div>Proof of Time — system integrity</div>
 </footer>
 
 <script>
-/* ---------- LIVE SUBGRAPH FETCH: stats, ascii gauge, ascii sparkline ---------- */
+/* ================================================================
+   LIVE SUBGRAPH FETCH — stats, SVG sparkline, SVG health gauge.
+   Every rendered value here is the response to the GraphQL query
+   shown on the page. No fabricated figures.
+   ================================================================ */
 (function(){
   var ENDPOINT = "https://api.studio.thegraph.com/query/1744392/openttt-base-sepolia/v0.2.0";
   var QUERY = "{ _meta { block { number timestamp } hasIndexingErrors } recent: poTAnchors(first:60, orderBy:timestamp, orderDirection:desc){ blockNumber timestamp } }";
-  var SPARK = "▁▂▃▅▇█".split(""); // ▁▂▃▅▇█
+  var firstDraw = true;
 
   function fmtInt(n){ return Number(n).toLocaleString("en-US"); }
   function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
   function nowUTC(){ return new Date().toISOString().replace("T"," ").replace(/\.\d+Z$/," UTC"); }
 
-  // ASCII sparkline: anchors counted per block over the recent indexed window
+  /* ---- SVG sparkline: anchors counted per block over recent window ---- */
   function drawSpark(recent){
     var body=document.getElementById("tsBody");
     if(!recent || recent.length < 4){
@@ -298,28 +461,62 @@
     var blocks=Object.keys(byBlock).map(Number).sort(function(a,b){return a-b;});
     var vals=blocks.map(function(b){return byBlock[b];});
     var maxN=Math.max.apply(null,vals), minN=Math.min.apply(null,vals);
-    var line=vals.map(function(v){
-      if(maxN===minN) return SPARK[SPARK.length-1];
-      var idx=Math.round((v-minN)/(maxN-minN)*(SPARK.length-1));
-      return SPARK[idx];
-    }).join("");
-    body.innerHTML='<div class="spark" role="img" aria-label="anchors per block, recent indexed window">'+line+'</div>'+
+
+    var W=100, H=100, padTop=10, padBot=8, n=vals.length;
+    function px(i){ return n===1?W/2:(i/(n-1))*W; }
+    function py(v){
+      if(maxN===minN) return H/2;
+      var t=(v-minN)/(maxN-minN);
+      return H-padBot - t*(H-padTop-padBot);
+    }
+    var pts=vals.map(function(v,i){ return px(i)+","+py(v).toFixed(2); });
+    var linePath="M"+pts.join(" L");
+    var areaPath="M0,"+H+" L"+pts.join(" L")+" L"+W+","+H+" Z";
+
+    // approx length for stroke-draw animation
+    var len=0, prev=null;
+    vals.forEach(function(v,i){ var c=[px(i),py(v)];
+      if(prev){ len+=Math.hypot(c[0]-prev[0],c[1]-prev[1]); } prev=c; });
+
+    var lastX=px(n-1).toFixed(2), lastY=py(vals[n-1]).toFixed(2);
+    var drawClass = firstDraw ? " draw" : "";
+
+    body.innerHTML=
+      '<div class="sparkwrap"><svg class="spark" viewBox="0 0 100 100" preserveAspectRatio="none" '+
+        'role="img" aria-label="anchors per block, recent indexed window">'+
+        '<defs><linearGradient id="sageGrad" x1="0" y1="0" x2="0" y2="1">'+
+          '<stop offset="0%" stop-color="#7d9079" stop-opacity="0.22"/>'+
+          '<stop offset="100%" stop-color="#7d9079" stop-opacity="0.02"/></linearGradient></defs>'+
+        '<line class="grid" x1="0" y1="'+(H/2)+'" x2="100" y2="'+(H/2)+'"/>'+
+        '<path class="area" d="'+areaPath+'"/>'+
+        '<path class="line'+drawClass+'" style="--len:'+len.toFixed(1)+'" d="'+linePath+'"/>'+
+        '<circle class="dot" cx="'+lastX+'" cy="'+lastY+'" r="2.4"/>'+
+      '</svg></div>'+
       '<div class="axis"><span>block <b>'+fmtInt(blocks[0])+'</b> → <b>'+fmtInt(blocks[blocks.length-1])+'</b> · '+blocks.length+' blocks</span>'+
       '<span>peak <b>'+maxN+'</b>/block · live, not a mint feed</span></div>';
     set("tsSrc","live · The Graph");
+    firstDraw=false;
   }
 
+  /* ---- health gauge: indexing arc (135°→ sweep, 270° track) ---- */
   function setGaugeIndex(synced, hasErr){
-    var bar=document.getElementById("gIndexBar"), v=document.getElementById("gIndexV");
+    var arc=document.getElementById("gIndexArc"),
+        v=document.getElementById("gIndexV"),
+        s=document.getElementById("gIndexS"),
+        c=document.getElementById("gIndexC");
+    var TRACK=113; // dash length of the 270° track
     if(hasErr===false){
-      bar.textContent="[██████████]"; bar.style.color="var(--ok)";
-      v.textContent="synced · 0 errors"; v.style.color="var(--ok)";
+      arc.style.strokeDashoffset="0"; arc.setAttribute("stroke","var(--sage)");
+      c.textContent="✓"; c.setAttribute("fill","var(--sage)");
+      v.textContent="synced"; s.textContent="0 indexing errors";
     } else if(hasErr===true){
-      bar.textContent="[██████████]"; bar.style.color="var(--alarm)";
-      v.textContent="indexing errors"; v.style.color="var(--alarm)";
+      arc.style.strokeDashoffset="0"; arc.setAttribute("stroke","var(--rose)");
+      c.textContent="!"; c.setAttribute("fill","var(--rose)");
+      v.textContent="indexing errors"; s.textContent="see subgraph status";
     } else {
-      bar.textContent="[·····?····]"; bar.style.color="var(--faint)";
-      v.textContent="checking"; v.style.color="var(--dim)";
+      arc.style.strokeDashoffset=String(TRACK); arc.setAttribute("stroke","var(--slate-soft)");
+      c.textContent="··"; c.setAttribute("fill","var(--dim)");
+      v.textContent="checking"; s.textContent="querying _meta";
     }
   }
 
@@ -336,8 +533,11 @@
       setGaugeIndex(blk!=null, hasErr);
       set("headNote", hasErr===false ? "synced · 0 indexing errors" : (hasErr===true?"indexing errors present":"synced to chain head"));
       var hb=document.getElementById("headBadge");
-      if(hb){ hb.className = (hasErr===true) ? "bdg alert" : "bdg";
-        hb.textContent = (hasErr===true) ? "error" : "live"; }
+      if(hb){
+        hb.className = (hasErr===true) ? "tag dot" : "tag slate dot";
+        hb.textContent = (hasErr===true) ? "error" : "live";
+        hb.style.color = (hasErr===true) ? "var(--rose)" : "";
+      }
       drawSpark(d.recent);
       set("liveStamp","live — fetched "+nowUTC());
     })
@@ -355,86 +555,107 @@
   setInterval(fetchLive, 15000);
 })();
 
-/* ---------- DYNAMIC ASCII ATTACK -> REJECT FLOW ----------
-   Every vector and reason below is the measured verdict from `node attack_bot.js`
-   run against the real SDK gates (17 attempted | 11 in-scope rejected, full deployed
-   path | 0 minted). No live mint feed — this is a demonstration of the rejection
-   logic with the recorded full-path verdicts. No internal algorithms exposed:
-   only attack class + SDK gate name + reason. */
+/* ================================================================
+   DYNAMIC ATTACK -> REJECT FLOW
+   Every vector and reason below is the measured verdict from
+   `node attack_bot.js` run against the real SDK gates
+   (17 attempted | 11 in-scope rejected on the full deployed path
+   | 0 minted). No live mint feed — a demonstration of the rejection
+   logic with the recorded full-path verdicts. No internal algorithms
+   exposed: only attack class + SDK gate name + reason.
+   ================================================================ */
 (function(){
   var VECTORS = [
-    { name:"replay",            desc:"reused nonce resubmitted as a fresh proof",      gate:"verifyProofOfTime",  reason:"duplicate nonce — already used" },
-    { name:"backdated/expired", desc:"proof whose expiry has already passed",          gate:"verifyProofOfTime",  reason:"expired — outside validity window" },
-    { name:"time-skew (NTP)",   desc:"one source reading skewed beyond tolerance",     gate:"verifyProofOfTime",  reason:"reading outside per-source tolerance" },
-    { name:"confidence-strip",  desc:"confidence field zeroed to bypass quality check",gate:"verifyProofOfTime",  reason:"confidence must be > 0" },
-    { name:"empty-readings",    desc:"proof submitted with no source readings",        gate:"verifyProofOfTime",  reason:"readings must be non-empty" },
-    { name:"future-date",       desc:"all readings shifted forward together by +1h",   gate:"full path",          reason:"live-time anchor + Ed25519 hash binding" },
-    { name:"signature-forgery", desc:"random bytes presented as issuer signature",     gate:"verifyPotSignature", reason:"Ed25519 verification failed" },
-    { name:"body-tamper (MITM)",desc:"payload mutated after signing",                  gate:"verifyPotSignature", reason:"signature invalid for mutated body" },
-    { name:"issuer-spoof (DNS)",desc:"attacker key vs the pinned issuer key",          gate:"verifyPotSignature", reason:"public-key mismatch vs pin" },
-    { name:"cross-pool replay", desc:"pool-A token replayed into pool B",              gate:"isValidForPool",     reason:"pool context binding mismatch" },
-    { name:"protocol-violation",desc:"malformed proof structure at ingress",           gate:"verifyProofOfTime",  reason:"malformed-PoT guard tripped" }
+    { name:"replay",            desc:"reused nonce resubmitted as a fresh proof",       gate:"verifyProofOfTime",  reason:"duplicate nonce — already used" },
+    { name:"backdated/expired", desc:"proof whose expiry has already passed",           gate:"verifyProofOfTime",  reason:"expired — outside validity window" },
+    { name:"time-skew (NTP)",   desc:"one source reading skewed beyond tolerance",      gate:"verifyProofOfTime",  reason:"reading outside per-source tolerance" },
+    { name:"confidence-strip",  desc:"confidence field zeroed to bypass quality check", gate:"verifyProofOfTime",  reason:"confidence must be > 0" },
+    { name:"empty-readings",    desc:"proof submitted with no source readings",         gate:"verifyProofOfTime",  reason:"readings must be non-empty" },
+    { name:"future-date",       desc:"all readings shifted forward together by +1h",    gate:"full mint path",     reason:"live-time anchor + Ed25519 hash binding" },
+    { name:"signature-forgery", desc:"random bytes presented as issuer signature",      gate:"verifyPotSignature", reason:"Ed25519 verification failed" },
+    { name:"body-tamper (MITM)",desc:"payload mutated after signing",                   gate:"verifyPotSignature", reason:"signature invalid for mutated body" },
+    { name:"issuer-spoof (DNS)",desc:"attacker key vs the pinned issuer key",           gate:"verifyPotSignature", reason:"public-key mismatch vs pin" },
+    { name:"cross-pool replay", desc:"pool-A token replayed into pool B",               gate:"isValidForPool",     reason:"pool context binding mismatch" },
+    { name:"protocol-violation",desc:"malformed proof structure at ingress",            gate:"verifyProofOfTime",  reason:"malformed-PoT guard tripped" }
   ];
 
-  // --- attack-surface log lines (one per vector) ---
+  var CHECK_SVG='<svg viewBox="0 0 11 11" aria-hidden="true"><path d="M1.5 6 L4 8.5 L9.5 2.5" '+
+    'fill="none" stroke="#566b53" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var X_SVG='<svg class="ic" viewBox="0 0 18 18" aria-hidden="true">'+
+    '<circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>'+
+    '<path d="M6 6 L12 12 M12 6 L6 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+
+  /* attack-surface log rows (one per vector) */
   var logEl=document.getElementById("log"), rows=[];
   VECTORS.forEach(function(v){
     var r=document.createElement("div");
     r.className="lrow";
-    r.innerHTML='<span class="mark">·</span>'+
-      '<span><span class="nm"></span><br><span class="rs"></span></span>'+
+    r.innerHTML='<span class="mk">'+CHECK_SVG+'</span>'+
+      '<span><span class="nm"></span><span class="rs"></span></span>'+
       '<span class="st">awaiting</span>';
     r.querySelector(".nm").textContent=v.name;
     logEl.appendChild(r); rows.push(r);
   });
 
-  // --- ascii ingress gate flow stage ---
-  var stage=document.getElementById("stage"),
-      flowLine=document.getElementById("flowLine"),
-      flowGate1=document.getElementById("flowGate1"),
-      flowGate2=document.getElementById("flowGate2"),
-      flowGate3=document.getElementById("flowGate3");
+  /* gate flow elements */
+  var gfName=document.getElementById("gfName"),
+      gfDesc=document.getElementById("gfDesc"),
+      gfArrow=document.getElementById("gfArrow"),
+      gfGate=document.getElementById("gfGate"),
+      gfMod=document.getElementById("gfMod"),
+      gfOut=document.getElementById("gfOut"),
+      gfVer=document.getElementById("gfVer"),
+      gfReason=document.getElementById("gfReason");
   var reduceMotion=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var idx=0;
 
-  function pad(s,n){ s=String(s); while(s.length<n) s+=" "; return s.slice(0,n); }
-
   function showIncoming(v,row){
-    flowLine.textContent="  incoming › "+v.name+" — "+v.desc;
-    flowGate1.textContent="  ["+pad(v.name,16)+"]  ──────▶  ║                  ║";
-    flowGate2.textContent="                              ║ PRE-INGRESS GATE ║  ──"+(reduceMotion?"✗":"·")+"──▶  "+(reduceMotion?"REJECTED":"checking…");
-    flowGate3.textContent="                              ║ "+pad(v.gate,16)+" ║  no tx · gas 0";
+    gfName.textContent=v.name;
+    gfDesc.textContent=v.desc;
+    gfMod.textContent="› "+v.gate;
+    gfArrow.classList.remove("run"); void gfArrow.offsetWidth; gfArrow.classList.add("run");
+    gfOut.classList.remove("rej");
+    gfVer.innerHTML='<svg class="ic" viewBox="0 0 18 18" aria-hidden="true">'+
+      '<circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'+
+      '<span>checking…</span>';
+    gfReason.textContent="evaluating at "+v.gate;
     row.className="lrow live";
-    row.querySelector(".mark").textContent="▶";
     row.querySelector(".rs").textContent="→ ingress gate…";
     row.querySelector(".st").textContent="checking";
   }
   function showRejected(v,row){
-    stage.classList.add("flash");
-    flowGate2.textContent="                              ║ PRE-INGRESS GATE ║  ──✗──▶  REJECTED · "+v.reason;
+    gfGate.classList.add("flash");
+    gfOut.classList.add("rej");
+    gfVer.innerHTML=X_SVG+'<span id="gfVerText">REJECTED</span>';
+    gfReason.textContent=v.reason;
     row.className="lrow done";
-    row.querySelector(".mark").textContent="✗";
     row.querySelector(".rs").textContent=v.reason;
-    row.querySelector(".st").textContent="REJECTED";
-    setTimeout(function(){ stage.classList.remove("flash"); },560);
+    row.querySelector(".st").textContent="rejected";
+    setTimeout(function(){ gfGate.classList.remove("flash"); },620);
   }
   function step(){
     var v=VECTORS[idx], row=rows[idx];
     showIncoming(v,row);
-    setTimeout(function(){ showRejected(v,row); }, reduceMotion?0:640);
+    setTimeout(function(){ showRejected(v,row); }, reduceMotion?0:680);
     idx=(idx+1)%VECTORS.length;
   }
 
   if(reduceMotion){
     VECTORS.forEach(function(v,i){
       rows[i].className="lrow done";
-      rows[i].querySelector(".mark").textContent="✗";
       rows[i].querySelector(".rs").textContent=v.reason;
-      rows[i].querySelector(".st").textContent="REJECTED";
+      rows[i].querySelector(".st").textContent="rejected";
     });
+    gfName.textContent="all in-scope vectors";
+    gfDesc.textContent="each rejected on the full deployed mint path";
+    gfMod.textContent="› pre-ingress gates";
+    gfOut.classList.add("rej");
+    gfVer.innerHTML=X_SVG+'<span>REJECTED</span>';
+    gfReason.textContent="0 forged tokens minted · 0 reached chain";
+  } else {
+    step();
+    setInterval(step, 2050);
   }
-  step();
-  setInterval(step, 1950);
 })();
 </script>
 
